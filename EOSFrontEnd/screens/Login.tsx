@@ -1,7 +1,12 @@
 import * as React from 'react';
 
-import { Text } from 'react-native'
+import { Button, Text, View } from 'react-native'
 
-export function Login() {
-  return <Text>login</Text>;
+export function Login({navigation}: {navigation: any}) {
+  return (
+    <View>
+      <Text>login</Text>
+      <Button title="Next" onPress={() => navigation.navigate('Root')} />
+    </View>
+  );
 }

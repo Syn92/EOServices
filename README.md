@@ -1,5 +1,10 @@
 # EOS-Front-End
 
+dev - développement
+deb - débug
+ref - refactoring
+tes - test
+aut - autre
 
 
 ## Getting started
