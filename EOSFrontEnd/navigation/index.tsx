@@ -8,9 +8,9 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as React from 'react';
-import { ColorSchemeName, Pressable } from 'react-native';
-import { Login } from '../screens/Login';
+import { ActivityIndicator, ColorSchemeName, Pressable, View } from 'react-native';
 
+import Firebase from '../config/firebase';
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
 import ModalScreen from '../screens/ModalScreen';
@@ -18,14 +18,45 @@ import NotFoundScreen from '../screens/NotFoundScreen';
 import TabOneScreen from '../screens/TabOneScreen';
 import TabTwoScreen from '../screens/TabTwoScreen';
 import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
+import { AuthenticatedUserContext } from './AuthenticatedUserProvider';
+import AuthStack from './AuthStack';
 import LinkingConfiguration from './LinkingConfiguration';
 
+const auth = Firebase.auth();
+
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
+  const { user, setUser } =  React.useContext(AuthenticatedUserContext);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    // onAuthStateChanged returns an unsubscriber
+    const unsubscribeAuth = auth.onAuthStateChanged(async (authenticatedUser: any) => {
+      try {
+        await (authenticatedUser ? setUser(authenticatedUser) : setUser(null));
+        setIsLoading(false);
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+    // unsubscribe auth listener on unmount
+    return unsubscribeAuth;
+  }, []);
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size='large' />
+      </View>
+    )
+  }
+
+  console.log(user)
+
   return (
     <NavigationContainer
-      linking={LinkingConfiguration}
       theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <RootNavigator />
+      {user ? <RootNavigator /> : <AuthStack />}
     </NavigationContainer>
   );
 }
@@ -39,7 +70,6 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 function RootNavigator() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="Login" component={Login} />
       <Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: false }} />
       <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
       <Stack.Group screenOptions={{ presentation: 'modal' }}>

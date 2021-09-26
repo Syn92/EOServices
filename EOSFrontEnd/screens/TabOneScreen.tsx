@@ -3,12 +3,24 @@ import { Button, StyleSheet } from 'react-native';
 
 import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
+import Firebase from '../config/firebase';
 import { RootTabScreenProps } from '../types';
 
+const auth = Firebase.auth()
+
 export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'>) {
+
+  async function handleLogout() {
+    try {
+      await auth.signOut()
+    } catch (error: any) {
+      console.log(error)
+    }
+  }
+
   return (
     <View style={styles.container}>
-      <Button title="Back" onPress={() => navigation.navigate('Login')} />
+      <Button title="Logout" onPress={handleLogout} />
       <Text style={styles.title}>Tab One</Text>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
       <EditScreenInfo path="/screens/TabOneScreen.tsx" />
