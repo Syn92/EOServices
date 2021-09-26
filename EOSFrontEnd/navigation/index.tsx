@@ -20,7 +20,6 @@ import TabTwoScreen from '../screens/TabTwoScreen';
 import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
 import { AuthenticatedUserContext } from './AuthenticatedUserProvider';
 import AuthStack from './AuthStack';
-import LinkingConfiguration from './LinkingConfiguration';
 
 const auth = Firebase.auth();
 
@@ -50,8 +49,6 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
       </View>
     )
   }
-
-  console.log(user)
 
   return (
     <NavigationContainer

@@ -1,32 +1,33 @@
+import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { useState } from 'react';
-import { StyleSheet, Text, View, Button, TextInput, TouchableOpacity } from 'react-native';
+import { Button, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import Firebase from '../config/firebase';
 
 const auth = Firebase.auth();
 
-export function Login({navigation}: {navigation: any}) {
+export function Register({navigation}: {navigation: any}) {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loginError, setLoginError] = useState('');
+  const [signupError, setSignupError] = useState('');
 
-  async function handleLogin() {
+  async function handleSignup() {
     try {
       if (email !== '' && password !== '') {
-        await auth.signInWithEmailAndPassword(email, password);
+        await auth.createUserWithEmailAndPassword(email, password);
       }
     } catch (error: any) {
-      setLoginError(error.message);
+      setSignupError(error.message);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>LOGIN</Text>
+      <StatusBar style='dark' />
 
-      {/*Email input */}
+      <Text style={styles.title}>Create new account</Text>
       <TextInput
         placeholder='Enter email'
         placeholderTextColor='black'
@@ -61,18 +62,10 @@ export function Login({navigation}: {navigation: any}) {
           backgroundColor: "white"
         }}
       />
+      
+      {signupError ? <Text style={styles.errorText}>{signupError}</Text> : null}
 
-      {loginError ? <Text style={styles.errorText}>{loginError}</Text> : null}
-
-      <Button title="Login" onPress={handleLogin}/>
-
-      <View style={styles.helpContainer}>
-        <TouchableOpacity onPress={() => navigation.navigate('Register')} style={styles.helpLink}>
-          <Text style={styles.helpLinkText}>
-            Dont have an account? Register now!
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <Button title="Register" onPress={handleSignup}/>
     </View>
   );
 }
