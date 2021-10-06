@@ -11,7 +11,6 @@ const firebaseConfig = {
   messagingSenderId: Constants.manifest?.extra?.messagingSenderId,
   appId: Constants.manifest?.extra?.appId
 };
-
 let Firebase: any;
 
 if (firebase.apps.length === 0) {

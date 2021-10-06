@@ -8,6 +8,7 @@ export default {
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     scheme: "myapp",
+    facebookScheme: 'fb' + process.env.FB_APP_ID,
     userInterfaceStyle: "automatic",
     splash: {
       image: "./assets/images/splash.png",
@@ -38,7 +39,10 @@ export default {
       projectId: process.env.PROJECT_ID,
       storageBucket: process.env.STORAGE_BUCKET,
       messagingSenderId: process.env.MESSAGING_SENDER_ID,
-      appId: process.env.APP_ID
+      appId: process.env.APP_ID,
+      iosClient: process.env.IOS_CLIENT,
+      andClient: process.env.AND_CLIENT,
+      fbAppId: process.env.FB_APP_ID
     }
   }
 }

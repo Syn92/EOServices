@@ -1,26 +1,100 @@
 import React from 'react';
 import { useState } from 'react';
-import { StyleSheet, Text, View, Button, TextInput, TouchableOpacity } from 'react-native';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  Button, 
+  TextInput, 
+  TouchableOpacity, 
+  ActivityIndicator 
+} from 'react-native';
+import * as Facebook from 'expo-facebook';
+import * as Google from 'expo-google-app-auth';
+import firebase from 'firebase/app';
 
+import Constants from 'expo-constants';
 import Firebase from '../config/firebase';
 
-const auth = Firebase.auth();
+const facebookAppId: Facebook.FacebookOptions = {};
 
 export function Login({navigation}: {navigation: any}) {
+
+  const [isLoading, setLoadingStatus] = useState(false);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
-  async function handleLogin() {
+  function renderLoading() {
+    if(isLoading) {
+      return (
+        <View>
+          <ActivityIndicator size='large' color='#0000ff' />
+        </View>
+      )
+    }
+  }
+
+  async function signInWithEmail() {
     try {
       if (email !== '' && password !== '') {
-        await auth.signInWithEmailAndPassword(email, password);
+        await Firebase.auth.signInWithEmailAndPassword(email, password);
       }
     } catch (error: any) {
       setLoginError(error.message);
     }
   };
+
+  async function signInWithFacebook() {
+    try {
+      await Facebook.initializeAsync({appId: Constants.manifest?.extra?.fbAppId})
+      const result = await Facebook.logInWithReadPermissionsAsync({permissions: ['public_profile']})
+
+      if (result.type == 'success') {
+        const credential = firebase.auth.FacebookAuthProvider.credential(result.token)
+
+        await Firebase.auth().signInWithCredential(credential).then((res: any) => { 
+          //TODO: isNewUser ? add to DB : nothing
+          
+          setLoadingStatus(false);
+        })
+      }
+
+    } catch(e) {
+      console.log(e);
+
+      return { error: true };
+    }
+  }
+
+  async function signInWithGoogle() {
+    try {
+      const result = await Google.logInAsync({
+        androidClientId: Constants.manifest?.extra?.andClient,
+        iosClientId: Constants.manifest?.extra?.iosClient,
+        scopes: ['profile', 'email'],
+      });
+      
+      if (result.type === 'success') {
+        setLoadingStatus(true);
+        const credential = firebase.auth.GoogleAuthProvider.credential(result.idToken, result.accessToken);
+        await Firebase.auth().signInWithCredential(credential).then((res: any) => { 
+          //TODO: isNewUser ? add to DB : nothing
+          
+          setLoadingStatus(false);
+        })
+        return result.accessToken;
+      } else {
+        return { cancelled: true };
+      }
+    } catch (e) {
+      console.log(e)
+
+      setLoadingStatus(false);
+      return { error: true };
+    }
+  }
 
   return (
     <View style={styles.container}>
@@ -64,7 +138,11 @@ export function Login({navigation}: {navigation: any}) {
 
       {loginError ? <Text style={styles.errorText}>{loginError}</Text> : null}
 
-      <Button title="Login" onPress={handleLogin}/>
+      {renderLoading()}
+
+      <Button title="Login" onPress={signInWithEmail}/>
+      <Button title="Login with google" onPress={signInWithGoogle}/>
+      <Button title="Login with facebook" onPress={signInWithFacebook}/>
 
       <View style={styles.helpContainer}>
         <TouchableOpacity onPress={() => navigation.navigate('Register')} style={styles.helpLink}>

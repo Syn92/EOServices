@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import Firebase from '../config/firebase';
 
@@ -22,6 +22,12 @@ export function Register({navigation}: {navigation: any}) {
       setSignupError(error.message);
     }
   };
+
+  auth.onAuthStateChanged(function(user: any) {
+    if (user) {
+      user.updateProfile({displayName: "NEW USER NAME"})
+    }
+});
 
   return (
     <View style={styles.container}>
