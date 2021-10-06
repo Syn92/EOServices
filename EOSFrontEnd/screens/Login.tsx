@@ -1,71 +1,39 @@
 import React from 'react';
 import { useState } from 'react';
-import { StyleSheet, Text, View, Button, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Button, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import * as Google from 'expo-google-app-auth';
+import firebase from 'firebase/app';
 
 import Constants from 'expo-constants';
 import Firebase from '../config/firebase';
 
-const auth = Firebase.auth();
-
 export function Login({navigation}: {navigation: any}) {
+
+  const [isLoading, setLoadingStatus] = useState(false);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
+  function renderLoading() {
+    if(isLoading) {
+      return (
+        <View>
+          <ActivityIndicator size='large' color='#0000ff' />
+        </View>
+      )
+    }
+  }
+
   async function handleLogin() {
     try {
       if (email !== '' && password !== '') {
-        await auth.signInWithEmailAndPassword(email, password);
+        await Firebase.auth.signInWithEmailAndPassword(email, password);
       }
     } catch (error: any) {
       setLoginError(error.message);
     }
   };
-
-  function onSignIn(googleUser: any) {
-    // We need to register an Observer on Firebase Auth to make sure auth is initialized.
-    const unsubscribe = auth.onAuthStateChanged(auth, (firebaseUser: any) => {
-      unsubscribe();
-      // Check if we are already signed-in Firebase with the correct user.
-      if (!isUserEqual(googleUser, firebaseUser)) {
-        // Build Firebase credential with the Google ID token.
-        const credential = auth.GoogleAuthProvider.credential(
-            googleUser.idToken,
-            googleUser.accessToken
-        );
-  
-        // Sign in with credential from the Google user.
-        auth.signInWithCredential(auth, credential).catch((error: any) => {
-          // Handle Errors here.
-          const errorCode = error.code;
-          const errorMessage = error.message;
-          // The email of the user's account used.
-          const email = error.email;
-          // The credential that was used.
-          const credential = auth.GoogleAuthProvider.credentialFromError(error);
-          // ...
-        });
-      } else {
-        console.log('User already signed-in Firebase.');
-      }
-    });
-  }
-
-  const isUserEqual = (googleUser:any, firebaseUser:any) => {
-    if (firebaseUser) {
-      const providerData = firebaseUser.providerData;
-      for (let i = 0; i < providerData.length; i++) {
-        if (providerData[i].providerId === auth.GoogleAuthProvider.PROVIDER_ID &&
-            providerData[i].uid === googleUser.getBasicProfile().getId()) {
-          // We don't need to reauth the Firebase connection.
-          return true;
-        }
-      }
-    }
-    return false;
-  }
 
   async function signInWithGoogleAsync() {
 
@@ -77,13 +45,21 @@ export function Login({navigation}: {navigation: any}) {
       });
       
       if (result.type === 'success') {
-        onSignIn(result)
+        setLoadingStatus(true);
+        const credential = firebase.auth.GoogleAuthProvider.credential(result.idToken, result.accessToken);
+        await Firebase.auth().signInWithCredential(credential).then((res: any) => { 
+          //TODO: isNewUser ? add to DB : nothing
+          
+          setLoadingStatus(false);
+        })
         return result.accessToken;
       } else {
         return { cancelled: true };
       }
     } catch (e) {
       console.log(e)
+
+      setLoadingStatus(false);
       return { error: true };
     }
   }
@@ -129,6 +105,8 @@ export function Login({navigation}: {navigation: any}) {
       />
 
       {loginError ? <Text style={styles.errorText}>{loginError}</Text> : null}
+
+      {renderLoading()}
 
       <Button title="Login" onPress={handleLogin}/>
       <Button title="Login with google" onPress={signInWithGoogleAsync}/>
