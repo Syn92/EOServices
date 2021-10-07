@@ -4,19 +4,19 @@ import {
   StyleSheet, 
   Text, 
   View, 
-  Button, 
   TextInput, 
   TouchableOpacity, 
-  ActivityIndicator 
+  ActivityIndicator, 
+  Image
 } from 'react-native';
 import * as Facebook from 'expo-facebook';
 import * as Google from 'expo-google-app-auth';
 import firebase from 'firebase/app';
+import { SocialIcon } from 'react-native-elements'
 
 import Constants from 'expo-constants';
 import Firebase from '../config/firebase';
-
-const facebookAppId: Facebook.FacebookOptions = {};
+import { ScrollView } from 'react-native-gesture-handler';
 
 export function Login({navigation}: {navigation: any}) {
 
@@ -97,82 +97,119 @@ export function Login({navigation}: {navigation: any}) {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>LOGIN</Text>
+    <ScrollView contentContainerStyle={{flexGrow: 1}}>
+        <View style={styles.container}>
+          <View style={styles.contentContainer}>
+            {/* EOS Logo */}
+            <Image style={styles.image} source={require('../assets/images/eos.png')}/>
 
-      {/*Email input */}
-      <TextInput
-        placeholder='Enter email'
-        placeholderTextColor='black'
-        autoCapitalize='none'
-        keyboardType='email-address'
-        textContentType='emailAddress'
-        autoFocus={true}
-        value={email}
-        onChangeText={text => setEmail(text)}
-        style={{
-          width: '100%',
-          fontSize: 14,
-          marginBottom: 20,
-          backgroundColor: "white"
-        }}
-      />
+            {/* Email input */}
+            <View style={styles.inputView}>
+              <Text style={styles.inputLabel}>Email</Text>
+              <TextInput
+                autoCapitalize='none'
+                keyboardType='email-address'
+                textContentType='emailAddress'
+                value={email}
+                onChangeText={text => setEmail(text)}
+              />
+            </View>
 
-      {/* Password input*/}
-      <TextInput
-        placeholder='Enter password'
-        placeholderTextColor='black'
-        autoCapitalize='none'
-        autoCorrect={false}
-        secureTextEntry={true}
-        textContentType='password'
-        value={password}
-        onChangeText={text => setPassword(text)}
-        style={{
-          width: '100%',
-          fontSize: 14,
-          marginBottom: 20,
-          backgroundColor: "white"
-        }}
-      />
+            {/* Password input */}
+            <View style={styles.inputView}>
+              <Text style={styles.inputLabel}>Password</Text>
+              <TextInput
+                autoCapitalize='none'
+                autoCorrect={false}
+                secureTextEntry={true}
+                textContentType='password'
+                value={password}
+                onChangeText={text => setPassword(text)}
+              />
+            </View>
 
-      {loginError ? <Text style={styles.errorText}>{loginError}</Text> : null}
+            {loginError ? <Text style={styles.errorText}>{loginError}</Text> : null}
+            {renderLoading()}
+            
+            <TouchableOpacity style={{...styles.button, ...styles.mailButton}} onPress={signInWithEmail}>
+              <Text style={{...styles.text, fontSize: 20, fontWeight: 'bold'}}>LOGIN</Text>
+            </TouchableOpacity>
 
-      {renderLoading()}
+            <View style={{flexDirection: 'row', marginVertical: '5%'}}>
+              <View style={styles.horizontalLine}></View>
+              <Text style={{...styles.text, fontSize: 20}}>Or</Text>
+              <View style={styles.horizontalLine}></View>
+            </View>
 
-      <Button title="Login" onPress={signInWithEmail}/>
-      <Button title="Login with google" onPress={signInWithGoogle}/>
-      <Button title="Login with facebook" onPress={signInWithFacebook}/>
+            <TouchableOpacity style={{...styles.button, ...styles.googfbButton}} onPress={signInWithGoogle}>
+              <SocialIcon type='google' raised={false} style={styles.icon} iconSize={20} iconColor='#4a6da7' />
+              <Text style={styles.text}>Login with Google</Text>
+            </TouchableOpacity>
 
-      <View style={styles.helpContainer}>
-        <TouchableOpacity onPress={() => navigation.navigate('Register')} style={styles.helpLink}>
-          <Text style={styles.helpLinkText}>
-            Dont have an account? Register now!
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+            <TouchableOpacity style={{...styles.button, ...styles.googfbButton}} onPress={signInWithFacebook}>
+              <SocialIcon type='facebook' raised={false} style={styles.icon} iconSize={20} iconColor='#4a6da7' />
+              <Text style={styles.text}>Login with Facebook</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.footer}>
+            <TouchableOpacity onPress={() => navigation.navigate('Register')} style={styles.helpLink}>
+              <Text style={styles.helpLinkText}>
+                No account? Create one here
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'gainsboro',
-    paddingTop: 50,
-    paddingHorizontal: 12
+    backgroundColor: '#16254b',
   },
-  helpContainer: {
-    marginTop: 15,
-    marginHorizontal: 20,
+  contentContainer: {
+    flex:1,
+    flexDirection: 'column',
     alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#000',
-    alignSelf: 'center',
-    paddingBottom: 24
+  inputView: {
+    width: "70%",
+    marginBottom: 20,
+    borderBottomWidth: 2,
+    borderColor: 'white',
+  },
+  inputLabel: {
+    fontSize: 16,
+    color: '#04b388',
+  },
+  textInput: {
+    height: 50,
+    flex: 1,
+    padding: 10,
+    marginLeft: 20,
+  },
+  button: {
+    backgroundColor: '#04b388',
+    width: "60%",
+    borderRadius: 25,
+    height: 50,
+    marginVertical: 15,
+  },
+  mailButton: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  googfbButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  text: {
+    color: 'white',
+    letterSpacing: 1.1,
   },
   errorText: {
     color: 'darkred',
@@ -184,5 +221,32 @@ const styles = StyleSheet.create({
   },
   helpLinkText: {
     textAlign: 'center',
+    color: '#04b388',
+    fontSize: 17,
+    textDecorationLine: 'underline',
+  },
+  horizontalLine: {
+    borderBottomWidth: 2,
+    borderBottomColor: 'white',
+    width: '30%',
+    marginHorizontal: '7%',
+    marginBottom: '2.5%'
+  },
+  icon: {
+    marginLeft: 5,
+    backgroundColor: '#04b388',
+    zIndex: -1,
+  },
+  footer: {
+    backgroundColor: 'white',
+    height: '7%',
+    justifyContent: 'center',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  image: {
+    width: 150,
+    height: 150,
+    marginBottom: 25, 
   }
 });
