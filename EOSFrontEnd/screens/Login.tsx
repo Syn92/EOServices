@@ -7,13 +7,16 @@ import {
   TextInput, 
   TouchableOpacity, 
   ActivityIndicator, 
-  Image
+  Image,
+  ImageBackground,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import * as Facebook from 'expo-facebook';
 import * as Google from 'expo-google-app-auth';
 import firebase from 'firebase/app';
 import { SocialIcon } from 'react-native-elements'
 
+import HorizontalSeparator from '../components/HorizontalSeparator';
 import Constants from 'expo-constants';
 import Firebase from '../config/firebase';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -99,65 +102,67 @@ export function Login({navigation}: {navigation: any}) {
   return (
     <ScrollView contentContainerStyle={{flexGrow: 1}}>
         <View style={styles.container}>
-          <View style={styles.contentContainer}>
-            {/* EOS Logo */}
-            <Image style={styles.image} source={require('../assets/images/eos.png')}/>
+          <ImageBackground style={{
+            flex: 1,
+            justifyContent: 'center',
+          }} source={require('../assets/images/bg.png')}>
+            <StatusBar style='light' />
+            <View style={styles.contentContainer}>
+              {/* EOS Logo */}
+              <Image style={styles.image} source={require('../assets/images/eos.png')}/>
 
-            {/* Email input */}
-            <View style={styles.inputView}>
-              <Text style={styles.inputLabel}>Email</Text>
-              <TextInput
-                autoCapitalize='none'
-                keyboardType='email-address'
-                textContentType='emailAddress'
-                value={email}
-                onChangeText={text => setEmail(text)}
-              />
+              {/* Email input */}
+              <View style={styles.inputView}>
+                <Text style={styles.inputLabel}>Email</Text>
+                <TextInput
+                  autoCapitalize='none'
+                  keyboardType='email-address'
+                  textContentType='emailAddress'
+                  value={email}
+                  onChangeText={text => setEmail(text)}
+                />
+              </View>
+
+              {/* Password input */}
+              <View style={styles.inputView}>
+                <Text style={styles.inputLabel}>Password</Text>
+                <TextInput
+                  autoCapitalize='none'
+                  autoCorrect={false}
+                  secureTextEntry={true}
+                  textContentType='password'
+                  value={password}
+                  onChangeText={text => setPassword(text)}
+                />
+              </View>
+
+              {loginError ? <Text style={styles.errorText}>{loginError}</Text> : null}
+              {renderLoading()}
+              
+              <TouchableOpacity style={{...styles.button, ...styles.mailButton}} onPress={signInWithEmail}>
+                <Text style={{...styles.text, fontSize: 20, fontWeight: 'bold'}}>LOGIN</Text>
+              </TouchableOpacity>
+
+              <HorizontalSeparator text='Or' fontSize={20} lineColor='#04b388'/>
+
+              <TouchableOpacity style={{...styles.button, ...styles.googfbButton}} onPress={signInWithGoogle}>
+                <SocialIcon type='google' raised={false} style={styles.icon} iconSize={20} iconColor='#ea4335' />
+                <Text style={styles.text}>Login with Google</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={{...styles.button, ...styles.googfbButton}} onPress={signInWithFacebook}>
+                <SocialIcon type='facebook' raised={false} style={styles.icon} iconSize={20} iconColor='#4a6da7' />
+                <Text style={styles.text}>Login with Facebook</Text>
+              </TouchableOpacity>
             </View>
-
-            {/* Password input */}
-            <View style={styles.inputView}>
-              <Text style={styles.inputLabel}>Password</Text>
-              <TextInput
-                autoCapitalize='none'
-                autoCorrect={false}
-                secureTextEntry={true}
-                textContentType='password'
-                value={password}
-                onChangeText={text => setPassword(text)}
-              />
+            <View style={styles.footer}>
+              <TouchableOpacity onPress={() => navigation.navigate('Register')} style={styles.helpLink}>
+                <Text style={styles.helpLinkText}>
+                  No account? Create one here
+                </Text>
+              </TouchableOpacity>
             </View>
-
-            {loginError ? <Text style={styles.errorText}>{loginError}</Text> : null}
-            {renderLoading()}
-            
-            <TouchableOpacity style={{...styles.button, ...styles.mailButton}} onPress={signInWithEmail}>
-              <Text style={{...styles.text, fontSize: 20, fontWeight: 'bold'}}>LOGIN</Text>
-            </TouchableOpacity>
-
-            <View style={{flexDirection: 'row', marginVertical: '5%'}}>
-              <View style={styles.horizontalLine}></View>
-              <Text style={{...styles.text, fontSize: 20}}>Or</Text>
-              <View style={styles.horizontalLine}></View>
-            </View>
-
-            <TouchableOpacity style={{...styles.button, ...styles.googfbButton}} onPress={signInWithGoogle}>
-              <SocialIcon type='google' raised={false} style={styles.icon} iconSize={20} iconColor='#4a6da7' />
-              <Text style={styles.text}>Login with Google</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={{...styles.button, ...styles.googfbButton}} onPress={signInWithFacebook}>
-              <SocialIcon type='facebook' raised={false} style={styles.icon} iconSize={20} iconColor='#4a6da7' />
-              <Text style={styles.text}>Login with Facebook</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.footer}>
-            <TouchableOpacity onPress={() => navigation.navigate('Register')} style={styles.helpLink}>
-              <Text style={styles.helpLinkText}>
-                No account? Create one here
-              </Text>
-            </TouchableOpacity>
-          </View>
+          </ImageBackground>
         </View>
     </ScrollView>
   );
@@ -197,14 +202,13 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     height: 50,
     marginVertical: 15,
+    alignItems: "center",
   },
   mailButton: {
-    alignItems: "center",
     justifyContent: "center",
   },
   googfbButton: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'flex-start',
   },
   text: {
@@ -224,13 +228,6 @@ const styles = StyleSheet.create({
     color: '#04b388',
     fontSize: 17,
     textDecorationLine: 'underline',
-  },
-  horizontalLine: {
-    borderBottomWidth: 2,
-    borderBottomColor: 'white',
-    width: '30%',
-    marginHorizontal: '7%',
-    marginBottom: '2.5%'
   },
   icon: {
     marginLeft: 5,
