@@ -43,8 +43,9 @@ export function Login({navigation}: {navigation: any}) {
     try {
       if (email !== '' && password !== '') {
         setLoadingStatus(true);
-        await Firebase.auth().signInWithEmailAndPassword(email, password);
-        setLoadingStatus(false)
+        Firebase.auth().signInWithEmailAndPassword(email, password).then((res: any) => {
+          setLoadingStatus(false)
+        });
       }
     } catch (error: any) {
       setLoadingStatus(false)
