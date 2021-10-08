@@ -32,8 +32,8 @@ export function Login({navigation}: {navigation: any}) {
   function renderLoading() {
     if(isLoading) {
       return (
-        <View>
-          <ActivityIndicator size='large' color='#0000ff' />
+        <View style={styles.loading}>
+          <ActivityIndicator size='large' color='#D66C44' />
         </View>
       )
     }
@@ -42,37 +42,45 @@ export function Login({navigation}: {navigation: any}) {
   async function signInWithEmail() {
     try {
       if (email !== '' && password !== '') {
-        await Firebase.auth.signInWithEmailAndPassword(email, password);
+        setLoadingStatus(true);
+        await Firebase.auth().signInWithEmailAndPassword(email, password);
+        setLoadingStatus(false)
       }
     } catch (error: any) {
+      setLoadingStatus(false)
       setLoginError(error.message);
     }
   };
 
   async function signInWithFacebook() {
     try {
+      setLoadingStatus(true);
       await Facebook.initializeAsync({appId: Constants.manifest?.extra?.fbAppId})
       const result = await Facebook.logInWithReadPermissionsAsync({permissions: ['public_profile']})
 
       if (result.type == 'success') {
-        const credential = firebase.auth.FacebookAuthProvider.credential(result.token)
-
+        setLoadingStatus(true);
+        const credential = firebase.auth.FacebookAuthProvider.credential(result.token);
         await Firebase.auth().signInWithCredential(credential).then((res: any) => { 
           //TODO: isNewUser ? add to DB : nothing
           
           setLoadingStatus(false);
         })
+      }  else {
+        setLoadingStatus(false);
+        return { cancelled: true };
       }
 
     } catch(e) {
       console.log(e);
-
+      setLoadingStatus(false);
       return { error: true };
     }
   }
 
   async function signInWithGoogle() {
     try {
+      setLoadingStatus(true);
       const result = await Google.logInAsync({
         androidClientId: Constants.manifest?.extra?.andClient,
         iosClientId: Constants.manifest?.extra?.iosClient,
@@ -80,7 +88,6 @@ export function Login({navigation}: {navigation: any}) {
       });
       
       if (result.type === 'success') {
-        setLoadingStatus(true);
         const credential = firebase.auth.GoogleAuthProvider.credential(result.idToken, result.accessToken);
         await Firebase.auth().signInWithCredential(credential).then((res: any) => { 
           //TODO: isNewUser ? add to DB : nothing
@@ -89,11 +96,11 @@ export function Login({navigation}: {navigation: any}) {
         })
         return result.accessToken;
       } else {
+        setLoadingStatus(false)
         return { cancelled: true };
       }
     } catch (e) {
       console.log(e)
-
       setLoadingStatus(false);
       return { error: true };
     }
@@ -115,6 +122,7 @@ export function Login({navigation}: {navigation: any}) {
               <View style={styles.inputView}>
                 <Text style={styles.inputLabel}>Email</Text>
                 <TextInput
+                  style={{color: 'white'}}
                   autoCapitalize='none'
                   keyboardType='email-address'
                   textContentType='emailAddress'
@@ -127,6 +135,7 @@ export function Login({navigation}: {navigation: any}) {
               <View style={styles.inputView}>
                 <Text style={styles.inputLabel}>Password</Text>
                 <TextInput
+                  style={{color: 'white'}}
                   autoCapitalize='none'
                   autoCorrect={false}
                   secureTextEntry={true}
@@ -245,5 +254,14 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
     marginBottom: 25, 
-  }
+  },
+  loading: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000000b9',
+    padding: 20,
+    borderRadius: 10,    
+    zIndex: 100
+  },
 });

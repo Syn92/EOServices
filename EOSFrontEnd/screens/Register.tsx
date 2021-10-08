@@ -14,12 +14,14 @@ export function Register({navigation}: {navigation: any}) {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [signupError, setSignupError] = useState('');
 
   async function handleSignup() {
     try {
       if (email !== '' && password !== '') {
-        await auth.createUserWithEmailAndPassword(email, password);
+        if (password == passwordConfirmation)
+          await auth.createUserWithEmailAndPassword(email, password);
       }
     } catch (error: any) {
       setSignupError(error.message);
@@ -34,68 +36,72 @@ export function Register({navigation}: {navigation: any}) {
 
   return (
     <ScrollView contentContainerStyle={{flexGrow: 1}}>
+      <View style={{flex: 1}}>
+        <ImageBackground  source={require('../assets/images/bg.png')} style={styles.container}>
+          <StatusBar style='light' />
 
-      <ImageBackground  source={require('../assets/images/bg.png')} style={styles.container}>
-        <StatusBar style='light' />
+          
+          {/* Email input */}
+          <View style={styles.inputView}>
+            <Text style={styles.inputLabel}>Email</Text>
+            <TextInput
+              style={{color: 'white'}} 
+              autoCapitalize='none'
+              keyboardType='email-address'
+              textContentType='emailAddress'
+              value={email}
+              onChangeText={text => setEmail(text)}
+            />
+          </View>
 
-        
-        {/* Email input */}
-        <View style={styles.inputView}>
-          <Text style={styles.inputLabel}>Email</Text>
-          <TextInput
-            autoCapitalize='none'
-            keyboardType='email-address'
-            textContentType='emailAddress'
-            value={email}
-            onChangeText={text => setEmail(text)}
-          />
-        </View>
+          {/* Password input */}
+          <View style={styles.inputView}>
+            <Text style={styles.inputLabel}>Password</Text>
+            <TextInput
+              style={{color: 'white'}}
+              autoCapitalize='none'
+              autoCorrect={false}
+              secureTextEntry={true}
+              textContentType='password'
+              value={password}
+              onChangeText={text => setPassword(text)}
+            />
+          </View>
 
-        {/* Password input */}
-        <View style={styles.inputView}>
-          <Text style={styles.inputLabel}>Password</Text>
-          <TextInput
-            autoCapitalize='none'
-            autoCorrect={false}
-            secureTextEntry={true}
-            textContentType='password'
-            value={password}
-            onChangeText={text => setPassword(text)}
-          />
-        </View>
+          <View style={styles.inputView}>
+            <Text style={styles.inputLabel}>Confirm Password</Text>
+            <TextInput
+              style={{color: 'white'}}          
+              autoCapitalize='none'
+              autoCorrect={false}
+              secureTextEntry={true}
+              textContentType='password'
+              value={passwordConfirmation}
+              onChangeText={text => setPasswordConfirmation(text)}
+            />
+          </View>
 
-        <View style={styles.inputView}>
-          <Text style={styles.inputLabel}>Confirm Password</Text>
-          <TextInput
-            autoCapitalize='none'
-            autoCorrect={false}
-            secureTextEntry={true}
-            textContentType='password'
-            value={password}
-            onChangeText={text => setPassword(text)}
-          />
-        </View>
+          <HorizontalSeparator text='EOS Wallet' fontSize={20} lineColor='#04b388' />
+          
+          {signupError ? <Text style={styles.errorText}>{signupError}</Text> : null}
 
-        <HorizontalSeparator text='EOS Wallet' fontSize={20} lineColor='#04b388' />
-        
-        {signupError ? <Text style={styles.errorText}>{signupError}</Text> : null}
+          <View style={styles.iconView}>
+            <Icon name='sync-alt' type='material' size={30} color='white' />
+            <Text style={styles.iconText}>Link</Text>
+          </View>
 
-        <View style={styles.iconView}>
-          <Icon name='sync-alt' type='material' size={30} color='white' />
-          <Text style={styles.iconText}>Link</Text>
-        </View>
+          <Text style={styles.text}>Or</Text>
 
-        <Text style={styles.text}>Or</Text>
+          <View style={styles.iconView}>
+            <Icon name='update' type='material' size={30} color='white' />
+            <Text style={styles.iconText}>Create</Text>
+          </View>
 
-        <View style={styles.iconView}>
-          <Icon name='update' type='material' size={30} color='white' />
-          <Text style={styles.iconText}>Create</Text>
-        </View>
-
-        <TouchableOpacity style={styles.button} onPress={handleSignup}>
-          <Text style={styles.buttonText}>Create Account</Text>
-        </TouchableOpacity>
-      </ImageBackground>
+          <TouchableOpacity style={styles.button} onPress={handleSignup}>
+            <Text style={styles.buttonText}>Create Account</Text>
+          </TouchableOpacity>
+        </ImageBackground>
+      </View>
     </ScrollView>
   );
 }
@@ -103,7 +109,8 @@ export function Register({navigation}: {navigation: any}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: Platform.OS == 'ios' ?  60 : 80,
+    // paddingTop: Platform.OS == 'ios' ?  60 : 80,
+    paddingTop: '35%',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
