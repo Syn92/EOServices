@@ -9,8 +9,19 @@ const Stack = createNativeStackNavigator();
 export default function AuthStack() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name='Login' component={Login} />
-      <Stack.Screen name='Register' component={Register} />
+      <Stack.Screen name='Login' component={Login}  options={{headerShown: false}}/>
+      <Stack.Screen name='Register' component={Register} options={{
+        headerTransparent: true,
+        headerShadowVisible: false,
+        headerTintColor: '#04b388'
+        }}/>
     </Stack.Navigator>
   )
+}
+
+const loginOptions = {
+  title: 'EOS Marketplace',
+  headerStyle: {
+    color: '#04b388'
+  }
 }

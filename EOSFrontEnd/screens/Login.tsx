@@ -4,19 +4,22 @@ import {
   StyleSheet, 
   Text, 
   View, 
-  Button, 
   TextInput, 
   TouchableOpacity, 
-  ActivityIndicator 
+  ActivityIndicator, 
+  Image,
+  ImageBackground,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import * as Facebook from 'expo-facebook';
 import * as Google from 'expo-google-app-auth';
 import firebase from 'firebase/app';
+import { SocialIcon } from 'react-native-elements'
 
+import HorizontalSeparator from '../components/HorizontalSeparator';
 import Constants from 'expo-constants';
 import Firebase from '../config/firebase';
-
-const facebookAppId: Facebook.FacebookOptions = {};
+import { ScrollView } from 'react-native-gesture-handler';
 
 export function Login({navigation}: {navigation: any}) {
 
@@ -29,8 +32,8 @@ export function Login({navigation}: {navigation: any}) {
   function renderLoading() {
     if(isLoading) {
       return (
-        <View>
-          <ActivityIndicator size='large' color='#0000ff' />
+        <View style={styles.loading}>
+          <ActivityIndicator size='large' color='#D66C44' />
         </View>
       )
     }
@@ -39,37 +42,46 @@ export function Login({navigation}: {navigation: any}) {
   async function signInWithEmail() {
     try {
       if (email !== '' && password !== '') {
-        await Firebase.auth.signInWithEmailAndPassword(email, password);
+        setLoadingStatus(true);
+        Firebase.auth().signInWithEmailAndPassword(email, password).then((res: any) => {
+          setLoadingStatus(false)
+        });
       }
     } catch (error: any) {
+      setLoadingStatus(false)
       setLoginError(error.message);
     }
   };
 
   async function signInWithFacebook() {
     try {
+      setLoadingStatus(true);
       await Facebook.initializeAsync({appId: Constants.manifest?.extra?.fbAppId})
       const result = await Facebook.logInWithReadPermissionsAsync({permissions: ['public_profile']})
 
       if (result.type == 'success') {
-        const credential = firebase.auth.FacebookAuthProvider.credential(result.token)
-
+        setLoadingStatus(true);
+        const credential = firebase.auth.FacebookAuthProvider.credential(result.token);
         await Firebase.auth().signInWithCredential(credential).then((res: any) => { 
           //TODO: isNewUser ? add to DB : nothing
           
           setLoadingStatus(false);
         })
+      }  else {
+        setLoadingStatus(false);
+        return { cancelled: true };
       }
 
     } catch(e) {
       console.log(e);
-
+      setLoadingStatus(false);
       return { error: true };
     }
   }
 
   async function signInWithGoogle() {
     try {
+      setLoadingStatus(true);
       const result = await Google.logInAsync({
         androidClientId: Constants.manifest?.extra?.andClient,
         iosClientId: Constants.manifest?.extra?.iosClient,
@@ -77,7 +89,6 @@ export function Login({navigation}: {navigation: any}) {
       });
       
       if (result.type === 'success') {
-        setLoadingStatus(true);
         const credential = firebase.auth.GoogleAuthProvider.credential(result.idToken, result.accessToken);
         await Firebase.auth().signInWithCredential(credential).then((res: any) => { 
           //TODO: isNewUser ? add to DB : nothing
@@ -86,93 +97,133 @@ export function Login({navigation}: {navigation: any}) {
         })
         return result.accessToken;
       } else {
+        setLoadingStatus(false)
         return { cancelled: true };
       }
     } catch (e) {
       console.log(e)
-
       setLoadingStatus(false);
       return { error: true };
     }
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>LOGIN</Text>
+    <ScrollView contentContainerStyle={{flexGrow: 1}}>
+        <View style={styles.container}>
+          <ImageBackground style={{
+            flex: 1,
+            justifyContent: 'center',
+          }} source={require('../assets/images/bg.png')}>
+            <StatusBar style='light' />
+            <View style={styles.contentContainer}>
+              {/* EOS Logo */}
+              <Image style={styles.image} source={require('../assets/images/eos.png')}/>
 
-      {/*Email input */}
-      <TextInput
-        placeholder='Enter email'
-        placeholderTextColor='black'
-        autoCapitalize='none'
-        keyboardType='email-address'
-        textContentType='emailAddress'
-        autoFocus={true}
-        value={email}
-        onChangeText={text => setEmail(text)}
-        style={{
-          width: '100%',
-          fontSize: 14,
-          marginBottom: 20,
-          backgroundColor: "white"
-        }}
-      />
+              {/* Email input */}
+              <View style={styles.inputView}>
+                <Text style={styles.inputLabel}>Email</Text>
+                <TextInput
+                  style={{color: 'white'}}
+                  autoCapitalize='none'
+                  keyboardType='email-address'
+                  textContentType='emailAddress'
+                  value={email}
+                  onChangeText={text => setEmail(text)}
+                />
+              </View>
 
-      {/* Password input*/}
-      <TextInput
-        placeholder='Enter password'
-        placeholderTextColor='black'
-        autoCapitalize='none'
-        autoCorrect={false}
-        secureTextEntry={true}
-        textContentType='password'
-        value={password}
-        onChangeText={text => setPassword(text)}
-        style={{
-          width: '100%',
-          fontSize: 14,
-          marginBottom: 20,
-          backgroundColor: "white"
-        }}
-      />
+              {/* Password input */}
+              <View style={styles.inputView}>
+                <Text style={styles.inputLabel}>Password</Text>
+                <TextInput
+                  style={{color: 'white'}}
+                  autoCapitalize='none'
+                  autoCorrect={false}
+                  secureTextEntry={true}
+                  textContentType='password'
+                  value={password}
+                  onChangeText={text => setPassword(text)}
+                />
+              </View>
 
-      {loginError ? <Text style={styles.errorText}>{loginError}</Text> : null}
+              {loginError ? <Text style={styles.errorText}>{loginError}</Text> : null}
+              {renderLoading()}
+              
+              <TouchableOpacity style={{...styles.button, ...styles.mailButton}} onPress={signInWithEmail}>
+                <Text style={{...styles.text, fontSize: 20, fontWeight: 'bold'}}>LOGIN</Text>
+              </TouchableOpacity>
 
-      {renderLoading()}
+              <HorizontalSeparator text='Or' fontSize={20} lineColor='#04b388'/>
 
-      <Button title="Login" onPress={signInWithEmail}/>
-      <Button title="Login with google" onPress={signInWithGoogle}/>
-      <Button title="Login with facebook" onPress={signInWithFacebook}/>
+              <TouchableOpacity style={{...styles.button, ...styles.googfbButton}} onPress={signInWithGoogle}>
+                <SocialIcon type='google' raised={false} style={styles.icon} iconSize={20} iconColor='#ea4335' />
+                <Text style={styles.text}>Login with Google</Text>
+              </TouchableOpacity>
 
-      <View style={styles.helpContainer}>
-        <TouchableOpacity onPress={() => navigation.navigate('Register')} style={styles.helpLink}>
-          <Text style={styles.helpLinkText}>
-            Dont have an account? Register now!
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+              <TouchableOpacity style={{...styles.button, ...styles.googfbButton}} onPress={signInWithFacebook}>
+                <SocialIcon type='facebook' raised={false} style={styles.icon} iconSize={20} iconColor='#4a6da7' />
+                <Text style={styles.text}>Login with Facebook</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.footer}>
+              <TouchableOpacity onPress={() => navigation.navigate('Register')} style={styles.helpLink}>
+                <Text style={styles.helpLinkText}>
+                  No account? Create one here
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </ImageBackground>
+        </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'gainsboro',
-    paddingTop: 50,
-    paddingHorizontal: 12
+    backgroundColor: '#16254b',
   },
-  helpContainer: {
-    marginTop: 15,
-    marginHorizontal: 20,
+  contentContainer: {
+    flex:1,
+    flexDirection: 'column',
     alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#000',
-    alignSelf: 'center',
-    paddingBottom: 24
+  inputView: {
+    width: "70%",
+    marginBottom: 20,
+    borderBottomWidth: 2,
+    borderColor: 'white',
+  },
+  inputLabel: {
+    fontSize: 16,
+    color: '#04b388',
+  },
+  textInput: {
+    height: 50,
+    flex: 1,
+    padding: 10,
+    marginLeft: 20,
+  },
+  button: {
+    backgroundColor: '#04b388',
+    width: "60%",
+    borderRadius: 25,
+    height: 50,
+    marginVertical: 15,
+    alignItems: "center",
+  },
+  mailButton: {
+    justifyContent: "center",
+  },
+  googfbButton: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+  },
+  text: {
+    color: 'white',
+    letterSpacing: 1.1,
   },
   errorText: {
     color: 'darkred',
@@ -184,5 +235,34 @@ const styles = StyleSheet.create({
   },
   helpLinkText: {
     textAlign: 'center',
-  }
+    color: '#04b388',
+    fontSize: 17,
+    textDecorationLine: 'underline',
+  },
+  icon: {
+    marginLeft: 5,
+    backgroundColor: '#04b388',
+    zIndex: -1,
+  },
+  footer: {
+    backgroundColor: 'white',
+    height: '7%',
+    justifyContent: 'center',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  image: {
+    width: 150,
+    height: 150,
+    marginBottom: 25, 
+  },
+  loading: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000000b9',
+    padding: 20,
+    borderRadius: 10,    
+    zIndex: 100
+  },
 });
