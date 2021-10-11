@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Button, StyleSheet } from 'react-native';
 
 import EditScreenInfo from '../components/EditScreenInfo';
+import Map from '../components/Map';
 import { Text, View } from '../components/Themed';
 import Firebase from '../config/firebase';
 import { RootTabScreenProps } from '../types';
@@ -21,9 +22,8 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   return (
     <View style={styles.container}>
       <Button title="Logout" onPress={handleLogout} />
-      <Text style={styles.title}>Tab One</Text>
+      <Map/>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="/screens/TabOneScreen.tsx" />
     </View>
   );
 }
