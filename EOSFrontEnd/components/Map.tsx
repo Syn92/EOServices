@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
-import MapView, { Region, UrlTile } from 'react-native-maps';
+import MapView, { LatLng, Marker, Region, UrlTile } from 'react-native-maps';
 
 interface IState {
     region: Region;
@@ -12,8 +12,8 @@ export default class Map extends React.Component<{}, IState> {
         super(props);
         this.state = {
             region: {
-                latitude: 37.78825,
-                longitude: -122.4324,
+                latitude: 45.5017,
+                longitude: -73.5673,
                 latitudeDelta: 0.0922,
                 longitudeDelta: 0.0421,
             },
@@ -25,12 +25,18 @@ export default class Map extends React.Component<{}, IState> {
     }
 
     render() {
+        const testMarkerCoord: LatLng = {
+            latitude: 45.5048,
+            longitude: -73.6132,
+        };
         return (
             <View style={this.styles.container}>
                 <MapView style={this.styles.map} region={this.state.region} onRegionChange={this.onRegionChange.bind(this)}>
                     <UrlTile urlTemplate="http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         maximumZ={19}
                     />
+                    <Marker coordinate={testMarkerCoord} title="Test Poly" description="Marker test description"
+                        icon={require('../assets/images/markers/test.png')} tracksViewChanges={false}/>
                 </MapView>
             </View>
           );
@@ -38,9 +44,6 @@ export default class Map extends React.Component<{}, IState> {
 
     styles = StyleSheet.create({
         container: {
-            // flex: 1,
-            // alignItems: 'center',
-            // justifyContent: 'center',
             height: '60%',
             width: '95%',
             borderColor: 'blue',
