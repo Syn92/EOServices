@@ -20,6 +20,7 @@ import HorizontalSeparator from '../components/HorizontalSeparator';
 import Constants from 'expo-constants';
 import Firebase from '../config/firebase';
 import { ScrollView } from 'react-native-gesture-handler';
+import Loading from '../components/Loading';
 
 export function Login({navigation}: {navigation: any}) {
 
@@ -28,16 +29,6 @@ export function Login({navigation}: {navigation: any}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
-
-  function renderLoading() {
-    if(isLoading) {
-      return (
-        <View style={styles.loading}>
-          <ActivityIndicator size='large' color='#D66C44' />
-        </View>
-      )
-    }
-  }
 
   async function signInWithEmail() {
     try {
@@ -147,7 +138,7 @@ export function Login({navigation}: {navigation: any}) {
               </View>
 
               {loginError ? <Text style={styles.errorText}>{loginError}</Text> : null}
-              {renderLoading()}
+              {isLoading ? Loading({}): null}
               
               <TouchableOpacity style={{...styles.button, ...styles.mailButton}} onPress={signInWithEmail}>
                 <Text style={{...styles.text, fontSize: 20, fontWeight: 'bold'}}>LOGIN</Text>
@@ -255,14 +246,5 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
     marginBottom: 25, 
-  },
-  loading: {
-    position: 'absolute',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000000b9',
-    padding: 20,
-    borderRadius: 10,    
-    zIndex: 100
   },
 });
