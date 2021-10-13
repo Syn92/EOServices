@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import MapView, { LatLng, MapEvent, Marker, Region, UrlTile } from 'react-native-maps';
+import Geocoder from 'react-native-geocoding';
 
 interface IMarker {
     key: string;
@@ -16,8 +17,10 @@ interface IState {
 
 interface IProps {
     pressable: boolean;
-    onPressed?: Function | null;
+    onPressed?: Function;
 }
+
+Geocoder.init("AIzaSyCcPFzHoC-XT8h-3MZt8CfIz5J-w9BeMHA");
 
 export default class Map extends React.Component<IProps, IState> {
 
@@ -42,6 +45,13 @@ export default class Map extends React.Component<IProps, IState> {
             coordinate: event.nativeEvent.coordinate,
         }
         this.addMarker(marker);
+
+        if(this.props.onPressed) {
+        Geocoder.from(marker.coordinate).then(json => {
+            const address = json.results[0].formatted_address;
+            if(this.props.onPressed) this.props.onPressed(address);
+        }).catch(error => console.warn(error));
+        }
     }
 
     public addMarker(marker: IMarker) {
