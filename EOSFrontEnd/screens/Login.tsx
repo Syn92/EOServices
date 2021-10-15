@@ -6,7 +6,6 @@ import {
   View, 
   TextInput, 
   TouchableOpacity, 
-  ActivityIndicator, 
   Image,
   ImageBackground,
 } from 'react-native';
@@ -34,9 +33,8 @@ export function Login({navigation}: {navigation: any}) {
     try {
       if (email !== '' && password !== '') {
         setLoadingStatus(true);
-        Firebase.auth().signInWithEmailAndPassword(email, password).then((res: any) => {
-          setLoadingStatus(false)
-        });
+        Firebase.auth().signInWithEmailAndPassword(email, password);
+        setLoadingStatus(false);
       }
     } catch (error: any) {
       setLoadingStatus(false)
@@ -53,11 +51,8 @@ export function Login({navigation}: {navigation: any}) {
       if (result.type == 'success') {
         setLoadingStatus(true);
         const credential = firebase.auth.FacebookAuthProvider.credential(result.token);
-        await Firebase.auth().signInWithCredential(credential).then((res: any) => { 
-          //TODO: isNewUser ? add to DB : nothing
-          
-          setLoadingStatus(false);
-        })
+        await Firebase.auth().signInWithCredential(credential);
+        setLoadingStatus(false);
       }  else {
         setLoadingStatus(false);
         return { cancelled: true };
@@ -81,11 +76,8 @@ export function Login({navigation}: {navigation: any}) {
       
       if (result.type === 'success') {
         const credential = firebase.auth.GoogleAuthProvider.credential(result.idToken, result.accessToken);
-        await Firebase.auth().signInWithCredential(credential).then((res: any) => { 
-          //TODO: isNewUser ? add to DB : nothing
-          
-          setLoadingStatus(false);
-        })
+        await Firebase.auth().signInWithCredential(credential);
+        setLoadingStatus(false);
         return result.accessToken;
       } else {
         setLoadingStatus(false)

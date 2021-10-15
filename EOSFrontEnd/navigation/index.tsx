@@ -7,22 +7,53 @@ import { FontAwesome } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import axios from 'axios';
 import * as React from 'react';
 import { ActivityIndicator, ColorSchemeName, Pressable, View } from 'react-native';
 
 import Firebase from '../config/firebase';
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
+import { NewUser } from '../interfaces/User';
 import ModalScreen from '../screens/ModalScreen';
 import NotFoundScreen from '../screens/NotFoundScreen';
 import { PrivateProfile } from '../screens/PrivateProfile';
-import TabOneScreen from '../screens/TabOneScreen';
 import TabTwoScreen from '../screens/TabTwoScreen';
 import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
 import { AuthenticatedUserContext } from './AuthenticatedUserProvider';
 import AuthStack from './AuthStack';
 
 const auth = Firebase.auth();
+
+async function checkUser(user: any) {
+  // TODO: add url to constants (google cloud server and local)
+  const authUrl = 'http://10.0.0.7:4000/auth';
+
+  try {
+    const res = (await axios.get<any>(authUrl, { params: { uid: user.uid } })).data;
+    // if user exists, return user
+    if (res){
+      return {
+        email: res.email,
+        name: res.name,
+        uid: res.uid
+      };
+    }
+
+      
+    // add user to mongodb
+    const newUsr: NewUser = {
+      email: user.email,
+      name: user.displayName,
+      uid: user.uid,
+    };
+    await axios.post(authUrl, newUsr);
+
+    return newUsr;    
+  } catch (err) {
+    console.log(err);
+  }
+}
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   const { user, setUser } =  React.useContext(AuthenticatedUserContext);
@@ -32,7 +63,11 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
     // onAuthStateChanged returns an unsubscriber
     const unsubscribeAuth = auth.onAuthStateChanged(async (authenticatedUser: any) => {
       try {
-        await (authenticatedUser ? setUser(authenticatedUser) : setUser(null));
+        if (authenticatedUser)
+          authenticatedUser = await checkUser(authenticatedUser)
+        
+        // setUser to either null or return value of checkUser
+        setUser(authenticatedUser);
         setIsLoading(false);
       } catch (error) {
         console.log(error);
