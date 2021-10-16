@@ -8,6 +8,7 @@ interface IMarker {
     coordinate: LatLng;
     // title: string;
     // description: string;
+    // type: EMarkerType // todo: change marker icon depending on type
 }
 
 interface IState {
@@ -35,8 +36,14 @@ export default class Map extends React.Component<IProps, IState> {
             },
             markers: []
         };
+
+        if(!props.pressable) {
+            //todo: set existing markers from the DB here
+        }
     }
 
+    // if pressable, react to the onPress event by adding a marker
+    // and calling onPressed with the corresponding address
     private mapPressed(event: MapEvent) {
         if(!this.props.pressable) return;
 
@@ -54,6 +61,7 @@ export default class Map extends React.Component<IProps, IState> {
         }
     }
 
+    // add a single marker. do not use if adding more than one at once
     public addMarker(marker: IMarker) {
         const existingIndex = this.state.markers.findIndex(x => x.key == marker.key);
         if(existingIndex != -1) {
@@ -64,6 +72,7 @@ export default class Map extends React.Component<IProps, IState> {
         this.setState(this.state);
     }
 
+    // customize how the markers are rendered here (icon, etc.)
     private renderMarkers() {
         return this.state.markers.map((marker) => {
             return (
@@ -81,7 +90,7 @@ export default class Map extends React.Component<IProps, IState> {
             <View style={this.styles.container}>
                 <MapView style={this.styles.map} initialRegion={this.state.initialRegion} onPress={this.mapPressed.bind(this)}
                     mapType={Platform.OS == "android" ? "none" : "standard"}>
-                    <UrlTile urlTemplate='http://c.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png'
+                    <UrlTile urlTemplate='https://api.maptiler.com/maps/streets/{z}/{x}/{y}@2x.png?key=eif7poHbo0Lyr1ArRDWL'
                         maximumZ={19}
                     />
                     <Marker key="example" coordinate={testMarkerCoord} title="Test Poly" description="Marker test description"
