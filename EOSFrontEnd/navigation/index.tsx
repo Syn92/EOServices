@@ -13,12 +13,14 @@ import { ActivityIndicator, ColorSchemeName, Pressable, View } from 'react-nativ
 
 import Firebase from '../config/firebase';
 import Colors from '../constants/Colors';
+import ServerConstants from '../constants/Server';
 import useColorScheme from '../hooks/useColorScheme';
-import { NewUser } from '../interfaces/User';
+import { User } from '../interfaces/User';
 import ModalScreen from '../screens/ModalScreen';
 import NotFoundScreen from '../screens/NotFoundScreen';
 import { PrivateProfile } from '../screens/PrivateProfile';
 import TabTwoScreen from '../screens/TabTwoScreen';
+import GetFormatedDate from '../services/DateFormater';
 import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
 import { AuthenticatedUserContext } from './AuthenticatedUserProvider';
 import AuthStack from './AuthStack';
@@ -26,31 +28,27 @@ import AuthStack from './AuthStack';
 const auth = Firebase.auth();
 
 async function checkUser(user: any) {
-  // TODO: add url to constants (google cloud server and local)
-  const authUrl = 'http://10.0.0.7:4000/auth';
 
   try {
-    const res = (await axios.get<any>(authUrl, { params: { uid: user.uid } })).data;
+    const res = await axios.get<any>(ServerConstants.local + 'auth', { params: { uid: user.uid } });
     // if user exists, return user
-    if (res){
-      return {
-        email: res.email,
-        name: res.name,
-        uid: res.uid
-      };
+    if (res.data){
+      delete res.data._id;
+      return res.data;
     }
 
-      
     // add user to mongodb
-    const newUsr: NewUser = {
+    const newUsr: User = {
+      uid: user.uid,
       email: user.email,
       name: user.displayName,
-      uid: user.uid,
+      joinedDate: GetFormatedDate(new Date())
     };
-    await axios.post(authUrl, newUsr);
+    await axios.post(ServerConstants.local + 'auth', newUsr);
 
     return newUsr;    
   } catch (err) {
+    console.log('checkuser')
     console.log(err);
   }
 }
@@ -65,11 +63,16 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
       try {
         if (authenticatedUser)
           authenticatedUser = await checkUser(authenticatedUser)
+
+        console.log(authenticatedUser)
         
         // setUser to either null or return value of checkUser
-        setUser(authenticatedUser);
+        if (setUser) await setUser(authenticatedUser);
+        else throw Error('setUser undefined');
+
         setIsLoading(false);
       } catch (error) {
+        console.log('onAuthChanged')
         console.log(error);
       }
     });

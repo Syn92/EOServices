@@ -1,5 +1,8 @@
-export interface NewUser {
+export interface User {
+    uid: string,
     email: string,
     name: string,
-    uid: string,
-} 
+    phone?: string,
+    description?: string
+    joinedDate: string
+}

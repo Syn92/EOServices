@@ -14,6 +14,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
     try {
       await auth.signOut()
     } catch (error: any) {
+      console.log('logout')
       console.log(error)
     }
   }

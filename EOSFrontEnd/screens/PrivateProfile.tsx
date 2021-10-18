@@ -1,13 +1,42 @@
 import React from 'react'
 import { StatusBar } from 'expo-status-bar';
-import { Dimensions, Image, ImageBackground, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Button, Dimensions, Image, ImageBackground, ScrollView, StyleSheet, Text, View } from 'react-native'
 
 import { ProfileCard } from '../components/ProfileCard'
 import { Icon } from 'react-native-elements';
+import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
+import { User } from '../interfaces/User';
+import axios from 'axios';
+import ServerConstants from '../constants/Server';
 
 const WIDTH = Dimensions.get('window').width;
 
 export function PrivateProfile() {
+
+    const { user, setUser } =  React.useContext(AuthenticatedUserContext);
+
+    function editDescription(){
+        axios.patch(ServerConstants.local + 'auth', { 
+            uid: user?.uid,
+            patch: { description: "this is the default description" }
+        }).then((res) => {
+            console.log(res)
+        }).catch((err) => {
+            console.log(err)
+        })
+    }
+
+    function editContactInfo(){
+        axios.patch(ServerConstants.local + 'auth', { 
+            uid: user?.uid,
+            patch: { phone: "phone", name: 'name' }
+        }).then((res) => {
+            console.log(res)
+        }).catch((err) => {
+            console.log(err)
+        })
+    }
+
     return (
         <View style={styles.container}>
             <ScrollView contentContainerStyle={{flexGrow: 1}}>
@@ -16,29 +45,29 @@ export function PrivateProfile() {
                     {/* ---- Avatar + ratings ---- */}
                     <View style={styles.avatar}>
                         <Image resizeMode='cover' style={styles.photo} source={require('../assets/images/avatar.webp')} />
-                        <Text style={styles.username}>Alfred</Text>
+                        <Text style={styles.username}>{user?.name}</Text>
                         <Text>⭐⭐⭐⭐⭐</Text>
                     </View>
 
                     {/* ---- Profile cards ---- */}
-                    <ProfileCard icon='calendar-today' iconType='material' title='Joined Date'>
-                        <Text style={{fontSize: 20,}}>1st January 2025</Text>
+                    <ProfileCard icon='calendar-today' iconType='material' title='Joined Date' editable={ false }>
+                        <Text style={{fontSize: 20,}}>{user?.joinedDate}</Text>
                     </ProfileCard>
                     
-                    <ProfileCard icon='document-text-outline' iconType='ionicon' title='Description'>
+                    <ProfileCard icon='document-text-outline' iconType='ionicon' title='Description' callback={editDescription}>
                         {/* Max 240 char */}
-                        <Text style={{fontSize: 11}}>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce imperdiet libero ac dolor dictum feugiat. Maecenas porta posuere elit, id lobortis sem dignissim sit amet. Suspendisse congue enim ut augue egestas, eu viverra felis scelerisque</Text>
+                        <Text style={{fontSize: 11}}>{user?.description}</Text>
                     </ProfileCard>
                     
-                    <ProfileCard icon='document-text-outline' iconType='ionicon' title='Contact Information'>
+                    <ProfileCard icon='document-text-outline' iconType='ionicon' title='Contact Information' callback={editContactInfo}>
                         <View style={{alignItems: 'flex-start',}}>
                             <View style={styles.info}>
                                 <Icon name='alternate-email' type='material' size={18} style={styles.infoIcon} />
-                                <Text style={styles.infoText}>thisismymail@mail.com</Text>
+                                <Text style={styles.infoText}>{user?.email}</Text>
                             </View>
                             <View style={styles.info}>
-                                <Icon name='person' type='material' size={18} style={styles.infoIcon} />
-                                <Text style={styles.infoText}>Alfred</Text>
+                                <Icon name='call' type='material' size={18} style={styles.infoIcon} />
+                                <Text style={styles.infoText}>{user?.phone}</Text>
                             </View>
                         </View>
                     </ProfileCard>

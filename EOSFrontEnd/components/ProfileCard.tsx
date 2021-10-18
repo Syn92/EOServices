@@ -1,16 +1,21 @@
 import React from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { Icon } from 'react-native-elements'
+import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
 
 interface Prop {
     icon: string,
     iconType: string,
     title: string,
     editable?: boolean,
-    children: React.ReactNode
+    children: React.ReactNode,
+    callback?: any
 }
 
 export function ProfileCard(props: Prop) {
+    
+    const { user, setUser } =  React.useContext(AuthenticatedUserContext);
+
     return (
         <View style={styles.card}>
             <Icon name={props.icon} 
@@ -22,7 +27,7 @@ export function ProfileCard(props: Prop) {
                 <View style={{flexDirection: 'row'}}>
                     <Text style={styles.title}>{props.title}</Text>
                     {props.editable ? 
-                    <TouchableOpacity onPress={() => console.log('pressed')}>
+                    <TouchableOpacity onPress={props.callback}>
                         <Icon style={styles.edit} name='edit' type='material' size={20} color='#04b388' />
                     </TouchableOpacity> : null}
                 </View>

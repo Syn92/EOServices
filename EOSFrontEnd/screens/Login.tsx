@@ -59,6 +59,7 @@ export function Login({navigation}: {navigation: any}) {
       }
 
     } catch(e) {
+      console.log('sign in fb')
       console.log(e);
       setLoadingStatus(false);
       return { error: true };
@@ -84,6 +85,7 @@ export function Login({navigation}: {navigation: any}) {
         return { cancelled: true };
       }
     } catch (e) {
+      console.log('sign in google')
       console.log(e)
       setLoadingStatus(false);
       return { error: true };
