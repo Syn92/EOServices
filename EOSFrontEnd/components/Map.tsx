@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import MapView, { LatLng, MapEvent, Marker, Region, UrlTile } from 'react-native-maps';
 import Geocoder from 'react-native-geocoding';
+import axios from 'axios';
 
 interface IMarker {
     key: string;
@@ -51,6 +52,30 @@ export default function Map(props: IProps) {
         }
     }
 
+    // refresh the geojson when region is done changing
+    async function regionChanged(region: Region) {
+        const params = {
+            latitude: region.latitude,
+            longitude: region.longitude
+        }
+        const headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json'
+        }
+        console.log('-----START CADASTRE-----', 'http://192.168.56.1:4000/cadastre')
+        axios.get('http://192.168.56.1:4000/cadastre', { params, headers},)
+            .then(function (response) {
+                // handle success
+                console.log((response.data as any)[0].geometry);
+            }).catch(function (error) {
+                // handle error
+                console.log(error);
+            }).then(function () {
+                // always executed
+                console.log('-----END CADASTRE-----')
+            });
+    }
+
     // add a single marker. do not use if adding more than one at once
     function addMarker(marker: IMarker) {
         const existingIndex = markers.findIndex(x => x.key == marker.key);
@@ -69,7 +94,7 @@ export default function Map(props: IProps) {
     return (
         <View style={styles.container}>
             <MapView style={styles.map} initialRegion={initialRegion} onPress={mapPressed}
-                mapType={Platform.OS == "android" ? "none" : "standard"}>
+                mapType={Platform.OS == "android" ? "none" : "standard"} onRegionChangeComplete={regionChanged}>
                 <UrlTile urlTemplate='https://api.maptiler.com/maps/streets/{z}/{x}/{y}@2x.png?key=eif7poHbo0Lyr1ArRDWL'
                     maximumZ={19}
                 />
