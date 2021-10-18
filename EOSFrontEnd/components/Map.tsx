@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
-import MapView, { LatLng, MapEvent, Marker, Region, UrlTile } from 'react-native-maps';
+import MapView, { Geojson, LatLng, MapEvent, Marker, Region, UrlTile } from 'react-native-maps';
 import Geocoder from 'react-native-geocoding';
 import axios from 'axios';
 
@@ -28,6 +28,13 @@ const initialRegion: Region = {
 
 export default function Map(props: IProps) {
     const [markers, setMarkers] = useState<IMarker[]>([]);
+
+    const [geoJson, setGeoJson] = useState<GeoJSON.FeatureCollection>(
+        {
+            type: "FeatureCollection",
+            features: []
+        }
+    );
 
     if(!props.pressable) {
         //todo: set existing markers from the DB here
@@ -66,7 +73,9 @@ export default function Map(props: IProps) {
         axios.get('http://192.168.56.1:4000/cadastre', { params, headers},)
             .then(function (response) {
                 // handle success
-                console.log((response.data as any)[0].geometry);
+                geoJson.features = response.data as GeoJSON.Feature[];
+                setGeoJson(geoJson);
+                // console.log(geoJson.features);
             }).catch(function (error) {
                 // handle error
                 console.log(error);
@@ -95,8 +104,9 @@ export default function Map(props: IProps) {
         <View style={styles.container}>
             <MapView style={styles.map} initialRegion={initialRegion} onPress={mapPressed}
                 mapType={Platform.OS == "android" ? "none" : "standard"} onRegionChangeComplete={regionChanged}>
+                <Geojson geojson={geoJson} strokeColor="red" fillColor="green" strokeWidth={2} zIndex={2}></Geojson>
                 <UrlTile urlTemplate='https://api.maptiler.com/maps/streets/{z}/{x}/{y}@2x.png?key=eif7poHbo0Lyr1ArRDWL'
-                    maximumZ={19}
+                    maximumZ={19} zIndex={1}
                 />
                 <Marker key="example" coordinate={testMarkerCoord} title="Test Poly" description="Marker test description"
                     icon={require('../assets/images/markers/test.png')} tracksViewChanges={false}/>
