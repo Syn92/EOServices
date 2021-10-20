@@ -5,6 +5,7 @@ import { Button, ImageBackground, Platform, StyleSheet, Text, TextInput, Touchab
 import { Icon } from 'react-native-elements/dist/icons/Icon';
 import { ScrollView } from 'react-native-gesture-handler';
 import HorizontalSeparator from '../components/HorizontalSeparator';
+import { AnchorLickService } from '../components/AnchorWallet';
 
 import Firebase from '../config/firebase';
 
@@ -16,6 +17,7 @@ export function Register({navigation}: {navigation: any}) {
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [signupError, setSignupError] = useState('');
+  const anchorlinkService = new AnchorLickService();
 
   async function handleSignup() {
     try {
@@ -92,10 +94,10 @@ export function Register({navigation}: {navigation: any}) {
 
           <Text style={styles.text}>Or</Text>
 
-          <View style={styles.iconView}>
+          <TouchableOpacity style={styles.iconView}>
             <Icon name='update' type='material' size={30} color='white' />
             <Text style={styles.iconText}>Create</Text>
-          </View>
+          </TouchableOpacity>
 
           <TouchableOpacity style={styles.button} onPress={handleSignup}>
             <Text style={styles.buttonText}>Create Account</Text>
