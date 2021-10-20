@@ -56,11 +56,17 @@ export default function Map(props: IProps) {
             const address = json.results[0].formatted_address;
             if(props.onPressed) props.onPressed(address);
         }).catch(error => console.warn(error));
+        //todo: replace with checking on the cadastre foreach
         }
     }
 
     // refresh the geojson when region is done changing
     async function regionChanged(region: Region) {
+        const minZoom = 0.0035;
+        if(region.latitudeDelta > minZoom && region.longitudeDelta > minZoom) {
+            setGeoJson({type: geoJson.type, features: []});
+            return;
+        }
         const params = {
             latitude: region.latitude,
             longitude: region.longitude
@@ -69,19 +75,17 @@ export default function Map(props: IProps) {
             'Content-Type': 'application/x-www-form-urlencoded',
             'Accept': 'application/json'
         }
-        console.log('-----START CADASTRE-----', 'http://192.168.56.1:4000/cadastre')
-        axios.get('http://192.168.56.1:4000/cadastre', { params, headers},)
+        axios.get('http://10.200.12.162:4000/cadastre', { params, headers},)
             .then(function (response) {
                 // handle success
-                geoJson.features = response.data as GeoJSON.Feature[];
-                setGeoJson(geoJson);
-                // console.log(geoJson.features);
+                const features = response.data as GeoJSON.Feature[];
+                setGeoJson({type: geoJson.type, features: features});
             }).catch(function (error) {
                 // handle error
                 console.log(error);
+                setGeoJson({type: geoJson.type, features: []});
             }).then(function () {
                 // always executed
-                console.log('-----END CADASTRE-----')
             });
     }
 
@@ -104,7 +108,7 @@ export default function Map(props: IProps) {
         <View style={styles.container}>
             <MapView style={styles.map} initialRegion={initialRegion} onPress={mapPressed}
                 mapType={Platform.OS == "android" ? "none" : "standard"} onRegionChangeComplete={regionChanged}>
-                <Geojson geojson={geoJson} strokeColor="red" fillColor="green" strokeWidth={2} zIndex={2}></Geojson>
+                <Geojson geojson={geoJson} strokeColor="blue" fillColor="rgba(0, 255, 255, 0.2)" strokeWidth={2} zIndex={2}></Geojson>
                 <UrlTile urlTemplate='https://api.maptiler.com/maps/streets/{z}/{x}/{y}@2x.png?key=eif7poHbo0Lyr1ArRDWL'
                     maximumZ={19} zIndex={1}
                 />
@@ -123,6 +127,10 @@ function renderMarkers(markers: IMarker[]): JSX.Element[] {
             <Marker key={marker.key} coordinate={marker.coordinate} tracksViewChanges={false}/>
         )
     });
+}
+
+function geoJsonFeatureToAddress(feature: GeoJSON.Feature): string {
+    return "temp";
 }
 
 const styles = StyleSheet.create({
