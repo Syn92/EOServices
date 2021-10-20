@@ -17,9 +17,13 @@ export default function StepIndicator({title, step, stepMax}: Props) {
         </View>)
     }
 
-    return ( <View style={styles.stepIndicContainer}>
+    return ( 
+    <View style={styles.container}>
+    <Text style={styles.titleIndicator}> {title} </Text>
+    <View style={styles.stepIndicContainer}>
 
             { stepTab }
+    </View>
     </View>
     )
 }
@@ -27,7 +31,8 @@ export default function StepIndicator({title, step, stepMax}: Props) {
 const styles = StyleSheet.create({
     stepIndicContainer: {
         paddingVertical: 20,
-        width: '80%',
+        marginLeft: 10,
+        width: '75%',
         height: 6,
         display: 'flex',
         flexDirection: 'row',
@@ -43,5 +48,13 @@ const styles = StyleSheet.create({
         height: 5,
         marginHorizontal: 1,
 
+    },
+    titleIndicator: {
+        fontSize: 25,
+        color: '#16254b',
+        textAlign: 'center'
+    },
+    container: {
+        marginVertical: 10
     }
 })
