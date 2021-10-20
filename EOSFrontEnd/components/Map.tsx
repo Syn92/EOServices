@@ -59,7 +59,7 @@ export default function Map(props: IProps) {
     // if pressable, react to the onPress event by adding a marker
     // and calling onPressed with the corresponding address
     function mapPressed(event: MapEvent) {
-        // if(!props.pressable) return;
+        if(!props.pressable) return;
 
         if(props.onPressed) {
             // Geocoder.from(marker.coordinate).then(json => {
@@ -98,17 +98,11 @@ export default function Map(props: IProps) {
             latitude: region.latitude,
             longitude: region.longitude
         }
-        // const headers = {
-        //     'Content-Type': 'application/x-www-form-urlencoded',
-        //     'Accept': 'application/json'
-        // }
         axios.get('http://10.200.12.162:4000/cadastre', { params },)
             .then(function (response) {
                 // handle success
                 const features = response.data as GeoJSON.Feature<GeoJSON.Geometry, IFeatureProperties>[];
                 setGeoJson({type: geoJson.type, features: features});
-                // const maxVertices = Math.max.apply(Math, (features.map(x => (x.geometry as GeoJSON.Polygon).coordinates.length)))
-                // console.log(maxVertices);
             }).catch(function (error) {
                 // handle error
                 console.log(error);
