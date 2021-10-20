@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Platform, StyleSheet, TextInput, Image } from 'react-native';
+import { Platform, StyleSheet, TextInput, Image, ScrollView, TouchableHighlight, TouchableOpacity, Modal, Pressable, Alert, Keyboard } from 'react-native';
 import { Button } from 'react-native-elements/dist/buttons/Button';
 
 import EditScreenInfo from '../components/EditScreenInfo';
@@ -12,6 +12,9 @@ import { Icon } from 'react-native-elements';
 import {Dimensions} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import StepIndicator from '../components/stepIndicator';
+import { RootTabScreenProps } from '../types';
+import axios from 'axios';
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 const { height } = Dimensions.get('window');
 
 const itemType = "Items";
@@ -19,7 +22,7 @@ const serviceType = "Services"
 const servTypeSell = "sell"
 const servTypeBuy = "buy"
 
-export default function AddPostScreen() {
+export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPost'>) {
   const [step, setStep] = useState(1)
   const [selectedServType, setSelectedServType] = useState<string>();
   const [selectedCat, setSelectedCat] = useState<string>('');
@@ -29,10 +32,11 @@ export default function AddPostScreen() {
   const [errorMessage, setErrorMessage] = useState('');
   const [material, setMaterial] = useState<string>();
 
-  const [image, setImage] = useState<any[]>([]);
+  const [image, setImage] = useState<(string| undefined)[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
 
   function addPostRequest(){
-    console.log('2')
+    setModalVisible(true)
     let body = JSON.stringify({
       'serviceType': selectedServType,
       'category': selectedCat,
@@ -42,6 +46,7 @@ export default function AddPostScreen() {
       'images': image,
       'positon': position,
     })
+    axios.post('', body)
   }
 
   useEffect(() => {
@@ -55,25 +60,30 @@ export default function AddPostScreen() {
     })();
   }, []);
 
+  const removeImage = (i: number) => {
+    setImage((prevImages) => {
+      {return prevImages.filter((image, index) => index != i)}
+    })
+    
+  }
+
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       quality: 1,
+      base64: true,
     });
 
-    console.log(result);
+    // console.log(result);
 
     if (!result.cancelled) {
-      let images = [...image];
-      images.push(<Image source={{uri: result.uri, width: 80, height: 80}} key={result.uri}/>)
-      setImage(images);
+      await setImage([...image,result.base64]);
     }
   };
   if(step == 1) 
     return (
     <View style={styles.container}>
       <StepIndicator title="Add a post" step={step} stepMax={3}></StepIndicator>
-      {/* <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" /> */}
       <View style={styles.innerContainer}>
         <Text style={styles.subTitle}>You are ...</Text>
         <View style={styles.buttonContainer}>
@@ -86,7 +96,7 @@ export default function AddPostScreen() {
     );
     else if (step == 2)
         return(
-          <View style={styles.container}>
+          <ScrollView contentContainerStyle={styles.container}>
           <StepIndicator title="Add a post" step={step} stepMax={3}></StepIndicator>
           <View style={styles.innerContainer}>
             <View style={styles.header}>
@@ -133,23 +143,49 @@ export default function AddPostScreen() {
                 />
               </View>
             </View>
-            <View style={styles.photoContainer}>
+              <ScrollView horizontal={true} style={{marginHorizontal: 15, marginTop: 10}}>
+            {/* <View style={styles.photoContainer}> */}
               {
-                image
+                image.map((uri, i)=>{
+                  return (<TouchableOpacity style={i == image.length-1 ? {}:{marginRight: 5}} onPress={() => removeImage(i)} key={i}>
+                  <Image source={{uri: 'data:image/png;base64,' + uri, width: 80, height: 80}} key={i} />
+                </TouchableOpacity>)
+                })
               }
-            </View>
+            {/* </View> */}
+              </ScrollView>
             {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : <Text></Text>}
             <View style={{justifyContent: 'flex-end', marginHorizontal: 50, marginVertical: 10}}>
               <ActionButton title="Next" onPress={() => {if(material && description && price && selectedCat){setStep(3); setErrorMessage('')}else{setErrorMessage('Please complete all fields above')}; console.log(step)}}></ActionButton>
             </View>
           </View>
-        </View>
+        </ScrollView>
         );
       else if(step == 3)
         return (
           <View style={styles.container}>
           <StepIndicator title="Add a post" step={step} stepMax={3}></StepIndicator>
           <View style={styles.innerContainer}>
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={() => {
+              navigation.navigate('TabTwo')
+            }}
+          >
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <Text style={styles.modalText}>Post succesfully submited</Text>
+                <Pressable
+                  style={[styles.button, styles.buttonClose]}
+                  onPress={() => {setModalVisible(!modalVisible); navigation.navigate('TabTwo')}}
+                >
+                  <Text style={styles.textStyle}>Ok</Text>
+                </Pressable>
+              </View>
+            </View>
+          </Modal>
           <View style={styles.header}>
             <Button style={styles.headerButton} onPress={() => setStep(2)} icon={<Icon name="arrow-left" size={40} color="black"/>}/>
             <Text style={styles.subTitle}>Location</Text>
@@ -256,15 +292,52 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignSelf: 'center'
   },
-  photoContainer: {
-    alignSelf: 'center',
-    width: '80%',
-    flexWrap: 'wrap',
-    flexDirection: "row",
-    marginHorizontal: 5,
-  },
   errorText: {
     color: 'red',
     textAlign: 'center'
+  }, 
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: 'transparent',
+    alignItems: "center",
+    marginTop: 22
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center"
+  },
+   
+  button: {
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2
+  },
+  buttonOpen: {
+    backgroundColor: "#F194FF",
+  },
+  buttonClose: {
+    backgroundColor: "#2196F3",
+  },
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center"
   }
+
 });
