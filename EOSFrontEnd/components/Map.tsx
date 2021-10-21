@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import MapView, { Geojson, LatLng, MapEvent, Marker, Region, UrlTile } from 'react-native-maps';
 import Geocoder from 'react-native-geocoding';
-import axios from 'axios';
-import { isPointInPolygon } from 'geolib';
-import { GeolibInputCoordinates } from 'geolib/es/types';
+import axios, { CancelTokenSource } from 'axios';
+import { getCenterOfBounds } from 'geolib';
 
 interface IMarker {
     key: string;
@@ -52,13 +51,15 @@ export default function Map(props: IProps) {
         }
     );
 
+    let cancelTokenSource: CancelTokenSource | null;
+
     if(!props.pressable) {
         //todo: set existing markers from the DB here
     }
 
     // if pressable, react to the onPress event by adding a marker
     // and calling onPressed with the corresponding address
-    function mapPressed(event: MapEvent) {
+    function mapPressed(eventTemp: unknown) {
         if(!props.pressable) return;
 
         if(props.onPressed) {
@@ -66,20 +67,21 @@ export default function Map(props: IProps) {
             //     const address = json.results[0].formatted_address;
             //     if(props.onPressed) props.onPressed(address);
             // }).catch(error => console.warn(error));
-            const feature = geoJson.features.find(x => {
-                const polygon = (x.geometry as GeoJSON.Polygon)?.coordinates[0] as GeolibInputCoordinates[];
-                if(!polygon) return false;
-                return isPointInPolygon(event.nativeEvent.coordinate, polygon);
-            });
-            if(feature) {
+            // const features = geoJson.features.filter(x => {
+            //     const polygon = (x.geometry as GeoJSON.Polygon)?.coordinates[0] as GeolibInputCoordinates[];
+            //     return isPointInPolygon(marker.coordinate, polygon);
+            // });
+            // console.log(features.flatMap(x => x.properties))
+            const event = eventTemp as {feature: GeoJSON.Feature<GeoJSON.Geometry, IFeatureProperties>, coordinates: LatLng[]}
+            if(event && event.feature) {
+                setSelectedGeoJson({type: selectedGeoJson.type, features: [event.feature]});
                 const marker: IMarker = {
                     key: 'pressedMarker',
-                    coordinate: event.nativeEvent.coordinate,
+                    coordinate: getCenterOfBounds(event.coordinates),
                 }
                 setSelectedMarker(marker);
-                setSelectedGeoJson({type: selectedGeoJson.type, features: [feature]});
-                if(props.onPressed) props.onPressed(feature.properties.CIVIQUE_DEBUT + " " + feature.properties.NOM_RUE)
-                console.log('vertices: ', (feature.geometry as GeoJSON.Polygon).coordinates[0].length);
+                if(props.onPressed) props.onPressed(event.feature.properties.CIVIQUE_DEBUT + " " + event.feature.properties.NOM_RUE)
+                // console.log('vertices: ', (feature.geometry as GeoJSON.Polygon).coordinates[0].length);
             } else {
                 setSelectedMarker(null);
                 setSelectedGeoJson({type: selectedGeoJson.type, features: []});
@@ -98,17 +100,22 @@ export default function Map(props: IProps) {
             latitude: region.latitude,
             longitude: region.longitude
         }
-        axios.get('http://10.200.12.162:4000/cadastre', { params },)
+        cancelTokenSource?.cancel();
+        cancelTokenSource = axios.CancelToken.source();
+        axios.get('http://192.168.0.17:4000/cadastre', { params, cancelToken: cancelTokenSource.token })
             .then(function (response) {
                 // handle success
                 const features = response.data as GeoJSON.Feature<GeoJSON.Geometry, IFeatureProperties>[];
                 setGeoJson({type: geoJson.type, features: features});
             }).catch(function (error) {
                 // handle error
-                console.log(error);
                 setGeoJson({type: geoJson.type, features: []});
+                if(!axios.isCancel(error)) {
+                    console.log(error);
+                }
             }).then(function () {
                 // always executed
+                cancelTokenSource = null
             });
     }
 
@@ -135,13 +142,14 @@ export default function Map(props: IProps) {
     };
     return (
         <View style={styles.container}>
-            <MapView style={styles.map} initialRegion={initialRegion} onPress={mapPressed}
-                mapType={Platform.OS == "android" ? "none" : "standard"} onRegionChangeComplete={regionChanged}>
-                <Geojson geojson={selectedGeoJson} strokeColor="black" fillColor="green" strokeWidth={2} zIndex={3}></Geojson>
-                <Geojson geojson={geoJson} strokeColor="blue" fillColor="rgba(0, 255, 255, 0.2)" strokeWidth={1} zIndex={2}></Geojson>
+            <MapView style={styles.map} initialRegion={initialRegion}
+                mapType={Platform.OS == "android" ? "none" : "standard"} onRegionChangeComplete={regionChanged}
+                pitchEnabled={false} toolbarEnabled={false}>
+                <Geojson geojson={selectedGeoJson} strokeColor="black" fillColor="green" strokeWidth={3} zIndex={3}/>
+                <Geojson geojson={geoJson} strokeColor="blue" fillColor="rgba(0, 255, 255, 0.2)" strokeWidth={1} zIndex={2}
+                tappable={true} onPress={mapPressed}/>
                 <UrlTile urlTemplate='https://api.maptiler.com/maps/streets/{z}/{x}/{y}@2x.png?key=eif7poHbo0Lyr1ArRDWL'
-                    maximumZ={19} zIndex={1}
-                />
+                zIndex={1}/>
                 <Marker key="example" coordinate={testMarkerCoord} title="Test Poly" description="Marker test description"
                     icon={require('../assets/images/markers/test.png')} tracksViewChanges={false}/>
                 {markers.length > 0 ? renderMarkers(markers) : null}
@@ -157,10 +165,6 @@ function renderMarkers(markers: IMarker[]): JSX.Element[] {
             <Marker key={marker.key} coordinate={marker.coordinate} tracksViewChanges={false} zIndex={5}/>
         )
     });
-}
-
-function geoJsonFeatureToAddress(feature: GeoJSON.Feature): string {
-    return "temp";
 }
 
 const styles = StyleSheet.create({
