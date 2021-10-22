@@ -10,7 +10,7 @@ import Firebase from '../config/firebase';
 import { Login } from './Login';
 import * as wallet from '../components/Wallet'
 const auth = Firebase.auth();
-
+import * as anchor from "../components/Anchor"
 export function Register({navigation}: {navigation: any}) {
 
   const [email, setEmail] = useState('');
@@ -86,7 +86,7 @@ export function Register({navigation}: {navigation: any}) {
           
           {signupError ? <Text style={styles.errorText}>{signupError}</Text> : null}
 
-          <TouchableOpacity style={styles.iconView} onPress={() => navigation.navigate('WalletLink')}>
+          <TouchableOpacity style={styles.iconView} onPress={anchor.login}>
             <Icon name='sync-alt' type='material' size={30} color='white' />
             <Text style={styles.iconText} >Link</Text>
           </TouchableOpacity>

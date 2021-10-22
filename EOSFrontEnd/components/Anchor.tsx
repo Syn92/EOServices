@@ -1,6 +1,6 @@
 import AnchorLink, { LinkSession } from 'anchor-link';
 import AnchorLinkBrowserTransport from 'anchor-link-browser-transport';
-
+import AnchorLinkReactTransport from '../AnchorLinkReactTransport/AnchorLinkReactTransport'
 
 import fetch from 'isomorphic-fetch';
 import { EOSIO_CHAIN_ID, EOSIO_RPC } from '../constants/AnchorConfig';
@@ -8,7 +8,7 @@ import { EOSIO_CHAIN_ID, EOSIO_RPC } from '../constants/AnchorConfig';
 (global as any).fetch = fetch;
 
 export const link = new AnchorLink({
-  transport: new AnchorLinkBrowserTransport(),
+  transport: new AnchorLinkReactTransport(),
   chains: [
     {
       chainId: EOSIO_CHAIN_ID,
