@@ -24,7 +24,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   return (
     <View style={styles.container}>
       <Button title="Logout" onPress={handleLogout} />
-      <Map pressable={false} onPressed={(newAddress: string) => setAddress(newAddress)}/>
+      <Map pressable={true} onPressed={(newAddress: string) => setAddress(newAddress)}/>
       <Text>addresse: {address}</Text>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
     </View>
