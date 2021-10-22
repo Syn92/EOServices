@@ -5,10 +5,10 @@ import { Button, ImageBackground, Platform, StyleSheet, Text, TextInput, Touchab
 import { Icon } from 'react-native-elements/dist/icons/Icon';
 import { ScrollView } from 'react-native-gesture-handler';
 import HorizontalSeparator from '../components/HorizontalSeparator';
-import { AnchorLickService } from '../components/AnchorWallet';
-
+import {Wallet} from '../components/Wallet'
 import Firebase from '../config/firebase';
-
+import { Login } from './Login';
+import * as wallet from '../components/Wallet'
 const auth = Firebase.auth();
 
 export function Register({navigation}: {navigation: any}) {
@@ -17,7 +17,6 @@ export function Register({navigation}: {navigation: any}) {
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [signupError, setSignupError] = useState('');
-  const anchorlinkService = new AnchorLickService();
 
   async function handleSignup() {
     try {
@@ -87,10 +86,10 @@ export function Register({navigation}: {navigation: any}) {
           
           {signupError ? <Text style={styles.errorText}>{signupError}</Text> : null}
 
-          <View style={styles.iconView}>
+          <TouchableOpacity style={styles.iconView} onPress={() => navigation.navigate('WalletLink')}>
             <Icon name='sync-alt' type='material' size={30} color='white' />
-            <Text style={styles.iconText}>Link</Text>
-          </View>
+            <Text style={styles.iconText} >Link</Text>
+          </TouchableOpacity>
 
           <Text style={styles.text}>Or</Text>
 

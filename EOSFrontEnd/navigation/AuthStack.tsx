@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import { Login } from '../screens/Login'
 import { Register } from '../screens/Register';
-
+import { WalletLink} from "../screens/WebViewWalletLink"
 const Stack = createNativeStackNavigator();
 
 export default function AuthStack() {
@@ -15,6 +15,8 @@ export default function AuthStack() {
         headerShadowVisible: false,
         headerTintColor: '#04b388'
         }}/>
+      <Stack.Screen name='WalletLink' component={WalletLink}  options={{headerShown: false}}/>
+
     </Stack.Navigator>
   )
 }
