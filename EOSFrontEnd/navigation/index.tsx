@@ -63,12 +63,10 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
       try {
         if (authenticatedUser)
           authenticatedUser = await checkUser(authenticatedUser)
-
-        console.log(authenticatedUser)
         
         // setUser to either null or return value of checkUser
         if (setUser) await setUser(authenticatedUser);
-        else throw Error('setUser undefined');
+        else throw new Error('setUser undefined');
 
         setIsLoading(false);
       } catch (error) {

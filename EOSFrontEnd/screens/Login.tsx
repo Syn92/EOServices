@@ -33,7 +33,10 @@ export function Login({navigation}: {navigation: any}) {
     try {
       if (email !== '' && password !== '') {
         setLoadingStatus(true);
-        Firebase.auth().signInWithEmailAndPassword(email, password);
+        Firebase.auth().signInWithEmailAndPassword(email, password)
+        .catch((e: any)=> {
+          setLoginError(e.message)
+        });
         setLoadingStatus(false);
       }
     } catch (error: any) {
@@ -99,6 +102,8 @@ export function Login({navigation}: {navigation: any}) {
             flex: 1,
             justifyContent: 'center',
           }} source={require('../assets/images/bg.png')}>
+            {isLoading ? Loading({}): null}
+
             <StatusBar style='light' />
             <View style={styles.contentContainer}>
               {/* EOS Logo */}
@@ -132,7 +137,6 @@ export function Login({navigation}: {navigation: any}) {
               </View>
 
               {loginError ? <Text style={styles.errorText}>{loginError}</Text> : null}
-              {isLoading ? Loading({}): null}
               
               <TouchableOpacity style={{...styles.button, ...styles.mailButton}} onPress={signInWithEmail}>
                 <Text style={{...styles.text, fontSize: 20, fontWeight: 'bold'}}>LOGIN</Text>
@@ -211,6 +215,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1.1,
   },
   errorText: {
+    textAlign: 'center',
     color: 'darkred',
     fontWeight: 'bold',
     marginBottom: 20

@@ -50,7 +50,6 @@ const styles = StyleSheet.create({
         alignContent: 'center',
         
         borderRadius: 15,
-        maxHeight: '15%',
         backgroundColor: 'white',
     },
     container: {
