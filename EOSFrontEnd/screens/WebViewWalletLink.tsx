@@ -3,7 +3,7 @@ import { Modal, SafeAreaView, TouchableOpacity, View, Text,Button,StyleSheet, Li
 import { WebView } from 'react-native-webview';
 
 const html= require("../assets/html/AnchorLogin")
-export function WalletLink()  {
+export function WalletLink({navigation}: {navigation: any})  {
   const [modalVisible, setModalVisible] = useState(true);
 
   console.log(html)
@@ -12,9 +12,11 @@ export function WalletLink()  {
                 <Modal  visible={modalVisible}>
 
                     <View style={styles.modal}>
-                <TouchableOpacity onPress={()=>{setModalVisible(!modalVisible)}}>
-                <Text>Press Here</Text>
-                  </TouchableOpacity>
+                        <View style={styles.modelHeader}>
+                         <TouchableOpacity onPress={() => navigation.goBack()/*()=>{setModalVisible(!modalVisible)}*/}>
+                          <Text>Go Back</Text>
+                        </TouchableOpacity>
+                        </View>
                         <View style={styles.modalContainer}>
                             <WebView 
                                 onNavigationStateChange={event => {
@@ -38,16 +40,20 @@ export function WalletLink()  {
 
   const styles = StyleSheet.create({
     modal : {
-        
         justifyContent : 'center',
         alignItems : 'center',
         backgroundColor: 'rgba(0,0,0,0.5)'
     },
     modalContainer : {
         backgroundColor : 'white',
-        width : '90%',
-        height : '80%',
+        width : '100%',
+        height : '95%',
     },
+    modelHeader : {
+      height : '5%',
+      justifyContent : 'center',
+      alignItems : 'center',
+  },
     ActivityIndicatorStyle: {
         flex: 1,
         justifyContent: 'center',

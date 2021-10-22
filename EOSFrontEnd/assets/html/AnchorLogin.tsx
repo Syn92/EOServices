@@ -98,8 +98,11 @@ export const template = ()=> `<!DOCTYPE html>
         <p><small>Press F to pay respects</small></p>
         <pre id="log"></pre>
     </div>
-    <div id="login-ui">
-        <button onclick="login()">Login</button>
+    <div id="login-ui" >
+        <script type="text/javascript">
+            login();
+        </script>
     </div>
 </body>
 </html>`
+{/* <button onclick="login()">Login</button> */}
