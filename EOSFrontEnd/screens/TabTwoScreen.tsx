@@ -1,12 +1,32 @@
+import axios from 'axios';
 import * as React from 'react';
-import { StyleSheet } from 'react-native';
+import { Button, StyleSheet } from 'react-native';
 
 import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
+import Firebase from '../config/firebase';
+
+const auth = Firebase.auth()
+
+async function handleLogout() {
+  try {
+    await auth.signOut()
+  } catch (error: any) {
+    console.log(error)
+  }
+}
+
+async function request() {
+  const user = auth.currentUser
+  const res = await axios.get('http://10.0.0.7:4000/auth', { params: { uid: user.uid } })
+  console.log(res)
+}
 
 export default function TabTwoScreen() {
   return (
     <View style={styles.container}>
+      <Button title="Logout" onPress={handleLogout} />
+      <Button title="axios" onPress={request} />
       <Text style={styles.title}>Tab Two</Text>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
       <EditScreenInfo path="/screens/TabTwoScreen.tsx" />
