@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Platform, StyleSheet, TextInput, Image, ScrollView, TouchableHighlight, TouchableOpacity, Modal, Pressable, Alert, Keyboard } from 'react-native';
 import { Button } from 'react-native-elements/dist/buttons/Button';
+import Map from '../components/Map';
 
 import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
@@ -118,7 +119,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
           <ActionButtonSecondary  title="Offering" styleContainer={selectedServType == servTypeSell ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'}} styleText={selectedServType == servTypeSell ? {color: 'white'} : {color: '#04B388'}} onPress={() => {setSelectedServType(servTypeSell)}}></ActionButtonSecondary>
           <ActionButtonSecondary styleContainer={[{marginTop: 30}, selectedServType == servTypeBuy ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'}]} styleText={selectedServType == servTypeBuy ? {color: 'white'} : {color: '#04B388'}} title="Looking For" onPress={() => {setSelectedServType(servTypeBuy)}}></ActionButtonSecondary>
         </View>
-        <ActionButton title="Next" styleContainer={[{justifySelf: 'flex-end', margin:50}]} onPress={() => {if(selectedServType){setStep(2)}; console.log(selectedServType)}}></ActionButton>
+        <ActionButton title="Next" styleContainer={[{justifySelf: 'flex-end', marginHorizontal: 50, marginBottom: 10, marginTop: 50}]} onPress={() => {if(selectedServType){setStep(2)}; console.log(selectedServType)}}></ActionButton>
       </View>
     </View>
     );
@@ -168,7 +169,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
             </View>
             <View style={styles.buttonContainer}>
               
-              <ActionButtonSecondary title="Add photos" styleContainer={{marginTop: 30}} onPress={pickImage}></ActionButtonSecondary>
+              <ActionButtonSecondary title="Add photos" onPress={pickImage}></ActionButtonSecondary>
               <View style={styles.inputView}>
                 <Text style={styles.inputLabel}>Price</Text>
                 <TextInput
@@ -248,17 +249,9 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
             <Button style={styles.headerButton} onPress={() => setStep(3)} icon={<Icon name="arrow-left" size={40} color="black"/>}/>
             <Text style={styles.subTitle}>Location</Text>
             </View>
-            <View style={styles.buttonContainer}>
-              <View style={styles.inputView}>
-                <Text style={styles.inputLabel}>Position</Text>
-                <TextInput
-                  style={{color: 'black'}}          
-                  autoCapitalize='none'
-                  autoCorrect={false}
-                  value={position}
-                  onChangeText={(text: string) => setPositon(text)}
-                />
-              </View>
+            <View style={styles.mapContainer}>
+              <Map pressable={true} onPressed={(newAddress: string) => setPositon(newAddress)}/>
+              <Text style={{textAlign: 'center'}}>addresse: {position}</Text>
             </View>
             <View style={{justifyContent: 'flex-end', marginHorizontal: 50, marginVertical: 10}}>
               <ActionButton title="Confirm" onPress={addPostRequest}></ActionButton>
@@ -277,13 +270,14 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
+    borderRadius: 15,
     alignItems: 'center',
     // justifyContent: 'space-between'
   },
   headerButton: {
     alignSelf: 'flex-start',
-    width: 50,
-    justifyContent: 'flex-start',
+    // width: 50,
+    // justifyContent: 'flex-start',
   }, 
   subTitle: {
     marginTop: 10,
@@ -321,6 +315,15 @@ const styles = StyleSheet.create({
     width: '50%',
     alignSelf: 'center',
     paddingTop: 20,
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  mapContainer: {
+    width: '90%',
+    height: 450,
+    alignSelf: 'center',
+    paddingTop: 20,
+    marginBottom: 50,
     display: 'flex',
     flexDirection: 'column'
   },
