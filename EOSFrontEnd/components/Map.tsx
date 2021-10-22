@@ -169,10 +169,9 @@ function renderMarkers(markers: IMarker[]): JSX.Element[] {
 
 const styles = StyleSheet.create({
     container: {
-        height: '60%',
-        width: '95%',
-        borderColor: 'blue',
-        borderWidth: 2,
+        // height: '80%',
+        width: '100%',
+        borderRadius: 15,
         overflow: 'hidden',
     },
     map: {

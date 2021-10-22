@@ -25,6 +25,7 @@ import GetFormatedDate from '../services/DateFormater';
 import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
 import { AuthenticatedUserContext } from './AuthenticatedUserProvider';
 import AuthStack from './AuthStack';
+import AddPostScreen from '../screens/AddPostScreen';
 
 const auth = Firebase.auth();
 
@@ -37,8 +38,8 @@ async function checkUser(user: any) {
       delete res.data._id;
       return res.data;
     }
-
     // add user to mongodb
+
     const newUsr: User = {
       uid: user.uid,
       email: user.email,
@@ -107,6 +108,7 @@ function RootNavigator() {
     <Stack.Navigator>
       <Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: false }} />
       <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
+      <Stack.Screen name="AddPost" component={AddPostScreen} />
       <Stack.Group screenOptions={{ presentation: 'modal' }}>
         <Stack.Screen name="Modal" component={ModalScreen} />
       </Stack.Group>
