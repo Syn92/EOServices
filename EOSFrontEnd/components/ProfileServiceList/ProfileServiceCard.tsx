@@ -1,6 +1,7 @@
 import React from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { Icon } from 'react-native-elements'
+import { AuthenticatedUserContext } from '../../navigation/AuthenticatedUserProvider';
 
 interface Prop {
     icon: string,
@@ -11,14 +12,15 @@ interface Prop {
     callback?: any
 }
 
-export function ProfileCard(props: Prop) {
+export function ProfileServiceCard(props: Prop) {
+    
+    const { user, setUser } =  React.useContext(AuthenticatedUserContext);
 
     return (
         <View style={styles.card}>
             <Icon name={props.icon} 
                   type={props.iconType} 
                   color='#04b388' 
-                  size={50}
                   style={styles.icon} />
             <View style={styles.container}>
                 <View style={{flexDirection: 'row'}}>
@@ -36,7 +38,7 @@ export function ProfileCard(props: Prop) {
     )
 }
 
-ProfileCard.defaultProps = {editable: true}
+ProfileServiceCard.defaultProps = {editable: true}
 
 const styles = StyleSheet.create({
     card: {
@@ -49,6 +51,16 @@ const styles = StyleSheet.create({
         
         borderRadius: 15,
         backgroundColor: 'white',
+
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.23,
+        shadowRadius: 2.62,
+
+        elevation: 4,
     },
     container: {
         flex: 1,
@@ -62,7 +74,6 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
     },
     title: {
-        fontWeight: '700',
         fontSize: 18,
     },
     icon: {

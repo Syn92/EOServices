@@ -9,6 +9,7 @@ import { User } from '../interfaces/User';
 import axios from 'axios';
 import ServerConstants from '../constants/Server';
 import Loading from '../components/Loading';
+import { ProfileServiceList } from '../components/ProfileServiceList/ProfileServiceList';
 
 const WIDTH = Dimensions.get('window').width;
 
@@ -20,7 +21,6 @@ enum ModalType {
 interface ContactInfo {
     name: string | undefined,
     phone: string | undefined,
-    email: string | undefined
 }
 
 export function PrivateProfile() {
@@ -34,20 +34,19 @@ export function PrivateProfile() {
 
     const [nameError, setNameError] = useState('');
     const [phoneError, setPhoneError] = useState('');
-    const [emailError, setEmailError] = useState('');
 
     const [ contactInfo, setContactInfo ] = useState<ContactInfo>({
         name: user?.name,
-        phone: user?.phone,
-        email: user?.email
+        phone: user?.phone
     });
-    
-    function validateEmail(email: string) {
-        if (email) {
-            const reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-            console.log(reg.test(email))
-            return reg.test(email)
-        }
+
+    function resetContactInfoModal() {
+        setContactInfo({
+            name: user?.name,
+            phone: user?.phone
+        });
+        setNameError('')
+        setPhoneError('')
     }
 
     async function fetchUser() {
@@ -67,12 +66,15 @@ export function PrivateProfile() {
                 uid: user?.uid,
                 patch: { description: description }
             })
+            console.log(res)
             if (res.status == 200) {
                 await fetchUser()
             } else {
+                setDescription(user?.description)
                 throw new Error(`Error updating description (status ${res.status}): ${res.statusText}`)
             }
         } catch (e) {
+            setDescription(user?.description)
             console.error('Edit description error: ', e)
         }
     }
@@ -87,9 +89,11 @@ export function PrivateProfile() {
             if (res.status == 200) {
                 await fetchUser()
             } else {
+                resetContactInfoModal()
                 throw new Error(`Error updating contact info (status ${res.status}): ${res.statusText}`)
             }
         } catch (e) {
+            resetContactInfoModal()
             console.error('Edit contact info error: ', e)
         }
     }
@@ -170,23 +174,6 @@ export function PrivateProfile() {
                         }}/>
                     {nameError.length != 0 ? <Text style={styles.errorText}>{nameError}</Text> : null}
                 </View>
-                
-                <View style={styles.inputView}>
-                    <Text style={styles.inputLabel}>Email</Text>
-                    <TextInput
-                        style={styles.contactInfoInput}
-                        autoCapitalize='none'
-                        keyboardType='email-address'
-                        textContentType='emailAddress'
-                        value={contactInfo.email}
-                        onChangeText={(email) => {
-                            setContactInfo({...contactInfo, ...{email: email}})
-                            if (email.length != 0)
-                                setEmailError('')
-                            else
-                                setEmailError('Please enter an email')
-                        }}/>
-                </View>
 
                 <View style={styles.inputView}>
                     <Text style={styles.inputLabel}>Phone #</Text>
@@ -203,20 +190,14 @@ export function PrivateProfile() {
                             else
                                 setPhoneError('Please enter a phone number')
                         }}/>
+                    {phoneError.length != 0 ? <Text style={styles.errorText}>{phoneError}</Text> : null}
                 </View>
 
                 <View style={styles.modalButtonContainer}>
                     <TouchableHighlight
                     style={{...styles.openButton, backgroundColor: 'gray'}}
                     onPress={() => {
-                        setContactInfo({
-                            name: user?.name,
-                            phone: user?.phone,
-                            email: user?.email
-                        });
-                        setNameError('')
-                        setEmailError('')
-                        setPhoneError('')
+                        resetContactInfoModal()
                         setModalVisible(!modalVisible)
                     }}>
                         <Text style={styles.textStyle}>Cancel</Text>
@@ -225,12 +206,8 @@ export function PrivateProfile() {
                     <TouchableHighlight
                     style={styles.openButton}
                     onPress={async () => {
-
-                        if (contactInfo.email && !validateEmail(contactInfo.email)) {
-                            setEmailError('Enter a valid email')
-                        }
-
-                        const submitCond = nameError.length == 0 && phoneError.length == 0 && emailError.length == 0
+                        
+                        const submitCond = nameError.length == 0 && phoneError.length == 0
 
                         if (submitCond) {
                             setisLoading(true)
@@ -293,9 +270,7 @@ export function PrivateProfile() {
                     </ProfileCard>
                     
                     {/* Orders list */}
-                    <View style={styles.list}>
-                        <Text>List</Text>
-                    </View>
+                    <ProfileServiceList/>
                 </ImageBackground>
             </View>
         </ScrollView>
@@ -321,10 +296,6 @@ const styles = StyleSheet.create({
         borderRadius: WIDTH/5,
         borderColor: 'white',
         borderWidth: 2
-    },
-    list: {
-        backgroundColor: 'violet',
-        borderWidth: 1
     },
     info: {
         marginTop: 5,
