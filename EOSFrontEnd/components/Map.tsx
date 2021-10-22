@@ -102,7 +102,7 @@ export default function Map(props: IProps) {
         }
         cancelTokenSource?.cancel();
         cancelTokenSource = axios.CancelToken.source();
-        axios.get('http://192.168.0.17:4000/cadastre', { params, cancelToken: cancelTokenSource.token })
+        axios.get('https://eos-marketplace.nn.r.appspot.com/cadastre', { params, cancelToken: cancelTokenSource.token })
             .then(function (response) {
                 // handle success
                 const features = response.data as GeoJSON.Feature<GeoJSON.Geometry, IFeatureProperties>[];
