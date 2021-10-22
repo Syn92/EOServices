@@ -15,12 +15,22 @@ import StepIndicator from '../components/stepIndicator';
 import { RootTabScreenProps } from '../types';
 import axios from 'axios';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
+
+export interface Service {
+  title: string;
+  description: string;
+  material: string;
+  images: (string | undefined)[];
+  priceEOS: number;
+  serviceType: string;
+  category: string;
+  position: string;
+  // owner: User;
+}
 const { height } = Dimensions.get('window');
 
-const itemType = "Items";
-const serviceType = "Services"
-const servTypeSell = "sell"
-const servTypeBuy = "buy"
+const servTypeSell = "Offering"
+const servTypeBuy = "Looking For"
 
 export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPost'>) {
   const [step, setStep] = useState(1)
@@ -29,24 +39,33 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
   const [price, setPrice] = useState<string>();
   const [description, setDescription] = useState<string>();
   const [position, setPositon] = useState('');
+  const [title, setTitle] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage1, setErrorMessage1] = useState('');
   const [material, setMaterial] = useState<string>();
 
   const [image, setImage] = useState<(string| undefined)[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
 
   function addPostRequest(){
-    setModalVisible(true)
-    let body = JSON.stringify({
-      'serviceType': selectedServType,
-      'category': selectedCat,
-      'price': price,
-      'description': description,
-      'material': material,
-      'images': image,
-      'positon': position,
-    })
-    axios.post('', body)
+    
+    if(selectedServType && description && material && image){
+      let body: Service = {
+        title: title,
+        serviceType: selectedServType,
+        category: selectedCat,
+        priceEOS: Number(price),
+        description: description,
+        material: material,
+        images: image,
+        position: position,
+      }
+      console.log(body)
+      axios.post('https://10.0.0.221:4000' + '/post', body).then(() => setModalVisible(true)).catch(() => console.log('error'))
+    } else {
+      console.log("input missing")
+    }
+    
   }
 
   useEffect(() => {
@@ -83,40 +102,70 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
   if(step == 1) 
     return (
     <View style={styles.container}>
-      <StepIndicator title="Add a post" step={step} stepMax={3}></StepIndicator>
+      <StepIndicator title="Add a post" step={step} stepMax={4}></StepIndicator>
       <View style={styles.innerContainer}>
         <Text style={styles.subTitle}>You are ...</Text>
         <View style={styles.buttonContainer}>
-          <ActionButtonSecondary  title="Looking For" styleContainer={selectedServType == servTypeSell ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'}} styleText={selectedServType == servTypeSell ? {color: 'white'} : {color: '#04B388'}} onPress={() => {setSelectedServType(servTypeSell)}}></ActionButtonSecondary>
-            <ActionButtonSecondary styleContainer={[{marginTop: 30}, selectedServType == servTypeBuy ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'}]} styleText={selectedServType == servTypeBuy ? {color: 'white'} : {color: '#04B388'}} title="Offering" onPress={() => {setSelectedServType(servTypeBuy)}}></ActionButtonSecondary>
+          <ActionButtonSecondary  title="Offering" styleContainer={selectedServType == servTypeSell ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'}} styleText={selectedServType == servTypeSell ? {color: 'white'} : {color: '#04B388'}} onPress={() => {setSelectedServType(servTypeSell)}}></ActionButtonSecondary>
+          <ActionButtonSecondary styleContainer={[{marginTop: 30}, selectedServType == servTypeBuy ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'}]} styleText={selectedServType == servTypeBuy ? {color: 'white'} : {color: '#04B388'}} title="Looking For" onPress={() => {setSelectedServType(servTypeBuy)}}></ActionButtonSecondary>
         </View>
         <ActionButton title="Next" styleContainer={[{justifySelf: 'flex-end', margin:50}]} onPress={() => {if(selectedServType){setStep(2)}; console.log(selectedServType)}}></ActionButton>
       </View>
     </View>
     );
-    else if (step == 2)
-        return(
-          <ScrollView contentContainerStyle={styles.container}>
-          <StepIndicator title="Add a post" step={step} stepMax={3}></StepIndicator>
-          <View style={styles.innerContainer}>
-            <View style={styles.header}>
+  else if(step == 2) 
+    return (
+    <View style={styles.container}>
+      <StepIndicator title="Add a post" step={step} stepMax={4}></StepIndicator>
+      <View style={styles.innerContainer}>
+      <View style={styles.header}>
             <Button style={styles.headerButton} onPress={() => setStep(1)} icon={<Icon name="arrow-left" size={40} color="black"/>}/>
-            <Text style={styles.subTitle}>Details</Text>
+            <Text style={styles.subTitle}>{selectedServType}...</Text>
             </View>
-            <View style={styles.buttonContainer}>
-              <Text style={styles.inputLabel}>Categorie</Text>
+        <View style={styles.buttonContainer}>
+              <View style={styles.inputView}>
+                <Text style={styles.inputLabel}>Title</Text>
+                <TextInput
+                  style={{color: 'black'}}          
+                  autoCapitalize='none'
+                  autoCorrect={false}
+                  value={title}
+                  onChangeText={(text: string) => setTitle(text)}
+                />
+              </View>
+          <Text style={styles.inputLabel}>Categorie</Text>
               <Picker mode="dropdown" style={styles.buttonStyle} selectedValue={selectedCat} onValueChange={(itemValue, itemIndex) => {if(itemValue != "0")setSelectedCat(itemValue.toString())}}>
                 <Picker.Item label="Select a Cat..." value="0"/>
                 <Picker.Item label="Cat1" value="cat1"/>
                 <Picker.Item label="Cat2" value="cat2"/>
                 <Picker.Item label="Cat3" value="cat3"/>
               </Picker>
+        </View>
+        {errorMessage1 ? <Text style={styles.errorText}>{errorMessage1}</Text> : <Text></Text>}
+            <View style={{justifyContent: 'flex-end', marginHorizontal: 50, marginVertical: 10}}>
+              <ActionButton title="Next" onPress={() => {if(title && selectedCat){setStep(3); setErrorMessage1('')}else{setErrorMessage1('Please complete all fields above')}}}></ActionButton>
+            </View>
+      </View>
+    </View>
+    );
+    else if (step == 3)
+        return(
+          <ScrollView contentContainerStyle={styles.container}>
+          <StepIndicator title="Add a post" step={step} stepMax={4}></StepIndicator>
+          <View style={styles.innerContainer}>
+            <View style={styles.header}>
+            <Button style={styles.headerButton} onPress={() => setStep(2)} icon={<Icon name="arrow-left" size={40} color="black"/>}/>
+            <Text style={styles.subTitle}>Details</Text>
+            </View>
+            <View style={styles.buttonContainer}>
+              
               <ActionButtonSecondary title="Add photos" styleContainer={{marginTop: 30}} onPress={pickImage}></ActionButtonSecondary>
               <View style={styles.inputView}>
                 <Text style={styles.inputLabel}>Price</Text>
                 <TextInput
                   style={{color: 'black'}}          
                   autoCapitalize='none'
+                  keyboardType="numeric"
                   autoCorrect={false}
                   value={price}
                   onChangeText={(text: string) => setPrice(text.replace(/[^0-9]/g, ''))}
@@ -156,15 +205,15 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
               </ScrollView>
             {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : <Text></Text>}
             <View style={{justifyContent: 'flex-end', marginHorizontal: 50, marginVertical: 10}}>
-              <ActionButton title="Next" onPress={() => {if(material && description && price && selectedCat){setStep(3); setErrorMessage('')}else{setErrorMessage('Please complete all fields above')}; console.log(step)}}></ActionButton>
+              <ActionButton title="Next" onPress={() => {if(material && description && price){setStep(4); setErrorMessage('')}else{setErrorMessage('Please complete all fields above')}}}></ActionButton>
             </View>
           </View>
         </ScrollView>
         );
-      else if(step == 3)
+      else if(step == 4)
         return (
           <View style={styles.container}>
-          <StepIndicator title="Add a post" step={step} stepMax={3}></StepIndicator>
+          <StepIndicator title="Add a post" step={step} stepMax={4}></StepIndicator>
           <View style={styles.innerContainer}>
           <Modal
             animationType="slide"
@@ -187,7 +236,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
             </View>
           </Modal>
           <View style={styles.header}>
-            <Button style={styles.headerButton} onPress={() => setStep(2)} icon={<Icon name="arrow-left" size={40} color="black"/>}/>
+            <Button style={styles.headerButton} onPress={() => setStep(3)} icon={<Icon name="arrow-left" size={40} color="black"/>}/>
             <Text style={styles.subTitle}>Location</Text>
             </View>
             <View style={styles.buttonContainer}>
