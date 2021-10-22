@@ -1,8 +1,7 @@
 import * as React from 'react';
-import { Platform, StyleSheet, TextInput, Image, ScrollView, TouchableHighlight, TouchableOpacity, Modal, Pressable, Alert, Keyboard } from 'react-native';
+import { Platform, StyleSheet, TextInput, Image, ScrollView, TouchableOpacity, Modal, Pressable } from 'react-native';
 import { Button } from 'react-native-elements/dist/buttons/Button';
 
-import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
 import ActionButton from '../components/ActionButton';
 import ActionButtonSecondary from '../components/ActionButtonSecondary';
@@ -14,7 +13,6 @@ import * as ImagePicker from 'expo-image-picker';
 import StepIndicator from '../components/stepIndicator';
 import { RootTabScreenProps } from '../types';
 import axios from 'axios';
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
 
 export interface Service {
@@ -143,7 +141,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
                 />
               </View>
           <Text style={styles.inputLabel}>Categorie</Text>
-              <Picker mode="dropdown" style={styles.buttonStyle} selectedValue={selectedCat} onValueChange={(itemValue, itemIndex) => {if(itemValue != "0")setSelectedCat(itemValue.toString())}}>
+              <Picker mode="dropdown" style={styles.buttonStyle} selectedValue={selectedCat} onValueChange={(itemValue: any, itemIndex: any) => {if(itemValue != "0")setSelectedCat(itemValue.toString())}}>
                 <Picker.Item label="Select a Cat..." value="0"/>
                 <Picker.Item label="Cat1" value="cat1"/>
                 <Picker.Item label="Cat2" value="cat2"/>
@@ -219,7 +217,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
           </View>
         </ScrollView>
         );
-      else if(step == 4)
+      else
         return (
           <View style={styles.container}>
           <StepIndicator title="Add a post" step={step} stepMax={4}></StepIndicator>
