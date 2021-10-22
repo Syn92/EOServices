@@ -15,6 +15,7 @@ import StepIndicator from '../components/stepIndicator';
 import { RootTabScreenProps } from '../types';
 import axios from 'axios';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
+import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
 
 export interface Service {
   title: string;
@@ -25,7 +26,8 @@ export interface Service {
   serviceType: string;
   category: string;
   position: string;
-  // owner: User;
+  thumbnail: string | undefined;
+  owner: string;
 }
 const { height } = Dimensions.get('window');
 
@@ -43,9 +45,11 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
   const [errorMessage, setErrorMessage] = useState('');
   const [errorMessage1, setErrorMessage1] = useState('');
   const [material, setMaterial] = useState<string>();
+  const [submited, setSubmited] = useState<boolean>(false);
 
   const [image, setImage] = useState<(string| undefined)[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const { user, setUser } =  React.useContext(AuthenticatedUserContext);
 
   function addPostRequest(){
     
@@ -59,9 +63,14 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
         material: material,
         images: image,
         position: position,
+        thumbnail: image[0],
+        owner: user.uid
       }
       console.log(body)
-      axios.post('https://10.0.0.221:4000' + '/post', body).then(() => setModalVisible(true)).catch(() => console.log('error'))
+      if(!submited){
+        setSubmited(true);
+        axios.post('http://10.200.40.106:4000' + '/post', body).then(() => setModalVisible(true)).catch(() => {console.log('error'); setSubmited(false)})
+      }
     } else {
       console.log("input missing")
     }
