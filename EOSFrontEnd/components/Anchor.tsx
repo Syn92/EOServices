@@ -49,5 +49,5 @@ export async function login() {
     // const sessions = await link.listSessions('pomelo.io');
     // if (sessions.length) return await link.restoreSession('pomelo.io');
     // else return (await link.login('pomelo.io')).session;
-    return (await link.login('pomelo.io')).session
+    return (await link.login('eos-marketplace')).session
   }
