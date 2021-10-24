@@ -6,7 +6,6 @@ import {
   View, 
   TextInput, 
   TouchableOpacity, 
-  ActivityIndicator, 
   Image,
   ImageBackground,
 } from 'react-native';
@@ -20,6 +19,7 @@ import HorizontalSeparator from '../components/HorizontalSeparator';
 import Constants from 'expo-constants';
 import Firebase from '../config/firebase';
 import { ScrollView } from 'react-native-gesture-handler';
+import Loading from '../components/Loading';
 
 export function Login({navigation}: {navigation: any}) {
 
@@ -29,23 +29,15 @@ export function Login({navigation}: {navigation: any}) {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
-  function renderLoading() {
-    if(isLoading) {
-      return (
-        <View style={styles.loading}>
-          <ActivityIndicator size='large' color='#D66C44' />
-        </View>
-      )
-    }
-  }
-
   async function signInWithEmail() {
     try {
       if (email !== '' && password !== '') {
         setLoadingStatus(true);
-        Firebase.auth().signInWithEmailAndPassword(email, password).then((res: any) => {
-          setLoadingStatus(false)
+        Firebase.auth().signInWithEmailAndPassword(email, password)
+        .catch((e: any)=> {
+          setLoginError(e.message)
         });
+        setLoadingStatus(false);
       }
     } catch (error: any) {
       setLoadingStatus(false)
@@ -62,17 +54,15 @@ export function Login({navigation}: {navigation: any}) {
       if (result.type == 'success') {
         setLoadingStatus(true);
         const credential = firebase.auth.FacebookAuthProvider.credential(result.token);
-        await Firebase.auth().signInWithCredential(credential).then((res: any) => { 
-          //TODO: isNewUser ? add to DB : nothing
-          
-          setLoadingStatus(false);
-        })
+        await Firebase.auth().signInWithCredential(credential);
+        setLoadingStatus(false);
       }  else {
         setLoadingStatus(false);
         return { cancelled: true };
       }
 
     } catch(e) {
+      console.log('sign in fb')
       console.log(e);
       setLoadingStatus(false);
       return { error: true };
@@ -90,17 +80,15 @@ export function Login({navigation}: {navigation: any}) {
       
       if (result.type === 'success') {
         const credential = firebase.auth.GoogleAuthProvider.credential(result.idToken, result.accessToken);
-        await Firebase.auth().signInWithCredential(credential).then((res: any) => { 
-          //TODO: isNewUser ? add to DB : nothing
-          
-          setLoadingStatus(false);
-        })
+        await Firebase.auth().signInWithCredential(credential);
+        setLoadingStatus(false);
         return result.accessToken;
       } else {
         setLoadingStatus(false)
         return { cancelled: true };
       }
     } catch (e) {
+      console.log('sign in google')
       console.log(e)
       setLoadingStatus(false);
       return { error: true };
@@ -114,6 +102,8 @@ export function Login({navigation}: {navigation: any}) {
             flex: 1,
             justifyContent: 'center',
           }} source={require('../assets/images/bg.png')}>
+            {isLoading ? Loading({}): null}
+
             <StatusBar style='light' />
             <View style={styles.contentContainer}>
               {/* EOS Logo */}
@@ -147,7 +137,6 @@ export function Login({navigation}: {navigation: any}) {
               </View>
 
               {loginError ? <Text style={styles.errorText}>{loginError}</Text> : null}
-              {renderLoading()}
               
               <TouchableOpacity style={{...styles.button, ...styles.mailButton}} onPress={signInWithEmail}>
                 <Text style={{...styles.text, fontSize: 20, fontWeight: 'bold'}}>LOGIN</Text>
@@ -226,6 +215,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1.1,
   },
   errorText: {
+    textAlign: 'center',
     color: 'darkred',
     fontWeight: 'bold',
     marginBottom: 20
@@ -255,14 +245,5 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
     marginBottom: 25, 
-  },
-  loading: {
-    position: 'absolute',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000000b9',
-    padding: 20,
-    borderRadius: 10,    
-    zIndex: 100
   },
 });

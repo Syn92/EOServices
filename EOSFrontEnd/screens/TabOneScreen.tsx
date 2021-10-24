@@ -10,13 +10,14 @@ import { RootTabScreenProps } from '../types';
 const auth = Firebase.auth()
 
 export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'>) {
-
+  
   const [address, setAddress] = useState('test');
 
   async function handleLogout() {
     try {
       await auth.signOut()
     } catch (error: any) {
+      console.log('logout')
       console.log(error)
     }
   }

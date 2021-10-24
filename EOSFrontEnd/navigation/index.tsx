@@ -7,21 +7,53 @@ import { FontAwesome } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import axios from 'axios';
 import * as React from 'react';
 import { ActivityIndicator, ColorSchemeName, Pressable, View } from 'react-native';
 
 import Firebase from '../config/firebase';
 import Colors from '../constants/Colors';
+import ServerConstants from '../constants/Server';
 import useColorScheme from '../hooks/useColorScheme';
+import { User } from '../interfaces/User';
 import ModalScreen from '../screens/ModalScreen';
 import NotFoundScreen from '../screens/NotFoundScreen';
+import { PrivateProfile } from '../screens/PrivateProfile';
 import TabOneScreen from '../screens/TabOneScreen';
 import TabTwoScreen from '../screens/TabTwoScreen';
+import GetFormatedDate from '../services/DateFormater';
 import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
 import { AuthenticatedUserContext } from './AuthenticatedUserProvider';
 import AuthStack from './AuthStack';
+import AddPostScreen from '../screens/AddPostScreen';
 
 const auth = Firebase.auth();
+
+async function checkUser(user: any) {
+
+  try {
+    const res = await axios.get<any>(ServerConstants.local + 'auth', { params: { uid: user.uid } });
+    // if user exists, return user
+    if (res.data){
+      delete res.data._id;
+      return res.data;
+    }
+    // add user to mongodb
+
+    const newUsr: User = {
+      uid: user.uid,
+      email: user.email,
+      name: user.displayName,
+      joinedDate: GetFormatedDate(new Date())
+    };
+    await axios.post(ServerConstants.local + 'auth', newUsr);
+
+    return newUsr;    
+  } catch (err) {
+    console.log('checkuser')
+    console.log(err);
+  }
+}
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   const { user, setUser } =  React.useContext(AuthenticatedUserContext);
@@ -31,9 +63,16 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
     // onAuthStateChanged returns an unsubscriber
     const unsubscribeAuth = auth.onAuthStateChanged(async (authenticatedUser: any) => {
       try {
-        await (authenticatedUser ? setUser(authenticatedUser) : setUser(null));
+        if (authenticatedUser)
+          authenticatedUser = await checkUser(authenticatedUser)
+        
+        // setUser to either null or return value of checkUser
+        if (setUser) await setUser(authenticatedUser);
+        else throw new Error('setUser undefined');
+
         setIsLoading(false);
       } catch (error) {
+        console.log('onAuthChanged')
         console.log(error);
       }
     });
@@ -69,6 +108,7 @@ function RootNavigator() {
     <Stack.Navigator>
       <Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: false }} />
       <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
+      <Stack.Screen name="AddPost" component={AddPostScreen} />
       <Stack.Group screenOptions={{ presentation: 'modal' }}>
         <Stack.Screen name="Modal" component={ModalScreen} />
       </Stack.Group>
@@ -89,13 +129,14 @@ function BottomTabNavigator() {
     <BottomTab.Navigator
       initialRouteName="TabOne"
       screenOptions={{
+        headerShown: false,
         tabBarActiveTintColor: Colors[colorScheme].tint,
       }}>
       <BottomTab.Screen
         name="TabOne"
         component={TabOneScreen}
         options={({ navigation }: RootTabScreenProps<'TabOne'>) => ({
-          title: 'Tab One',
+          title: 'Profile',
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
           headerRight: () => (
             <Pressable
@@ -116,6 +157,22 @@ function BottomTabNavigator() {
       <BottomTab.Screen
         name="TabTwo"
         component={TabTwoScreen}
+        options={{
+          title: 'Tab Two',
+          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+        }}
+      />
+      <BottomTab.Screen
+        name="TabThree"
+        component={TabTwoScreen}
+        options={{
+          title: 'Tab Two',
+          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+        }}
+      />
+      <BottomTab.Screen
+        name="TabFour"
+        component={PrivateProfile}
         options={{
           title: 'Tab Two',
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
