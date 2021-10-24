@@ -1,8 +1,6 @@
 import * as React from 'react';
 import { Platform, StyleSheet, TextInput, Image, ScrollView, TouchableOpacity, Modal, Pressable } from 'react-native';
 import { Button } from 'react-native-elements/dist/buttons/Button';
-import Map from '../components/Map';
-
 import { Text, View } from '../components/Themed';
 import ActionButton from '../components/ActionButton';
 import ActionButtonSecondary from '../components/ActionButtonSecondary';
@@ -15,6 +13,12 @@ import StepIndicator from '../components/stepIndicator';
 import { RootTabScreenProps } from '../types';
 import axios from 'axios';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
+import Map from '../components/Map';
+import { CustomFeature, CustomFeatureColl, getAddress } from '../utils/Cadastre';
+import AutocompleteInput from 'react-native-autocomplete-input';
+import { LatLng } from 'react-native-maps';
+import ServerConstants from '../constants/Server';
 
 export interface Service {
   title: string;
@@ -24,7 +28,8 @@ export interface Service {
   priceEOS: number;
   serviceType: string;
   category: string;
-  position: string;
+  cadastreId: string;
+  markerPos: LatLng;
   thumbnail: string | undefined;
   owner: string;
 }
@@ -39,7 +44,10 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
   const [selectedCat, setSelectedCat] = useState<string>('');
   const [price, setPrice] = useState<string>();
   const [description, setDescription] = useState<string>();
-  const [position, setPositon] = useState('');
+  const [addressInput, setAddressInput] = useState('');
+  const [cadastre, setCadastre] = useState<CustomFeature>();
+  const [cadastresAC, setCadastresAC] = useState<CustomFeature[]>([]);
+  let markerPos: LatLng = {latitude: 0, longitude: 0};
   const [title, setTitle] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [errorMessage1, setErrorMessage1] = useState('');
@@ -51,8 +59,8 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
   const { user, setUser } =  React.useContext(AuthenticatedUserContext);
 
   function addPostRequest(){
-    
-    if(selectedServType && description && material && image){
+
+    if(selectedServType && description && material && image && cadastre && user){
       let body: Service = {
         title: title,
         serviceType: selectedServType,
@@ -61,7 +69,8 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
         description: description,
         material: material,
         images: image,
-        position: position,
+        cadastreId: cadastre.properties.ID_UEV,
+        markerPos: markerPos,
         thumbnail: image[0],
         owner: user.uid
       }
@@ -73,7 +82,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
     } else {
       console.log("input missing")
     }
-    
+
   }
 
   useEffect(() => {
@@ -87,11 +96,30 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
     })();
   }, []);
 
+  function onChangeAddress(enteredAddress: any) {
+    if(enteredAddress == '') {
+      setCadastresAC([]);
+      return;
+    }
+    console.log("test")
+    axios.get(ServerConstants.local + "address", {params: {address: enteredAddress}})
+      .then(function (response) {
+        // handle success
+        const acResults = response.data as CustomFeature[];
+        setCadastresAC(acResults);
+        console.log(acResults);
+      }).catch(function (error) {
+        // handle error
+        setCadastresAC([]);
+        console.log(error);
+    });
+  }
+
   const removeImage = (i: number) => {
     setImage((prevImages) => {
       {return prevImages.filter((image, index) => index != i)}
     })
-    
+
   }
 
   const pickImage = async () => {
@@ -107,7 +135,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
       await setImage([...image,result.base64]);
     }
   };
-  if(step == 1) 
+  if(step == 1)
     return (
     <View style={styles.container}>
       <StepIndicator title="Add a post" step={step} stepMax={4}></StepIndicator>
@@ -121,7 +149,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
       </View>
     </View>
     );
-  else if(step == 2) 
+  else if(step == 2)
     return (
     <View style={styles.container}>
       <StepIndicator title="Add a post" step={step} stepMax={4}></StepIndicator>
@@ -134,7 +162,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
               <View style={styles.inputView}>
                 <Text style={styles.inputLabel}>Title</Text>
                 <TextInput
-                  style={{color: 'black'}}          
+                  style={{color: 'black'}}
                   autoCapitalize='none'
                   autoCorrect={false}
                   value={title}
@@ -166,12 +194,11 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
             <Text style={styles.subTitle}>Details</Text>
             </View>
             <View style={styles.buttonContainer}>
-              
               <ActionButtonSecondary title="Add photos" onPress={pickImage}></ActionButtonSecondary>
               <View style={styles.inputView}>
                 <Text style={styles.inputLabel}>Price</Text>
                 <TextInput
-                  style={{color: 'black'}}          
+                  style={{color: 'black'}}
                   autoCapitalize='none'
                   keyboardType="numeric"
                   autoCorrect={false}
@@ -182,7 +209,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
               <View style={styles.inputView}>
                 <Text style={styles.inputLabel}>Description</Text>
                 <TextInput
-                  style={{color: 'black'}}          
+                  style={{color: 'black'}}
                   autoCapitalize='none'
                   autoCorrect={false}
                   value={description}
@@ -192,7 +219,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
              <View style={styles.inputView}>
                 <Text style={styles.inputLabel}>Material required</Text>
                 <TextInput
-                  style={{color: 'black'}}          
+                  style={{color: 'black'}}
                   autoCapitalize='none'
                   autoCorrect={false}
                   value={material}
@@ -220,42 +247,51 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
         );
       else
         return (
-          <View style={styles.container}>
-          <StepIndicator title="Add a post" step={step} stepMax={4}></StepIndicator>
-          <View style={styles.innerContainer}>
-          <Modal
-            animationType="slide"
-            transparent={true}
-            visible={modalVisible}
-            onRequestClose={() => {
-              navigation.navigate('TabTwo')
-            }}
-          >
-            <View style={styles.centeredView}>
-              <View style={styles.modalView}>
-                <Text style={styles.modalText}>Post succesfully submited</Text>
-                <Pressable
-                  style={[styles.button, styles.buttonClose]}
-                  onPress={() => {setModalVisible(!modalVisible); navigation.navigate('TabTwo')}}
-                >
-                  <Text style={styles.textStyle}>Ok</Text>
-                </Pressable>
+          <ScrollView contentContainerStyle={styles.container}>
+            <StepIndicator title="Add a post" step={step} stepMax={4}></StepIndicator>
+            <View style={styles.innerContainer}>
+              <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                  navigation.navigate('TabTwo')
+                }}
+              >
+                <View style={styles.centeredView}>
+                  <View style={styles.modalView}>
+                    <Text style={styles.modalText}>Post succesfully submited</Text>
+                    <Pressable
+                      style={[styles.button, styles.buttonClose]}
+                      onPress={() => {setModalVisible(!modalVisible); navigation.navigate('TabTwo')}}
+                    >
+                      <Text style={styles.textStyle}>Ok</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              </Modal>
+              <View style={styles.header}>
+                <Button style={styles.headerButton} onPress={() => setStep(3)} icon={<Icon name="arrow-left" size={40} color="black"/>}/>
+                <Text style={styles.subTitle}>Location</Text>
+              </View>
+              <View style={styles.mapContainer && {position: 'relative'}}>
+                <View style={{position: 'absolute', height: 30, width: '90%', zIndex: 100, alignSelf: 'center'}}>
+                  <AutocompleteInput data={cadastresAC} onChangeText={onChangeAddress}
+                  flatListProps={{
+                    keyExtractor: (item: CustomFeature, _: any) => item.properties.ID_UEV,
+                    renderItem: ({ item }: {item: CustomFeature}) => <Text>{getAddress(item)}</Text>,
+                  }} style={{color: 'black', width: '100%'}} autoCapitalize='none' autoCorrect={false}/>
+                </View>
+                <View style={{height: 200, marginTop: 40}}>
+                  <Map pressable={true} onPressed={(newAddress: string) => setAddressInput(newAddress)}/>
+                </View>
+                <Text style={styles.inputLabel && {textAlign: 'center'}}>Addresse: {addressInput}</Text>
+              </View>
+              <View style={{justifyContent: 'flex-end', marginHorizontal: 50, marginVertical: 10}}>
+                <ActionButton title="Confirm" onPress={addPostRequest}></ActionButton>
               </View>
             </View>
-          </Modal>
-          <View style={styles.header}>
-            <Button style={styles.headerButton} onPress={() => setStep(3)} icon={<Icon name="arrow-left" size={40} color="black"/>}/>
-            <Text style={styles.subTitle}>Location</Text>
-            </View>
-            <View style={styles.mapContainer}>
-              <Map pressable={true} onPressed={(newAddress: string) => setPositon(newAddress)}/>
-              <Text style={{textAlign: 'center'}}>addresse: {position}</Text>
-            </View>
-            <View style={{justifyContent: 'flex-end', marginHorizontal: 50, marginVertical: 10}}>
-              <ActionButton title="Confirm" onPress={addPostRequest}></ActionButton>
-            </View>
-          </View>
-        </View>
+          </ScrollView>
         )
 }
 
@@ -276,7 +312,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     // width: 50,
     // justifyContent: 'flex-start',
-  }, 
+  },
   subTitle: {
     marginTop: 10,
     fontSize: 20,
@@ -354,7 +390,7 @@ const styles = StyleSheet.create({
   errorText: {
     color: 'red',
     textAlign: 'center'
-  }, 
+  },
   centeredView: {
     flex: 1,
     justifyContent: "center",
@@ -381,7 +417,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     textAlign: "center"
   },
-   
+
   button: {
     borderRadius: 20,
     padding: 10,
@@ -397,6 +433,9 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
     textAlign: "center"
+  },
+  map: {
+    height: '50%'
   }
 
 });

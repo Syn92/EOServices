@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
-import MapView, { Geojson, LatLng, MapEvent, Marker, Region, UrlTile } from 'react-native-maps';
+import MapView, { Geojson, LatLng, Marker, Region, UrlTile } from 'react-native-maps';
 import Geocoder from 'react-native-geocoding';
 import axios, { CancelTokenSource } from 'axios';
 import { getCenterOfBounds } from 'geolib';
+import { CustomFeature, CustomFeatureColl, getAddress } from '../utils/Cadastre';
 
 interface IMarker {
     key: string;
@@ -18,13 +19,6 @@ interface IProps {
     onPressed?: Function;
 }
 
-interface IFeatureProperties {
-    ID_UEV: string,
-    CIVIQUE_DEBUT: string,
-    NOM_RUE: string,
-    MUNICIPALITE: string,
-}
-
 Geocoder.init("AIzaSyCcPFzHoC-XT8h-3MZt8CfIz5J-w9BeMHA");
 
 const initialRegion: Region = {
@@ -37,14 +31,14 @@ const initialRegion: Region = {
 export default function Map(props: IProps) {
     const [markers, setMarkers] = useState<IMarker[]>([]);
 
-    const [geoJson, setGeoJson] = useState<GeoJSON.FeatureCollection<GeoJSON.Geometry, IFeatureProperties>>(
+    const [geoJson, setGeoJson] = useState<CustomFeatureColl>(
         {
             type: "FeatureCollection",
             features: []
         }
     );
 
-    const [selectedGeoJson, setSelectedGeoJson] = useState<GeoJSON.FeatureCollection>(
+    const [selectedGeoJson, setSelectedGeoJson] = useState<CustomFeatureColl>(
         {
             type: "FeatureCollection",
             features: []
@@ -72,7 +66,7 @@ export default function Map(props: IProps) {
             //     return isPointInPolygon(marker.coordinate, polygon);
             // });
             // console.log(features.flatMap(x => x.properties))
-            const event = eventTemp as {feature: GeoJSON.Feature<GeoJSON.Geometry, IFeatureProperties>, coordinates: LatLng[]}
+            const event = eventTemp as {feature: CustomFeature, coordinates: LatLng[]}
             if(event && event.feature) {
                 setSelectedGeoJson({type: selectedGeoJson.type, features: [event.feature]});
                 const marker: IMarker = {
@@ -80,7 +74,7 @@ export default function Map(props: IProps) {
                     coordinate: getCenterOfBounds(event.coordinates),
                 }
                 setSelectedMarker(marker);
-                if(props.onPressed) props.onPressed(event.feature.properties.CIVIQUE_DEBUT + " " + event.feature.properties.NOM_RUE)
+                if(props.onPressed) props.onPressed(getAddress(event.feature))
                 // console.log('vertices: ', (feature.geometry as GeoJSON.Polygon).coordinates[0].length);
             } else {
                 setSelectedMarker(null);
@@ -105,7 +99,7 @@ export default function Map(props: IProps) {
         axios.get('https://eos-marketplace.nn.r.appspot.com/cadastre', { params, cancelToken: cancelTokenSource.token })
             .then(function (response) {
                 // handle success
-                const features = response.data as GeoJSON.Feature<GeoJSON.Geometry, IFeatureProperties>[];
+                const features = response.data as CustomFeature[];
                 setGeoJson({type: geoJson.type, features: features});
             }).catch(function (error) {
                 // handle error
