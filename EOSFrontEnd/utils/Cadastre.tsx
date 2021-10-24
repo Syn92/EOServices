@@ -1,5 +1,5 @@
 export type CustomFeatureColl = GeoJSON.FeatureCollection<GeoJSON.Geometry, IFeatureProperties>
-export type CustomFeature = GeoJSON.Feature<GeoJSON.Geometry, IFeatureProperties>
+export type CustomFeature = GeoJSON.Feature<GeoJSON.Polygon, IFeatureProperties>
 
 export interface IFeatureProperties {
     ID_UEV: string,

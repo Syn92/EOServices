@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { LegacyRef, useEffect, useState } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
-import MapView, { Geojson, LatLng, Marker, Region, UrlTile } from 'react-native-maps';
+import MapView, { Camera, Geojson, LatLng, Marker, Region, UrlTile } from 'react-native-maps';
 import Geocoder from 'react-native-geocoding';
 import axios, { CancelTokenSource } from 'axios';
 import { getCenterOfBounds } from 'geolib';
@@ -17,6 +17,7 @@ interface IMarker {
 interface IProps {
     pressable: boolean;
     onPressed?: ((cadastre: CustomFeature) => any);
+    selectedCadastre?: CustomFeature;
 }
 
 Geocoder.init("AIzaSyCcPFzHoC-XT8h-3MZt8CfIz5J-w9BeMHA");
@@ -45,11 +46,35 @@ export default function Map(props: IProps) {
         }
     );
 
+    let map: MapView | null;
+
     let cancelTokenSource: CancelTokenSource | null;
 
     if(!props.pressable) {
         //todo: set existing markers from the DB here
     }
+
+    useEffect( () => {
+        if(props.selectedCadastre) {
+            if(selectedGeoJson.features.length > 0 && selectedGeoJson.features[0].properties.ID_UEV == props.selectedCadastre.properties.ID_UEV) {
+                return; // change already coming from map itself
+            }
+            setSelectedGeoJson({type: selectedGeoJson.type, features: [props.selectedCadastre]})
+            const marker: IMarker = {
+                key: 'pressedMarker',
+                coordinate: getCenterOfBounds(props.selectedCadastre.geometry.coordinates[0].map(x => ({latitude: x[1], longitude: x[0]}))),
+            }
+            setSelectedMarker(marker)
+            const cam: Partial<Camera> = {
+                center: marker.coordinate,
+                zoom: 17,
+            }
+            map?.animateCamera(cam)
+        } else {
+            setSelectedMarker(null);
+            setSelectedGeoJson({type: selectedGeoJson.type, features: []});
+        }
+    }, [props.selectedCadastre]);
 
     // if pressable, react to the onPress event by adding a marker
     // and calling onPressed with the corresponding address
@@ -134,7 +159,7 @@ export default function Map(props: IProps) {
     };
     return (
         <View style={styles.container}>
-            <MapView style={styles.map} initialRegion={initialRegion}
+            <MapView style={styles.map} initialRegion={initialRegion} ref={(ref) => { map = ref; }}
                 mapType={Platform.OS == "android" ? "none" : "standard"} onRegionChangeComplete={regionChanged}
                 pitchEnabled={false} toolbarEnabled={false}>
                 <Geojson geojson={selectedGeoJson} strokeColor="black" fillColor="green" strokeWidth={3} zIndex={3}/>

@@ -19,7 +19,7 @@ import { CustomFeature, CustomFeatureColl, getAddress } from '../utils/Cadastre'
 import AutocompleteInput from 'react-native-autocomplete-input';
 import { LatLng } from 'react-native-maps';
 import ServerConstants from '../constants/Server';
-import { AutocompleteDropdown } from 'react-native-autocomplete-dropdown';
+import { AutocompleteDropdown, AutocompleteDropdownProps } from 'react-native-autocomplete-dropdown';
 
 export interface Service {
   title: string;
@@ -47,6 +47,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
   const [description, setDescription] = useState<string>();
   const [cadastre, setCadastre] = useState<CustomFeature>();
   const [cadastresAC, setCadastresAC] = useState<CustomFeature[]>([]);
+  let acDropdownController: {clear: Function, close: Function, open: Function, setInputText: Function, toggle: Function};
   let markerPos: LatLng = {latitude: 0, longitude: 0};
   const [title, setTitle] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -101,7 +102,6 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
       setCadastresAC([]);
       return;
     }
-    console.log("test: " + enteredAddress)
     axios.get(ServerConstants.local + "address", {params: {address: enteredAddress}})
       .then(function (response) {
         // handle success
@@ -274,14 +274,26 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
                 <Text style={styles.subTitle}>Location</Text>
               </View>
               <View style={styles.mapContainer}>
-                <AutocompleteDropdown onChangeText={onChangeAddress} useFilter={false} debounce={600}
+                <AutocompleteDropdown controller={(controller) => { acDropdownController = controller}}
+                onChangeText={onChangeAddress} useFilter={false} debounce={600} clearOnFocus={false}
                 dataSet={cadastresAC.map(x => ({id: x.properties.ID_UEV, title: getAddress(x)}))}
                 onSelectItem={(item) => item && setCadastre(cadastresAC.find(x => x.properties.ID_UEV == item.id))}
-                />
+                textInputProps={{
+                  placeholder: "Enter an address",
+                  autoCorrect: false,
+                  autoCapitalize: "none",
+                }}/>
                 <View style={{height: 200}}>
-                  <Map pressable={true} onPressed={(item) => setCadastre(item)}/>
+                  <Map pressable={true} selectedCadastre={cadastre}
+                  onPressed={(item) => {
+                    acDropdownController.clear()
+                    setCadastre(item);
+                    setCadastresAC([])
+                    setTimeout(() => {
+                      acDropdownController.setInputText(getAddress(item));
+                    }, 100);
+                  }}/>
                 </View>
-                <Text style={styles.inputLabel && {textAlign: 'center'}}>Addresse: {cadastre ? getAddress(cadastre) : ''}</Text>
               </View>
               <View style={{justifyContent: 'flex-end', marginHorizontal: 50, marginVertical: 10}}>
                 <ActionButton title="Confirm" onPress={addPostRequest}></ActionButton>
