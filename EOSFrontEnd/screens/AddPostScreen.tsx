@@ -15,6 +15,7 @@ import StepIndicator from '../components/stepIndicator';
 import { RootTabScreenProps } from '../types';
 import axios from 'axios';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
+import ServerConstants from '../constants/Server';
 
 export interface Service {
   title: string;
@@ -26,7 +27,8 @@ export interface Service {
   category: string;
   position: string;
   thumbnail: string | undefined;
-  owner: string;
+  owner?: string;
+  ownerName?: string;
 }
 const { height } = Dimensions.get('window');
 
@@ -61,14 +63,15 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
         description: description,
         material: material,
         images: image,
-        position: position,
+        position: position.slice(2), // 2 spaces at the beggining of position 
         thumbnail: image[0],
-        owner: user.uid
+        owner: user?.uid,
+        ownerName: user?.name
       }
       console.log(body)
       if(!submited){
         setSubmited(true);
-        axios.post('http://10.200.40.106:4000' + '/post', body).then(() => setModalVisible(true)).catch(() => {console.log('error'); setSubmited(false)})
+        axios.post(ServerConstants.local + 'post', body).then(() => setModalVisible(true)).catch(() => {console.log('error'); setSubmited(false)})
       }
     } else {
       console.log("input missing")
@@ -79,7 +82,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
   useEffect(() => {
     (async () => {
       if (Platform.OS !== 'web') {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        const { status } = (await ImagePicker.requestMediaLibraryPermissionsAsync() && await ImagePicker.requestCameraPermissionsAsync());
         if (status !== 'granted') {
           alert('Sorry, we need camera roll permissions to make this work!');
         }
@@ -201,7 +204,6 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
               </View>
             </View>
               <ScrollView horizontal={true} style={{marginHorizontal: 15, marginTop: 10}}>
-            {/* <View style={styles.photoContainer}> */}
               {
                 image.map((uri, i)=>{
                   return (<TouchableOpacity style={i == image.length-1 ? {}:{marginRight: 5}} onPress={() => removeImage(i)} key={i}>
@@ -209,7 +211,6 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
                 </TouchableOpacity>)
                 })
               }
-            {/* </View> */}
               </ScrollView>
             {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : <Text></Text>}
             <View style={{justifyContent: 'flex-end', marginHorizontal: 50, marginVertical: 10}}>
