@@ -19,6 +19,7 @@ import { CustomFeature, CustomFeatureColl, getAddress } from '../utils/Cadastre'
 import AutocompleteInput from 'react-native-autocomplete-input';
 import { LatLng } from 'react-native-maps';
 import ServerConstants from '../constants/Server';
+import { AutocompleteDropdown } from 'react-native-autocomplete-dropdown';
 
 export interface Service {
   title: string;
@@ -44,7 +45,6 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
   const [selectedCat, setSelectedCat] = useState<string>('');
   const [price, setPrice] = useState<string>();
   const [description, setDescription] = useState<string>();
-  const [addressInput, setAddressInput] = useState('');
   const [cadastre, setCadastre] = useState<CustomFeature>();
   const [cadastresAC, setCadastresAC] = useState<CustomFeature[]>([]);
   let markerPos: LatLng = {latitude: 0, longitude: 0};
@@ -96,18 +96,17 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
     })();
   }, []);
 
-  function onChangeAddress(enteredAddress: any) {
+  function onChangeAddress(enteredAddress: string) {
     if(enteredAddress == '') {
       setCadastresAC([]);
       return;
     }
-    console.log("test")
+    console.log("test: " + enteredAddress)
     axios.get(ServerConstants.local + "address", {params: {address: enteredAddress}})
       .then(function (response) {
         // handle success
         const acResults = response.data as CustomFeature[];
         setCadastresAC(acResults);
-        console.log(acResults);
       }).catch(function (error) {
         // handle error
         setCadastresAC([]);
@@ -274,18 +273,15 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
                 <Button style={styles.headerButton} onPress={() => setStep(3)} icon={<Icon name="arrow-left" size={40} color="black"/>}/>
                 <Text style={styles.subTitle}>Location</Text>
               </View>
-              <View style={styles.mapContainer && {position: 'relative'}}>
-                <View style={{position: 'absolute', height: 30, width: '90%', zIndex: 100, alignSelf: 'center'}}>
-                  <AutocompleteInput data={cadastresAC} onChangeText={onChangeAddress}
-                  flatListProps={{
-                    keyExtractor: (item: CustomFeature, _: any) => item.properties.ID_UEV,
-                    renderItem: ({ item }: {item: CustomFeature}) => <Text>{getAddress(item)}</Text>,
-                  }} style={{color: 'black', width: '100%'}} autoCapitalize='none' autoCorrect={false}/>
+              <View style={styles.mapContainer}>
+                <AutocompleteDropdown onChangeText={onChangeAddress} useFilter={false} debounce={600}
+                dataSet={cadastresAC.map(x => ({id: x.properties.ID_UEV, title: getAddress(x)}))}
+                onSelectItem={(item) => item && setCadastre(cadastresAC.find(x => x.properties.ID_UEV == item.id))}
+                />
+                <View style={{height: 200}}>
+                  <Map pressable={true} onPressed={(item) => setCadastre(item)}/>
                 </View>
-                <View style={{height: 200, marginTop: 40}}>
-                  <Map pressable={true} onPressed={(newAddress: string) => setAddressInput(newAddress)}/>
-                </View>
-                <Text style={styles.inputLabel && {textAlign: 'center'}}>Addresse: {addressInput}</Text>
+                <Text style={styles.inputLabel && {textAlign: 'center'}}>Addresse: {cadastre ? getAddress(cadastre) : ''}</Text>
               </View>
               <View style={{justifyContent: 'flex-end', marginHorizontal: 50, marginVertical: 10}}>
                 <ActionButton title="Confirm" onPress={addPostRequest}></ActionButton>
@@ -354,10 +350,8 @@ const styles = StyleSheet.create({
   },
   mapContainer: {
     width: '90%',
-    height: 450,
     alignSelf: 'center',
-    paddingTop: 20,
-    marginBottom: 50,
+    marginBottom: 10,
     display: 'flex',
     flexDirection: 'column'
   },

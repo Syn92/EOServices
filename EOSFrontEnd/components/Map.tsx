@@ -16,7 +16,7 @@ interface IMarker {
 
 interface IProps {
     pressable: boolean;
-    onPressed?: Function;
+    onPressed?: ((cadastre: CustomFeature) => any);
 }
 
 Geocoder.init("AIzaSyCcPFzHoC-XT8h-3MZt8CfIz5J-w9BeMHA");
@@ -56,30 +56,28 @@ export default function Map(props: IProps) {
     function mapPressed(eventTemp: unknown) {
         if(!props.pressable) return;
 
-        if(props.onPressed) {
-            // Geocoder.from(marker.coordinate).then(json => {
-            //     const address = json.results[0].formatted_address;
-            //     if(props.onPressed) props.onPressed(address);
-            // }).catch(error => console.warn(error));
-            // const features = geoJson.features.filter(x => {
-            //     const polygon = (x.geometry as GeoJSON.Polygon)?.coordinates[0] as GeolibInputCoordinates[];
-            //     return isPointInPolygon(marker.coordinate, polygon);
-            // });
-            // console.log(features.flatMap(x => x.properties))
-            const event = eventTemp as {feature: CustomFeature, coordinates: LatLng[]}
-            if(event && event.feature) {
-                setSelectedGeoJson({type: selectedGeoJson.type, features: [event.feature]});
-                const marker: IMarker = {
-                    key: 'pressedMarker',
-                    coordinate: getCenterOfBounds(event.coordinates),
-                }
-                setSelectedMarker(marker);
-                if(props.onPressed) props.onPressed(getAddress(event.feature))
-                // console.log('vertices: ', (feature.geometry as GeoJSON.Polygon).coordinates[0].length);
-            } else {
-                setSelectedMarker(null);
-                setSelectedGeoJson({type: selectedGeoJson.type, features: []});
+        // Geocoder.from(marker.coordinate).then(json => {
+        //     const address = json.results[0].formatted_address;
+        //     if(props.onPressed) props.onPressed(address);
+        // }).catch(error => console.warn(error));
+        // const features = geoJson.features.filter(x => {
+        //     const polygon = (x.geometry as GeoJSON.Polygon)?.coordinates[0] as GeolibInputCoordinates[];
+        //     return isPointInPolygon(marker.coordinate, polygon);
+        // });
+        // console.log(features.flatMap(x => x.properties))
+        const event = eventTemp as {feature: CustomFeature, coordinates: LatLng[]}
+        if(event && event.feature) {
+            setSelectedGeoJson({type: selectedGeoJson.type, features: [event.feature]});
+            const marker: IMarker = {
+                key: 'pressedMarker',
+                coordinate: getCenterOfBounds(event.coordinates),
             }
+            setSelectedMarker(marker);
+            if(props.onPressed) props.onPressed(event.feature);
+            // console.log('vertices: ', (feature.geometry as GeoJSON.Polygon).coordinates[0].length);
+        } else {
+            setSelectedMarker(null);
+            setSelectedGeoJson({type: selectedGeoJson.type, features: []});
         }
     }
 
