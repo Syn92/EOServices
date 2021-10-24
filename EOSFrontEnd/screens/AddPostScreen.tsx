@@ -15,7 +15,7 @@ import axios from 'axios';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import Map from '../components/Map';
-import { CustomFeature, CustomFeatureColl, getAddress } from '../utils/Cadastre';
+import { CustomFeature, CustomFeatureColl, getAddress, getCenter } from '../utils/Cadastre';
 import AutocompleteInput from 'react-native-autocomplete-input';
 import { LatLng } from 'react-native-maps';
 import ServerConstants from '../constants/Server';
@@ -48,7 +48,6 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
   const [cadastre, setCadastre] = useState<CustomFeature>();
   const [cadastresAC, setCadastresAC] = useState<CustomFeature[]>([]);
   let acDropdownController: {clear: Function, close: Function, open: Function, setInputText: Function, toggle: Function};
-  let markerPos: LatLng = {latitude: 0, longitude: 0};
   const [title, setTitle] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [errorMessage1, setErrorMessage1] = useState('');
@@ -71,14 +70,14 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
         material: material,
         images: image,
         cadastreId: cadastre.properties.ID_UEV,
-        markerPos: markerPos,
+        markerPos: getCenter(cadastre),
         thumbnail: image[0],
         owner: user.uid
       }
       console.log(body)
       if(!submited){
         setSubmited(true);
-        axios.post('http://10.200.40.106:4000' + '/post', body).then(() => setModalVisible(true)).catch(() => {console.log('error'); setSubmited(false)})
+        axios.post(ServerConstants.local + 'post', body).then(() => setModalVisible(true)).catch((err) => {console.log(err); setSubmited(false)})
       }
     } else {
       console.log("input missing")

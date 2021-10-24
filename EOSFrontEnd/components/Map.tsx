@@ -3,8 +3,8 @@ import { View, StyleSheet, Platform } from 'react-native';
 import MapView, { Camera, Geojson, LatLng, Marker, Region, UrlTile } from 'react-native-maps';
 import Geocoder from 'react-native-geocoding';
 import axios, { CancelTokenSource } from 'axios';
-import { getCenterOfBounds } from 'geolib';
-import { CustomFeature, CustomFeatureColl, getAddress } from '../utils/Cadastre';
+import { CustomFeature, CustomFeatureColl, getCenter } from '../utils/Cadastre';
+import ServerConstants from '../constants/Server';
 
 interface IMarker {
     key: string;
@@ -62,7 +62,7 @@ export default function Map(props: IProps) {
             setSelectedGeoJson({type: selectedGeoJson.type, features: [props.selectedCadastre]})
             const marker: IMarker = {
                 key: 'pressedMarker',
-                coordinate: getCenterOfBounds(props.selectedCadastre.geometry.coordinates[0].map(x => ({latitude: x[1], longitude: x[0]}))),
+                coordinate: getCenter(props.selectedCadastre),
             }
             setSelectedMarker(marker)
             const cam: Partial<Camera> = {
@@ -95,7 +95,7 @@ export default function Map(props: IProps) {
             setSelectedGeoJson({type: selectedGeoJson.type, features: [event.feature]});
             const marker: IMarker = {
                 key: 'pressedMarker',
-                coordinate: getCenterOfBounds(event.coordinates),
+                coordinate: getCenter(event.feature),
             }
             setSelectedMarker(marker);
             if(props.onPressed) props.onPressed(event.feature);
@@ -119,7 +119,7 @@ export default function Map(props: IProps) {
         }
         cancelTokenSource?.cancel();
         cancelTokenSource = axios.CancelToken.source();
-        axios.get('https://eos-marketplace.nn.r.appspot.com/cadastre', { params, cancelToken: cancelTokenSource.token })
+        axios.get(ServerConstants.prod + 'cadastre', { params, cancelToken: cancelTokenSource.token })
             .then(function (response) {
                 // handle success
                 const features = response.data as CustomFeature[];
