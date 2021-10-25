@@ -5,7 +5,7 @@ import { Button, ImageBackground, Platform, StyleSheet, Text, TextInput, Touchab
 import { Icon } from 'react-native-elements/dist/icons/Icon';
 import { ScrollView } from 'react-native-gesture-handler';
 import HorizontalSeparator from '../components/HorizontalSeparator';
-
+import * as anchor from "../components/Anchor"
 import Firebase from '../config/firebase';
 
 const auth = Firebase.auth();
@@ -85,10 +85,10 @@ export function Register({navigation}: {navigation: any}) {
           
           {signupError ? <Text style={styles.errorText}>{signupError}</Text> : null}
 
-          <View style={styles.iconView}>
+          <TouchableOpacity style={styles.iconView} onPress={anchor.transact}>
             <Icon name='sync-alt' type='material' size={30} color='white' />
             <Text style={styles.iconText}>Link</Text>
-          </View>
+          </TouchableOpacity>
 
           <Text style={styles.text}>Or</Text>
 

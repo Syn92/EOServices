@@ -1,51 +1,35 @@
-import AnchorLink, { LinkSession } from 'anchor-link';
-import AnchorLinkReactTransport from '../AnchorLinkReactTransport/AnchorLinkReactTransport'
+import { Api, JsonRpc, RpcError } from 'eosjs';
+import {SigningRequest} from "eosio-signing-request"
+import 'text-encoding-polyfill'
+import { Linking } from 'react-native';
 
-import { EOSIO_CHAIN_ID, EOSIO_RPC } from '../constants/AnchorConfig';
+export async function transact() {
+  const rpc = new JsonRpc('https://eos.greymass.com', { fetch });
 
-(global as any).fetch = fetch;
-
-export const link = new AnchorLink({
-  transport: new AnchorLinkReactTransport(),
-  chains: [
-    {
-      chainId: EOSIO_CHAIN_ID,
-      nodeUrl: EOSIO_RPC,
-    },
-  ],
-});
-
-export async function getAccount() {
-  console.log('anchor::getAccount');
-  return sessionToAccount(await login());
-}
-
-export async function disconnect() {
-  console.log('anchor::disconnect');
-  try {
-    await link.clearSessions('app.io');
-  } catch (err) {
-    console.log('anchor::disconnect', { err });
+  const api = new Api({ rpc, textDecoder: new TextDecoder(), textEncoder: new TextEncoder() });
+  const opts = {
+    
+    // Customizable ABI Provider used to retrieve contract data
+    abiProvider: {
+      getAbi: async (account:any) => (await api.getAbi(account))
+    }
   }
-}
+  const actions = [{
+    account: 'eosio.token',
+    name: 'transfer',
+    authorization: [{
+      actor: '............1',
+      permission: '............2'
+    }],
+    data: {
+      from: "............1",
+      to: "bar",
+      quantity: "42.0000 EOS",
+      memo: "Don't panic" }
+}]
+console.log("got hre")
 
-function sessionToAccount(session: LinkSession | null) {
-  console.log('anchor::sessionToAccount');
-  if (!session) return {};
-  const { auth, publicKey } = session;
-  const { actor, permission } = auth;
-  return {
-    actor: actor.toString(),
-    permission: permission.toString(),
-    publicKey: publicKey.toString(),
-    authorization: auth.toString(),
-  };
+  const request = await SigningRequest.create({ actions }, opts );
+  Linking.openURL(request.encode())
 }
-
-export async function login() {
-    // console.log('anchor::login');
-    // const sessions = await link.listSessions('pomelo.io');
-    // if (sessions.length) return await link.restoreSession('pomelo.io');
-    // else return (await link.login('pomelo.io')).session;
-    return (await link.login('eos-marketplace')).session
-  }
+  
