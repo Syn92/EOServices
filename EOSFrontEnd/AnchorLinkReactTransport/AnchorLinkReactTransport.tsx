@@ -217,10 +217,9 @@ export default class AnchorLinkReactTransport implements LinkTransport {
         const sameDeviceRequest = request.clone()
         // const returnUrl = generateReturnUrl()
         sameDeviceRequest.setInfoKey('same_device', true)
-        sameDeviceRequest.setInfoKey('return_path',"googlechrome://")
+        sameDeviceRequest.setInfoKey('return_path',"exp://10.200.22.9:19000")
 
         const sameDeviceUri = sameDeviceRequest.encode(true, false)
-        const crossDeviceUri = request.encode(true, false)
         console.log(sameDeviceUri)
         Linking.openURL(sameDeviceUri)
 
