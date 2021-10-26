@@ -14,6 +14,7 @@ export async function transact() {
       getAbi: async (account:any) => (await api.getAbi(account))
     }
   }
+  
   const actions = [{
     account: 'eosio.token',
     name: 'transfer',
