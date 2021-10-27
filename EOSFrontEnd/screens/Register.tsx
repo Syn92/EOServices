@@ -10,12 +10,13 @@ import Firebase from '../config/firebase';
 
 const auth = Firebase.auth();
 
-export function Register({navigation}: {navigation: any}) {
+export function Register({ navigation }: { navigation: any }) {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [signupError, setSignupError] = useState('');
+  const [eosUsername, setEosUsername] = useState('');
 
   async function handleSignup() {
     try {
@@ -28,24 +29,24 @@ export function Register({navigation}: {navigation: any}) {
     }
   };
 
-  auth.onAuthStateChanged(function(user: any) {
+  auth.onAuthStateChanged(function (user: any) {
     if (user) {
-      user.updateProfile({displayName: "NEW USER NAME"})
+      user.updateProfile({ displayName: "NEW USER NAME" })
     }
-});
+  });
 
   return (
-    <ScrollView contentContainerStyle={{flexGrow: 1}}>
-      <View style={{flex: 1}}>
-        <ImageBackground  source={require('../assets/images/bg.png')} style={styles.container}>
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <View style={{ flex: 1 }}>
+        <ImageBackground source={require('../assets/images/bg.png')} style={styles.container}>
           <StatusBar style='light' />
 
-          
+
           {/* Email input */}
           <View style={styles.inputView}>
             <Text style={styles.inputLabel}>Email</Text>
             <TextInput
-              style={{color: 'white'}} 
+              style={{ color: 'white' }}
               autoCapitalize='none'
               keyboardType='email-address'
               textContentType='emailAddress'
@@ -58,7 +59,7 @@ export function Register({navigation}: {navigation: any}) {
           <View style={styles.inputView}>
             <Text style={styles.inputLabel}>Password</Text>
             <TextInput
-              style={{color: 'white'}}
+              style={{ color: 'white' }}
               autoCapitalize='none'
               autoCorrect={false}
               secureTextEntry={true}
@@ -71,7 +72,7 @@ export function Register({navigation}: {navigation: any}) {
           <View style={styles.inputView}>
             <Text style={styles.inputLabel}>Confirm Password</Text>
             <TextInput
-              style={{color: 'white'}}          
+              style={{ color: 'white' }}
               autoCapitalize='none'
               autoCorrect={false}
               secureTextEntry={true}
@@ -82,20 +83,39 @@ export function Register({navigation}: {navigation: any}) {
           </View>
 
           <HorizontalSeparator text='EOS Wallet' fontSize={20} lineColor='#04b388' />
-          
+
           {signupError ? <Text style={styles.errorText}>{signupError}</Text> : null}
 
-          <TouchableOpacity style={styles.iconView} onPress={anchor.transact}>
-            <Icon name='sync-alt' type='material' size={30} color='white' />
-            <Text style={styles.iconText}>Link</Text>
+          {/* Wallet username input */}
+          <View style={styles.inputView}>
+            <Text style={styles.inputLabel}>Account Name</Text>
+            <TextInput
+              style={{ color: 'white' }}
+              autoCapitalize='none'
+              autoCorrect={false}
+              placeholder='Ex: username.gm'
+              placeholderTextColor='#ffffff50'
+              value={eosUsername}
+              onChangeText={text => setEosUsername(text)}
+            />
+          </View>
+          <TouchableOpacity onPress={() => navigation.navigate('CreateWalletTutorial')} style={styles.helpLink}>
+              <Text style={styles.helpLinkText}>
+                No wallet? See how to create one here
+              </Text>
           </TouchableOpacity>
 
+          {/* <TouchableOpacity style={styles.iconView} onPress={anchor.transact}>
+            <Icon name='sync-alt' type='material' size={30} color='white' />
+            <Text style={styles.iconText}>Link</Text>
+          </TouchableOpacity> */}
+{/* 
           <Text style={styles.text}>Or</Text>
 
           <View style={styles.iconView}>
             <Icon name='update' type='material' size={30} color='white' />
             <Text style={styles.iconText}>Create</Text>
-          </View>
+          </View> */}
 
           <TouchableOpacity style={styles.button} onPress={handleSignup}>
             <Text style={styles.buttonText}>Create Account</Text>
@@ -142,8 +162,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20
   },
+  helpLink: {
+    paddingTop: 0
+  },
   helpLinkText: {
     textAlign: 'center',
+    color: '#ffffff',
+    fontSize: 12,
+    textDecorationLine: 'underline',
   },
   iconView: {
     flexDirection: 'row',
