@@ -26,6 +26,7 @@ import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../typ
 import { AuthenticatedUserContext } from './AuthenticatedUserProvider';
 import AuthStack from './AuthStack';
 import AddPostScreen from '../screens/AddPostScreen';
+import ChatScreen from '../screens/ChatScreen';
 
 const auth = Firebase.auth();
 
@@ -48,7 +49,7 @@ async function checkUser(user: any) {
     };
     await axios.post(ServerConstants.local + 'auth', newUsr);
 
-    return newUsr;    
+    return newUsr;
   } catch (err) {
     console.log('checkuser')
     console.log(err);
@@ -65,7 +66,7 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
       try {
         if (authenticatedUser)
           authenticatedUser = await checkUser(authenticatedUser)
-        
+
         // setUser to either null or return value of checkUser
         if (setUser) await setUser(authenticatedUser);
         else throw new Error('setUser undefined');
@@ -139,7 +140,7 @@ function BottomTabNavigator() {
         options={({ navigation }: RootTabScreenProps<'TabOne'>) => ({
           title: 'Home',
           tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
-        
+
         })}
       />
       <BottomTab.Screen
@@ -152,7 +153,7 @@ function BottomTabNavigator() {
       />
       <BottomTab.Screen
         name="TabThree"
-        component={TabTwoScreen}
+        component={ChatScreen}
         options={{
           title: 'Message',
           tabBarIcon: ({ color }) => <TabBarIcon name="chat-bubble" color={color} />,
