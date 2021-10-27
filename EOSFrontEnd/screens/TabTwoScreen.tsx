@@ -50,7 +50,6 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
     const data = await resp.json();
     setData(data);
     setLoading(false);
-    console.log(data);
   };
 
   useEffect(() => {

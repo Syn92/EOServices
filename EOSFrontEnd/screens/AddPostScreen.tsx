@@ -1,8 +1,6 @@
 import * as React from 'react';
 import { Platform, StyleSheet, TextInput, Image, ScrollView, TouchableOpacity, Modal, Pressable } from 'react-native';
 import { Button } from 'react-native-elements/dist/buttons/Button';
-import Map from '../components/Map';
-
 import { Text, View } from '../components/Themed';
 import ActionButton from '../components/ActionButton';
 import ActionButtonSecondary from '../components/ActionButtonSecondary';
@@ -15,7 +13,12 @@ import StepIndicator from '../components/stepIndicator';
 import { RootTabScreenProps } from '../types';
 import axios from 'axios';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
+import Map from '../components/Map';
+import { CustomFeature, CustomFeatureColl, getAddress, getCenter } from '../utils/Cadastre';
+import { LatLng } from 'react-native-maps';
 import ServerConstants from '../constants/Server';
+import { AutocompleteDropdown, AutocompleteDropdownProps } from 'react-native-autocomplete-dropdown';
 
 export interface Service {
   title: string;
@@ -25,10 +28,11 @@ export interface Service {
   priceEOS: number;
   serviceType: string;
   category: string;
-  position: string;
-  thumbnail: string | undefined;
-  owner?: string;
   ownerName?: string;
+  cadastreId: string;
+  markerPos: LatLng;
+  thumbnail: string | undefined;
+  owner: string;
 }
 const { height } = Dimensions.get('window');
 
@@ -41,7 +45,9 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
   const [selectedCat, setSelectedCat] = useState<string>('');
   const [price, setPrice] = useState<string>();
   const [description, setDescription] = useState<string>();
-  const [position, setPositon] = useState('');
+  const [cadastre, setCadastre] = useState<CustomFeature>();
+  const [cadastresAC, setCadastresAC] = useState<CustomFeature[]>([]);
+  let acDropdownController: {clear: Function, close: Function, open: Function, setInputText: Function, toggle: Function};
   const [title, setTitle] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [errorMessage1, setErrorMessage1] = useState('');
@@ -53,8 +59,8 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
   const { user, setUser } =  React.useContext(AuthenticatedUserContext);
 
   function addPostRequest(){
-    
-    if(selectedServType && description && material && image){
+
+    if(selectedServType && description && material && image && cadastre && user){
       let body: Service = {
         title: title,
         serviceType: selectedServType,
@@ -62,21 +68,20 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
         priceEOS: Number(price),
         description: description,
         material: material,
-        images: image,
-        position: position.slice(2), // 2 spaces at the beggining of position 
+        images: image.filter((e,i) => i!=0),
+        cadastreId: cadastre.properties.ID_UEV,
+        markerPos: getCenter(cadastre),
         thumbnail: image[0],
-        owner: user?.uid,
-        ownerName: user?.name
+        owner: user.uid,
+        ownerName: user.name,
       }
-      console.log(body)
       if(!submited){
         setSubmited(true);
-        axios.post(ServerConstants.local + 'post', body).then(() => setModalVisible(true)).catch(() => {console.log('error'); setSubmited(false)})
+        axios.post(ServerConstants.local + 'post', body).then(() => setModalVisible(true)).catch((err) => {console.log(err); setSubmited(false)})
       }
     } else {
       console.log("input missing")
     }
-    
   }
 
   useEffect(() => {
@@ -90,11 +95,27 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
     })();
   }, []);
 
+  function onChangeAddress(enteredAddress: string) {
+    if(enteredAddress == '') {
+      setCadastresAC([]);
+      return;
+    }
+    axios.get(ServerConstants.local + "address", {params: {address: enteredAddress}})
+      .then(function (response) {
+        // handle success
+        const acResults = response.data as CustomFeature[];
+        setCadastresAC(acResults);
+      }).catch(function (error) {
+        // handle error
+        setCadastresAC([]);
+        console.log(error);
+    });
+  }
+
   const removeImage = (i: number) => {
     setImage((prevImages) => {
       {return prevImages.filter((image, index) => index != i)}
     })
-    
   }
 
   const pickImage = async () => {
@@ -110,7 +131,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
       await setImage([...image,result.base64]);
     }
   };
-  if(step == 1) 
+  if(step == 1)
     return (
     <View style={styles.container}>
       <StepIndicator title="Add a post" step={step} stepMax={4}></StepIndicator>
@@ -124,7 +145,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
       </View>
     </View>
     );
-  else if(step == 2) 
+  else if(step == 2)
     return (
     <View style={styles.container}>
       <StepIndicator title="Add a post" step={step} stepMax={4}></StepIndicator>
@@ -137,7 +158,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
               <View style={styles.inputView}>
                 <Text style={styles.inputLabel}>Title</Text>
                 <TextInput
-                  style={{color: 'black'}}          
+                  style={{color: 'black'}}
                   autoCapitalize='none'
                   autoCorrect={false}
                   value={title}
@@ -169,12 +190,11 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
             <Text style={styles.subTitle}>Details</Text>
             </View>
             <View style={styles.buttonContainer}>
-              
               <ActionButtonSecondary title="Add photos" onPress={pickImage}></ActionButtonSecondary>
               <View style={styles.inputView}>
                 <Text style={styles.inputLabel}>Price</Text>
                 <TextInput
-                  style={{color: 'black'}}          
+                  style={{color: 'black'}}
                   autoCapitalize='none'
                   keyboardType="numeric"
                   autoCorrect={false}
@@ -185,7 +205,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
               <View style={styles.inputView}>
                 <Text style={styles.inputLabel}>Description</Text>
                 <TextInput
-                  style={{color: 'black'}}          
+                  style={{color: 'black'}}
                   autoCapitalize='none'
                   autoCorrect={false}
                   value={description}
@@ -195,7 +215,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
              <View style={styles.inputView}>
                 <Text style={styles.inputLabel}>Material required</Text>
                 <TextInput
-                  style={{color: 'black'}}          
+                  style={{color: 'black'}}
                   autoCapitalize='none'
                   autoCorrect={false}
                   value={material}
@@ -204,6 +224,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
               </View>
             </View>
               <ScrollView horizontal={true} style={{marginHorizontal: 15, marginTop: 10}}>
+            {/* <View style={styles.photoContainer}> */}
               {
                 image.map((uri, i)=>{
                   return (<TouchableOpacity style={i == image.length-1 ? {}:{marginRight: 5}} onPress={() => removeImage(i)} key={i}>
@@ -211,6 +232,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
                 </TouchableOpacity>)
                 })
               }
+            {/* </View> */}
               </ScrollView>
             {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : <Text></Text>}
             <View style={{justifyContent: 'flex-end', marginHorizontal: 50, marginVertical: 10}}>
@@ -221,42 +243,60 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
         );
       else
         return (
-          <View style={styles.container}>
-          <StepIndicator title="Add a post" step={step} stepMax={4}></StepIndicator>
-          <View style={styles.innerContainer}>
-          <Modal
-            animationType="slide"
-            transparent={true}
-            visible={modalVisible}
-            onRequestClose={() => {
-              navigation.navigate('TabTwo')
-            }}
-          >
-            <View style={styles.centeredView}>
-              <View style={styles.modalView}>
-                <Text style={styles.modalText}>Post succesfully submited</Text>
-                <Pressable
-                  style={[styles.button, styles.buttonClose]}
-                  onPress={() => {setModalVisible(!modalVisible); navigation.navigate('TabTwo')}}
-                >
-                  <Text style={styles.textStyle}>Ok</Text>
-                </Pressable>
+          <ScrollView contentContainerStyle={styles.container}>
+            <StepIndicator title="Add a post" step={step} stepMax={4}></StepIndicator>
+            <View style={styles.innerContainer}>
+              <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                  navigation.navigate('TabTwo')
+                }}
+              >
+                <View style={styles.centeredView}>
+                  <View style={styles.modalView}>
+                    <Text style={styles.modalText}>Post succesfully submited</Text>
+                    <Pressable
+                      style={[styles.button, styles.buttonClose]}
+                      onPress={() => {setModalVisible(!modalVisible); navigation.navigate('TabTwo')}}
+                    >
+                      <Text style={styles.textStyle}>Ok</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              </Modal>
+              <View style={styles.header}>
+                <Button style={styles.headerButton} onPress={() => setStep(3)} icon={<Icon name="arrow-left" size={40} color="black"/>}/>
+                <Text style={styles.subTitle}>Location</Text>
+              </View>
+              <View style={styles.mapContainer}>
+                <AutocompleteDropdown controller={(controller: any) => { acDropdownController = controller}}
+                onChangeText={onChangeAddress} useFilter={false} debounce={600} clearOnFocus={false}
+                dataSet={cadastresAC.map(x => ({id: x.properties.ID_UEV, title: getAddress(x)}))}
+                onSelectItem={(item: any) => item && setCadastre(cadastresAC.find(x => x.properties.ID_UEV == item.id))}
+                textInputProps={{
+                  placeholder: "Enter an address",
+                  autoCorrect: false,
+                  autoCapitalize: "none",
+                }}/>
+                <View style={{height: 200}}>
+                  <Map pressable={true} selectedCadastre={cadastre}
+                  onPressed={(item) => {
+                    acDropdownController.clear()
+                    setCadastre(item);
+                    setCadastresAC([])
+                    setTimeout(() => {
+                      acDropdownController.setInputText(getAddress(item));
+                    }, 100);
+                  }}/>
+                </View>
+              </View>
+              <View style={{justifyContent: 'flex-end', marginHorizontal: 50, marginVertical: 10}}>
+                <ActionButton title="Confirm" onPress={addPostRequest}></ActionButton>
               </View>
             </View>
-          </Modal>
-          <View style={styles.header}>
-            <Button style={styles.headerButton} onPress={() => setStep(3)} icon={<Icon name="arrow-left" size={40} color="black"/>}/>
-            <Text style={styles.subTitle}>Location</Text>
-            </View>
-            <View style={styles.mapContainer}>
-              <Map pressable={true} onPressed={(newAddress: string) => setPositon(newAddress)}/>
-              <Text style={{textAlign: 'center'}}>addresse: {position}</Text>
-            </View>
-            <View style={{justifyContent: 'flex-end', marginHorizontal: 50, marginVertical: 10}}>
-              <ActionButton title="Confirm" onPress={addPostRequest}></ActionButton>
-            </View>
-          </View>
-        </View>
+          </ScrollView>
         )
 }
 
@@ -277,7 +317,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     // width: 50,
     // justifyContent: 'flex-start',
-  }, 
+  },
   subTitle: {
     marginTop: 10,
     fontSize: 20,
@@ -319,10 +359,8 @@ const styles = StyleSheet.create({
   },
   mapContainer: {
     width: '90%',
-    height: 450,
     alignSelf: 'center',
-    paddingTop: 20,
-    marginBottom: 50,
+    marginBottom: 10,
     display: 'flex',
     flexDirection: 'column'
   },
@@ -355,7 +393,7 @@ const styles = StyleSheet.create({
   errorText: {
     color: 'red',
     textAlign: 'center'
-  }, 
+  },
   centeredView: {
     flex: 1,
     justifyContent: "center",
@@ -382,7 +420,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     textAlign: "center"
   },
-   
   button: {
     borderRadius: 20,
     padding: 10,
@@ -398,6 +435,9 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
     textAlign: "center"
+  },
+  map: {
+    height: '50%'
   }
 
 });
