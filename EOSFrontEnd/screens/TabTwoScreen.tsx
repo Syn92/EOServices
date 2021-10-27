@@ -1,6 +1,6 @@
 import axios from 'axios';
 import * as React from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { Button } from 'react-native-elements/dist/buttons/Button';
 import Map from '../components/Map';
 
@@ -52,6 +52,11 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
     setLoading(false);
   };
 
+  const onCardPress = (serv: Service) => {
+    // console.log(serv)
+    navigation.navigate('PostDetails',serv._id);
+  }
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -88,7 +93,10 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
         
        {
          data.filter((e:Service) => e.title.startsWith(searchString.toLowerCase())).map((e: Service) => {
-           return(<PostCard title={e.title} price={e.priceEOS} position={e.position} owner={e.ownerName} thumbnail={e.thumbnail} key={e._id}></PostCard>)
+           return(
+             <TouchableOpacity onPress={() => {onCardPress(e)}} key={e._id}>
+               <PostCard title={e.title} price={e.priceEOS} position={e.position} owner={e.ownerName} thumbnail={e.thumbnail}></PostCard>
+             </TouchableOpacity>)
          })
        }
         </ScrollView>
