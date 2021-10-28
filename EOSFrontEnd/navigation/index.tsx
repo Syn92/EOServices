@@ -27,6 +27,7 @@ import { AuthenticatedUserContext } from './AuthenticatedUserProvider';
 import AuthStack from './AuthStack';
 import AddPostScreen from '../screens/AddPostScreen';
 import ChatScreen from '../screens/ChatScreen';
+import ChatRoomsScreen from '../screens/ChatRoomsScreen';
 
 const auth = Firebase.auth();
 
@@ -110,6 +111,8 @@ function RootNavigator() {
       <Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: false }} />
       <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
       <Stack.Screen name="AddPost" component={AddPostScreen} />
+      <Stack.Screen name="ChatRooms" component={ChatRoomsScreen} />
+      <Stack.Screen name="Chat" component={ChatScreen} />
       <Stack.Group screenOptions={{ presentation: 'modal' }}>
         <Stack.Screen name="Modal" component={ModalScreen} />
       </Stack.Group>
@@ -153,7 +156,7 @@ function BottomTabNavigator() {
       />
       <BottomTab.Screen
         name="TabThree"
-        component={ChatScreen}
+        component={ChatRoomsScreen}
         options={{
           title: 'Message',
           tabBarIcon: ({ color }) => <TabBarIcon name="chat-bubble" color={color} />,
