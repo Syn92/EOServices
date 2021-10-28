@@ -3,7 +3,7 @@
  * https://reactnavigation.org/docs/getting-started
  *
  */
-import { FontAwesome } from '@expo/vector-icons';
+import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -25,6 +25,7 @@ import GetFormatedDate from '../services/DateFormater';
 import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
 import { AuthenticatedUserContext } from './AuthenticatedUserProvider';
 import AuthStack from './AuthStack';
+import AddPostScreen from '../screens/AddPostScreen';
 
 const auth = Firebase.auth();
 
@@ -39,6 +40,7 @@ async function checkUser(user: any) {
     }
 
     // add user to mongodb
+
     const newUsr: User = {
       uid: user.uid,
       email: user.email,
@@ -107,6 +109,7 @@ function RootNavigator() {
     <Stack.Navigator>
       <Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: false }} />
       <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
+      <Stack.Screen name="AddPost" component={AddPostScreen} />
       <Stack.Group screenOptions={{ presentation: 'modal' }}>
         <Stack.Screen name="Modal" component={ModalScreen} />
       </Stack.Group>
@@ -128,36 +131,40 @@ function BottomTabNavigator() {
       initialRouteName="TabOne"
       screenOptions={{
         headerShown: false,
+        tabBarInactiveTintColor: Colors[colorScheme].tabIconDefault,
         tabBarActiveTintColor: Colors[colorScheme].tint,
       }}>
       <BottomTab.Screen
         name="TabOne"
-        component={TabOneScreen}
+        component={TabTwoScreen}
         options={({ navigation }: RootTabScreenProps<'TabOne'>) => ({
-          title: 'Profile',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-          headerRight: () => (
-            <Pressable
-              onPress={() => navigation.navigate('Modal')}
-              style={({ pressed }) => ({
-                opacity: pressed ? 0.5 : 1,
-              })}>
-              <FontAwesome
-                name="info-circle"
-                size={25}
-                color={Colors[colorScheme].text}
-                style={{ marginRight: 15 }}
-              />
-            </Pressable>
-          ),
+          title: 'Home',
+          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+        
         })}
       />
       <BottomTab.Screen
         name="TabTwo"
+        component={TabOneScreen}
+        options={{
+          title: 'Explore',
+          tabBarIcon: ({ color }) => <TabBarIcon name="explore" color={color} />,
+        }}
+      />
+      <BottomTab.Screen
+        name="TabThree"
         component={TabTwoScreen}
         options={{
-          title: 'Tab Two',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          title: 'Message',
+          tabBarIcon: ({ color }) => <TabBarIcon name="chat-bubble" color={color} />,
+        }}
+      />
+      <BottomTab.Screen
+        name="TabFour"
+        component={PrivateProfile}
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color }) => <TabBarIcon name="person" color={color} />,
         }}
       />
       <BottomTab.Screen
@@ -184,8 +191,8 @@ function BottomTabNavigator() {
  * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
  */
 function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
+  name: React.ComponentProps<typeof MaterialIcons>['name'];
   color: string;
 }) {
-  return <FontAwesome size={30} style={{ marginBottom: -3 }} {...props} />;
+  return <MaterialIcons size={30} style={{ marginBottom: -3 }} {...props} />;
 }

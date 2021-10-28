@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { LegacyRef, useEffect, useState } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
-import MapView, { Geojson, LatLng, MapEvent, Marker, Region, UrlTile } from 'react-native-maps';
+import MapView, { Camera, Geojson, LatLng, Marker, Region, UrlTile } from 'react-native-maps';
 import Geocoder from 'react-native-geocoding';
 import axios, { CancelTokenSource } from 'axios';
-import { getCenterOfBounds } from 'geolib';
+import { CustomFeature, CustomFeatureColl, getCenter } from '../utils/Cadastre';
+import ServerConstants from '../constants/Server';
+import { Service } from '../screens/TabTwoScreen';
 
 interface IMarker {
     key: string;
@@ -15,14 +17,9 @@ interface IMarker {
 
 interface IProps {
     pressable: boolean;
-    onPressed?: Function;
-}
-
-interface IFeatureProperties {
-    ID_UEV: string,
-    CIVIQUE_DEBUT: string,
-    NOM_RUE: string,
-    MUNICIPALITE: string,
+    onPressed?: ((cadastre: CustomFeature) => any);
+    selectedCadastre?: CustomFeature;
+    services?: Service[];
 }
 
 Geocoder.init("AIzaSyCcPFzHoC-XT8h-3MZt8CfIz5J-w9BeMHA");
@@ -37,55 +34,84 @@ const initialRegion: Region = {
 export default function Map(props: IProps) {
     const [markers, setMarkers] = useState<IMarker[]>([]);
 
-    const [geoJson, setGeoJson] = useState<GeoJSON.FeatureCollection<GeoJSON.Geometry, IFeatureProperties>>(
+    const [geoJson, setGeoJson] = useState<CustomFeatureColl>(
         {
             type: "FeatureCollection",
             features: []
         }
     );
 
-    const [selectedGeoJson, setSelectedGeoJson] = useState<GeoJSON.FeatureCollection>(
+    const [selectedGeoJson, setSelectedGeoJson] = useState<CustomFeatureColl>(
         {
             type: "FeatureCollection",
             features: []
         }
     );
+
+    let map: MapView | null;
 
     let cancelTokenSource: CancelTokenSource | null;
 
-    if(!props.pressable) {
-        //todo: set existing markers from the DB here
-    }
+    useEffect( () => {
+        if(props.selectedCadastre) {
+            if(selectedGeoJson.features.length > 0 && selectedGeoJson.features[0].properties.ID_UEV == props.selectedCadastre.properties.ID_UEV) {
+                return; // change already coming from map itself
+            }
+            setSelectedGeoJson({type: selectedGeoJson.type, features: [props.selectedCadastre]})
+            const marker: IMarker = {
+                key: 'pressedMarker',
+                coordinate: getCenter(props.selectedCadastre),
+            }
+            setSelectedMarker(marker)
+            const cam: Partial<Camera> = {
+                center: marker.coordinate,
+                zoom: 17,
+            }
+            map?.animateCamera(cam)
+        } else {
+            setSelectedMarker(null);
+            setSelectedGeoJson({type: selectedGeoJson.type, features: []});
+        }
+    }, [props.selectedCadastre]);
+
+    useEffect( () => {
+        if(props.services) {
+            setMarkers(props.services.map((x) => { return {
+                key: x.cadastre.properties.ID_UEV,
+                coordinate: x.markerPos
+            } as IMarker}))
+        } else {
+            setMarkers([])
+        }
+    }, [props.services]);
 
     // if pressable, react to the onPress event by adding a marker
     // and calling onPressed with the corresponding address
     function mapPressed(eventTemp: unknown) {
         if(!props.pressable) return;
 
-        if(props.onPressed) {
-            // Geocoder.from(marker.coordinate).then(json => {
-            //     const address = json.results[0].formatted_address;
-            //     if(props.onPressed) props.onPressed(address);
-            // }).catch(error => console.warn(error));
-            // const features = geoJson.features.filter(x => {
-            //     const polygon = (x.geometry as GeoJSON.Polygon)?.coordinates[0] as GeolibInputCoordinates[];
-            //     return isPointInPolygon(marker.coordinate, polygon);
-            // });
-            // console.log(features.flatMap(x => x.properties))
-            const event = eventTemp as {feature: GeoJSON.Feature<GeoJSON.Geometry, IFeatureProperties>, coordinates: LatLng[]}
-            if(event && event.feature) {
-                setSelectedGeoJson({type: selectedGeoJson.type, features: [event.feature]});
-                const marker: IMarker = {
-                    key: 'pressedMarker',
-                    coordinate: getCenterOfBounds(event.coordinates),
-                }
-                setSelectedMarker(marker);
-                if(props.onPressed) props.onPressed(event.feature.properties.CIVIQUE_DEBUT + " " + event.feature.properties.NOM_RUE)
-                // console.log('vertices: ', (feature.geometry as GeoJSON.Polygon).coordinates[0].length);
-            } else {
-                setSelectedMarker(null);
-                setSelectedGeoJson({type: selectedGeoJson.type, features: []});
+        // Geocoder.from(marker.coordinate).then(json => {
+        //     const address = json.results[0].formatted_address;
+        //     if(props.onPressed) props.onPressed(address);
+        // }).catch(error => console.warn(error));
+        // const features = geoJson.features.filter(x => {
+        //     const polygon = (x.geometry as GeoJSON.Polygon)?.coordinates[0] as GeolibInputCoordinates[];
+        //     return isPointInPolygon(marker.coordinate, polygon);
+        // });
+        // console.log(features.flatMap(x => x.properties))
+        const event = eventTemp as {feature: CustomFeature, coordinates: LatLng[]}
+        if(event && event.feature) {
+            setSelectedGeoJson({type: selectedGeoJson.type, features: [event.feature]});
+            const marker: IMarker = {
+                key: 'pressedMarker',
+                coordinate: getCenter(event.feature),
             }
+            setSelectedMarker(marker);
+            if(props.onPressed) props.onPressed(event.feature);
+            // console.log('vertices: ', (feature.geometry as GeoJSON.Polygon).coordinates[0].length);
+        } else {
+            setSelectedMarker(null);
+            setSelectedGeoJson({type: selectedGeoJson.type, features: []});
         }
     }
 
@@ -102,10 +128,10 @@ export default function Map(props: IProps) {
         }
         cancelTokenSource?.cancel();
         cancelTokenSource = axios.CancelToken.source();
-        axios.get('https://eos-marketplace.nn.r.appspot.com/cadastre', { params, cancelToken: cancelTokenSource.token })
+        axios.get(ServerConstants.prod + 'cadastre', { params, cancelToken: cancelTokenSource.token })
             .then(function (response) {
                 // handle success
-                const features = response.data as GeoJSON.Feature<GeoJSON.Geometry, IFeatureProperties>[];
+                const features = response.data as CustomFeature[];
                 setGeoJson({type: geoJson.type, features: features});
             }).catch(function (error) {
                 // handle error
@@ -142,7 +168,7 @@ export default function Map(props: IProps) {
     };
     return (
         <View style={styles.container}>
-            <MapView style={styles.map} initialRegion={initialRegion}
+            <MapView style={styles.map} initialRegion={initialRegion} ref={(ref) => { map = ref; }}
                 mapType={Platform.OS == "android" ? "none" : "standard"} onRegionChangeComplete={regionChanged}
                 pitchEnabled={false} toolbarEnabled={false}>
                 <Geojson geojson={selectedGeoJson} strokeColor="black" fillColor="green" strokeWidth={3} zIndex={3}/>
@@ -169,10 +195,9 @@ function renderMarkers(markers: IMarker[]): JSX.Element[] {
 
 const styles = StyleSheet.create({
     container: {
-        height: '60%',
-        width: '95%',
-        borderColor: 'blue',
-        borderWidth: 2,
+        // height: '80%',
+        width: '100%',
+        borderRadius: 15,
         overflow: 'hidden',
     },
     map: {
