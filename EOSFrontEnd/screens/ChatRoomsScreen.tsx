@@ -1,19 +1,24 @@
 import * as React from 'react';
+import { useState } from 'react';
 import { ImageBackground, StyleSheet } from 'react-native';
 import { Icon } from 'react-native-elements';
 import { ScrollView } from 'react-native-gesture-handler';
-import { ChatRoomCard } from '../components/Chat/ChatRoomCard';
-import { Text, View } from '../components/Themed';
-import { User } from '../interfaces/User';
+import { ChatRoomCard, IRoomCard } from '../components/Chat/ChatRoomCard';
+import { View } from '../components/Themed';
+import { IRoom } from '../interfaces/Room';
 import { RootTabScreenProps } from '../types';
 
+
 export default function ChatRoomsScreen({ navigation }: RootTabScreenProps<'ChatRooms'>) {
+  const [roomCards, setRoomCards] = useState<IRoomCard[]>(Array(10).fill({
+    room: {roomId: '1', userName: 'Guilhem', userId: '1', product: 'PS55555 555 55 55555'},
+    lastMessage: 'Hi! I was wondering if you still have that PS5 available, hopefully before christmas. Thanks!',
+    lastTime: '28/10/2021'
+  }));
 
-    function onChannelPress(roomId: string) {
-    navigation.navigate('Chat', { roomId })
+  function onChannelPress(room: IRoom) {
+    navigation.navigate('Chat', room)
   }
-
-  const user: User = {uid: '1', email: '', name: 'a', joinedDate: ''}
 
   return (
     <ImageBackground style={styles.container} source={require('../assets/images/bg.png')}>
@@ -21,9 +26,8 @@ export default function ChatRoomsScreen({ navigation }: RootTabScreenProps<'Chat
         <Icon style={styles.searchIcon} name="search" size={30} color="white"/>
       </View>
       <ScrollView style={styles.roomsContainer}>
-          {Array(10).fill(
-          <ChatRoomCard user={user} product={'Plomberie'} lastTime='16h40' onPress={onChannelPress} roomId={'1'}
-          lastMessage='I have a problem with my toilet, can you fix it'/>)}
+          {roomCards.map(card =>
+          <ChatRoomCard roomCard={card} onPress={onChannelPress}/>)}
       </ScrollView>
     </ImageBackground>
   );

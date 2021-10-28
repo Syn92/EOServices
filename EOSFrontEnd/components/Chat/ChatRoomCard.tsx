@@ -1,57 +1,57 @@
 import React from 'react'
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
-import { User } from '../../interfaces/User'
-import { RootTabScreenProps } from '../../types';
+import { IRoom } from '../../interfaces/Room';
+
+export interface IRoomCard {
+  room: IRoom;
+  lastMessage: string;
+  lastTime: string;
+}
 
 interface IProp {
-    roomId: string;
-    user: User;
-    product: string;
-    lastMessage: string;
-    lastTime: string;
-    onPress: (roomId: string) => any;
+  roomCard: IRoomCard;
+  onPress: (room: IRoom) => any;
 }
 
 export function ChatRoomCard(props: IProp) {
-    return (
-        <TouchableOpacity style={styles.mainContainer} onPress={() => props.onPress(props.roomId)}>
-            <View>
-                <Image style={styles.image} source={require('../../assets/images/avatar.webp')}/>
+  return (
+    <TouchableOpacity style={styles.mainContainer} onPress={() => props.onPress(props.roomCard.room)}>
+        <View>
+            <Image style={styles.image} source={require('../../assets/images/avatar.webp')}/>
+        </View>
+        <View style={styles.descriptionContainer}>
+            <View style={styles.titleContainer}>
+                <Text style={[styles.text, styles.title]} numberOfLines={1}>{props.roomCard.room.userName + " - " + props.roomCard.room.product }</Text>
+                <Text style={styles.text}>{props.roomCard.lastTime}</Text>
             </View>
-            <View style={styles.descriptionContainer}>
-                <View style={styles.titleContainer}>
-                    <Text style={[styles.text, styles.title]} numberOfLines={1}>{props.user.name + " - " + props.product }</Text>
-                    <Text style={styles.text}>{props.lastTime}</Text>
-                </View>
-                <View style={styles.lastMessageContainer}>
-                    <Text style={styles.text} numberOfLines={1}>{props.lastMessage}</Text>
-                </View>
+            <View style={styles.lastMessageContainer}>
+                <Text style={styles.text} numberOfLines={1}>{props.roomCard.lastMessage}</Text>
             </View>
-        </TouchableOpacity>
-    )
+        </View>
+    </TouchableOpacity>
+  )
 }
 
 
 const styles = StyleSheet.create({
     mainContainer: {
-        marginLeft: 20,
-        marginRight: 20,
-        marginTop: 15,
-        marginBottom: 15,
-        overflow: 'hidden',
+        marginHorizontal: 20,
+        marginVertical: 15,
         display: 'flex',
         flexDirection: 'row',
     },
     descriptionContainer: {
-        flex: 1,
+        display: 'flex',
         flexDirection: 'column',
         paddingTop: 2,
-        paddingBottom: 2,
+        paddingLeft: 10,
+        flexShrink: 1,
     },
     titleContainer: {
-        flex: 1,
+        display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
+        marginBottom: 5,
     },
     image: {
         width: 50,
@@ -59,11 +59,16 @@ const styles = StyleSheet.create({
         borderRadius: 25,
     },
     text: {
-        marginLeft: 10,
+        flexGrow: 0,
+        flexShrink: 0,
     },
     title: {
         fontSize: 16,
         fontWeight: 'bold',
+        flexGrow: 1,
+        flexShrink: 1,
+        flexBasis: 0,
+        marginRight: 10,
     },
     lastMessageContainer: {
 
