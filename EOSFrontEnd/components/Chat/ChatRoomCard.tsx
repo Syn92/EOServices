@@ -1,6 +1,6 @@
 import React from 'react'
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
-import { IRoom } from '../../interfaces/Room';
+import { IRoom } from '../../interfaces/Chat';
 
 export interface IRoomCard {
   room: IRoom;

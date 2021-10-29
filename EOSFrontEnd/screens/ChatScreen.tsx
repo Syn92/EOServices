@@ -3,21 +3,20 @@ import { useState } from 'react';
 import { ImageBackground, StyleSheet, Text } from 'react-native';
 import { GiftedChat, IMessage } from 'react-native-gifted-chat';
 import { View } from '../components/Themed';
+import { toGiftedMessage } from '../interfaces/Chat';
+import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
 import { RootStackScreenProps } from '../types';
 
 export default function ChatScreen({ navigation, route }: RootStackScreenProps<'Chat'>) {
-  const [messages, setMessages] = useState<IMessage[]>([{
-    _id: 1,
-    text: 'Hey! this is a test',
-    createdAt: Date.now(),
-    user: {_id: 2, name: 'Elon Musk'},
-  }]);
+  const [messages, setMessages] = useState<IMessage[]>(route.params.messages.map(toGiftedMessage));
+
+  const { user } =  React.useContext(AuthenticatedUserContext);
 
   return (
     <ImageBackground style={styles.container} source={require('../assets/images/bg.png')}>
-      <Text style={styles.title} numberOfLines={1}>{route.params.userName + " - " + route.params.product}</Text>
+      <Text style={styles.title} numberOfLines={1}>{route.params.room.user.name + " - " + route.params.room.service.title}</Text>
       <View style={styles.chatContainer}>
-        <GiftedChat messages={messages}/>
+        <GiftedChat messages={messages} user={{_id: user?.uid ? user?.uid : 'CURRENT_USER_ID', name: user?.name}}/>
       </View>
     </ImageBackground>
   );
