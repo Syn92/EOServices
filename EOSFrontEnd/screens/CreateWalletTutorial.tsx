@@ -1,7 +1,14 @@
 import React from 'react';
-import { Image, ImageBackground, StyleSheet, Text, View } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
+import AppLink from 'react-native-app-link';
+import { Image, ImageBackground, StyleSheet, Text, View,Linking } from 'react-native';
+import { isIOS } from 'react-native-elements/dist/helpers';
+import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
+import * as anchor from '../components/Anchor'
 export function CreateWalletTutorial() {
+    function openAnchor(){
+        AppLink.maybeOpenURL("anchor://app",{appName:"Anchor Wallet",appStoreId:1487410877,appStoreLocale:"ca",playStoreId:"com.greymass.anchor"})
+    }
+
     return (
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
             <View style={{ flex: 1 }}>
@@ -12,13 +19,17 @@ export function CreateWalletTutorial() {
                     {/* EOS Logo */}
                     <Image style={styles.image} source={require('../assets/images/anchorWalletLogo.png')} />
                     <View>
-                        <Text style={styles.iconText}>1. Install the Greymass Anchor Wallet app</Text>
+                        <TouchableOpacity onPress={openAnchor}>
+                            <Text style={styles.iconText}>1. Install the Greymass Anchor Wallet app</Text>
+                        </TouchableOpacity>
                         <Text style={styles.iconText}>2. Tap on "Add account"</Text>
                         <Text style={styles.iconText}>3. Tap the "Create account" option</Text>
                         <Text style={styles.iconText}>4. Select "EOS Account" at 2,49 $CAD</Text>
                         <Text style={styles.iconText}>5. Choose your account name, then tap "Continue"</Text>
                         <Text style={styles.iconText}>6. Tap on "Create account"</Text>
-                        <Text style={styles.iconText}>7. Confirm the 2,49 $CAD fee</Text>
+                        <TouchableOpacity onPress={anchor.transact}>
+                            <Text style={styles.iconText}>7. Confirm the 2,49 $CAD fee</Text>
+                        </TouchableOpacity>
 
                         <Text style={styles.iconTextLastLine}>That's it! Your wallet is created!</Text>
                     </View>
