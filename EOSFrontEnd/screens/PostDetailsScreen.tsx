@@ -9,7 +9,7 @@ import { Icon } from 'react-native-elements';
 import axios from 'axios';
 import ServerConstants from '../constants/Server';
 import Loading from '../components/Loading';
-import Carousel from 'react-native-snap-carousel';
+import Carousel, { Pagination } from 'react-native-snap-carousel';
 
 
 export default function PostDetailsScreen({route, navigation }: RootTabScreenProps<'PostDetails'>) {
@@ -30,7 +30,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
     const _renderItem = ({item, index}) => {
         return (
             <View>
-                <Image key={index} source={{uri: 'data:image/png;base64,' + item, width: 150, height: 150}}/>
+                <Image key={index} source={{uri: 'data:image/png;base64,' + item, width: 250, height: 250}}/>
             </View>
         );
     }
@@ -61,7 +61,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
 
                 <View style={styles.contentCard}>
                     <Icon style={styles.iconCard} name="attach-money" color="#04B388"></Icon>
-                    <Text style={styles.textCard}>{service.priceEOS}</Text>
+                    <Text style={styles.textCard}>{service.priceEOS} EOS</Text>
                 </View>
 
                 <View style={styles.contentCard}>
@@ -78,9 +78,27 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
                   layout={"default"}
                   data={service.images}
                   sliderWidth={300}
-                  itemWidth={300}
+                  itemWidth={250}
                   renderItem={_renderItem}
-                  onSnapToItem = { index => setActiveIndex(index) } />
+                  onSnapToItem = { index => setActiveIndex(index) } 
+                  layoutCardOffset={18}/>
+                  <Pagination
+                    dotsLength={service.images.length}
+                    activeDotIndex={activeIndex}
+                    containerStyle={{ backgroundColor: 'white' }}
+                    dotStyle={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: 5,
+                        marginHorizontal: 8,
+                        backgroundColor: '#04B388'
+                    }}
+                    inactiveDotStyle={{
+                        // Define styles for inactive dots here
+                    }}
+                    inactiveDotOpacity={0.4}
+                    inactiveDotScale={0.6}
+                  />
               </View>
           </View> : <Loading></Loading>
         )
@@ -95,7 +113,7 @@ const styles = StyleSheet.create({
   cardContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    width: '75%',
+    width: '80%',
     display: 'flex',
     flexDirection: 'column',
     marginVertical: 10,
