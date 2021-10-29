@@ -16,7 +16,6 @@ import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvide
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import Map from '../components/Map';
 import { CustomFeature, CustomFeatureColl, getAddress, getCenter } from '../utils/Cadastre';
-import AutocompleteInput from 'react-native-autocomplete-input';
 import { LatLng } from 'react-native-maps';
 import ServerConstants from '../constants/Server';
 import { AutocompleteDropdown, AutocompleteDropdownProps } from 'react-native-autocomplete-dropdown';
@@ -29,6 +28,7 @@ export interface Service {
   priceEOS: number;
   serviceType: string;
   category: string;
+  ownerName?: string;
   cadastreId: string;
   markerPos: LatLng;
   thumbnail: string | undefined;
@@ -36,8 +36,8 @@ export interface Service {
 }
 const { height } = Dimensions.get('window');
 
-const servTypeSell = "Offering"
-const servTypeBuy = "Looking For"
+export const servTypeSell = "Offering"
+export const servTypeBuy = "Looking For"
 
 export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPost'>) {
   const [step, setStep] = useState(1)
@@ -68,13 +68,13 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
         priceEOS: Number(price),
         description: description,
         material: material,
-        images: image,
+        images: image.filter((e,i) => i!=0),
         cadastreId: cadastre.properties.ID_UEV,
         markerPos: getCenter(cadastre),
         thumbnail: image[0],
-        owner: user.uid
+        owner: user.uid,
+        ownerName: user.name,
       }
-      console.log(body)
       if(!submited){
         setSubmited(true);
         axios.post(ServerConstants.local + 'post', body).then(() => setModalVisible(true)).catch((err) => {console.log(err); setSubmited(false)})
@@ -82,13 +82,12 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
     } else {
       console.log("input missing")
     }
-
   }
 
   useEffect(() => {
     (async () => {
       if (Platform.OS !== 'web') {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        const { status } = (await ImagePicker.requestMediaLibraryPermissionsAsync() && await ImagePicker.requestCameraPermissionsAsync());
         if (status !== 'granted') {
           alert('Sorry, we need camera roll permissions to make this work!');
         }
@@ -117,7 +116,6 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
     setImage((prevImages) => {
       {return prevImages.filter((image, index) => index != i)}
     })
-
   }
 
   const pickImage = async () => {
@@ -273,10 +271,10 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
                 <Text style={styles.subTitle}>Location</Text>
               </View>
               <View style={styles.mapContainer}>
-                <AutocompleteDropdown controller={(controller) => { acDropdownController = controller}}
+                <AutocompleteDropdown controller={(controller: any) => { acDropdownController = controller}}
                 onChangeText={onChangeAddress} useFilter={false} debounce={600} clearOnFocus={false}
                 dataSet={cadastresAC.map(x => ({id: x.properties.ID_UEV, title: getAddress(x)}))}
-                onSelectItem={(item) => item && setCadastre(cadastresAC.find(x => x.properties.ID_UEV == item.id))}
+                onSelectItem={(item: any) => item && setCadastre(cadastresAC.find(x => x.properties.ID_UEV == item.id))}
                 textInputProps={{
                   placeholder: "Enter an address",
                   autoCorrect: false,
@@ -422,7 +420,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     textAlign: "center"
   },
-
   button: {
     borderRadius: 20,
     padding: 10,
