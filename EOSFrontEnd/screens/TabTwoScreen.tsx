@@ -13,6 +13,8 @@ import { useState, useEffect } from 'react';
 import ServerConstants from '../constants/Server';
 import { PostCard } from '../components/PostCard';
 import { TextInput } from 'react-native-gesture-handler';
+import { CustomFeature, getAddress } from '../utils/Cadastre';
+import { LatLng } from 'react-native-maps';
 
 export interface Service {
   title: string;
@@ -21,7 +23,8 @@ export interface Service {
   priceEOS: number;
   serviceType: string;
   category: string;
-  position: string;
+  cadastre: CustomFeature;
+  markerPos: LatLng;
   owner: string;
   ownerName: string;
   thumbnail: string;
@@ -67,7 +70,7 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
         <Text style={styles.title}>EOS MARKETPLACE</Text>
       </View>
       <View style={styles.mapContainer}>
-        <Map pressable={true} />
+        <Map pressable={false} services={data} />
       </View>
       <View style={styles.searchSection}>
     <Icon style={styles.searchIcon} name="search" size={20} color="#04B388"/>
@@ -90,12 +93,12 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
           </View>
         </View>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        
+
        {
          data.filter((e:Service) => e.title.startsWith(searchString.toLowerCase())).map((e: Service) => {
            return(
              <TouchableOpacity onPress={() => {onCardPress(e)}} key={e._id}>
-               <PostCard title={e.title} price={e.priceEOS} position={e.position} owner={e.ownerName} thumbnail={e.thumbnail}></PostCard>
+               <PostCard title={e.title} price={e.priceEOS} position={getAddress(e.cadastre)} owner={e.ownerName} thumbnail={e.thumbnail}></PostCard>
              </TouchableOpacity>)
          })
        }
@@ -144,12 +147,12 @@ const styles = StyleSheet.create({
 
   },
   buttonContainer: {
-    display: 'flex', 
+    display: 'flex',
     flexDirection: 'row',
     flexBasis: 100,
   },
   mapContainer: {
-    justifyContent: 'flex-start', 
+    justifyContent: 'flex-start',
     width: '90%',
     flexBasis: '30%',
   },

@@ -12,6 +12,8 @@ export interface IFeatureProperties {
 }
 
 export function getAddress(feature: CustomFeature): string {
+    if(!feature?.properties?.CIVIQUE_DEBUT || !feature?.properties?.NOM_RUE) return '';
+
     return feature.properties.CIVIQUE_DEBUT + " " + feature.properties.NOM_RUE;
 }
 
