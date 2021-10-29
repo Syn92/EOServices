@@ -93,30 +93,48 @@ export default function Navigation() {
 
   return (
     <NavigationContainer>
-      {user ? <RootNavigator /> : <AuthStack />}
+      {user ? <BottomTabNavigator /> : <AuthStack />}
     </NavigationContainer>
   );
 }
 
-/**
- * A root stack navigator is often used for displaying modals on top of all other content.
- * https://reactnavigation.org/docs/modal
- */
-const Stack = createNativeStackNavigator<RootStackParamList>();
-
-function RootNavigator() {
+const TabOneStack = createNativeStackNavigator();
+function TabOneStackScreen() {
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: false }} />
-      <Stack.Screen name="PublicProfile" component={PublicProfile} options={{ headerShown: false }} />
-      <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
-      <Stack.Screen name="AddPost" component={AddPostScreen} />
-      <Stack.Screen name="PostDetails" component={PostDetailsScreen} />
-      <Stack.Group screenOptions={{ presentation: 'modal' }}>
-        <Stack.Screen name="Modal" component={ModalScreen} />
-      </Stack.Group>
-    </Stack.Navigator>
-  );
+    <TabOneStack.Navigator>
+      <TabOneStack.Screen name="Root" component={TabTwoScreen} options={{ headerShown: false }} />
+      <TabOneStack.Screen name="AddPost" component={AddPostScreen} />
+      <TabOneStack.Screen name="PostDetails" component={PostDetailsScreen} />
+    </TabOneStack.Navigator>
+  )
+}
+
+const TabTwoStack = createNativeStackNavigator();
+function TabTwoStackScreen() {
+  return (
+    <TabTwoStack.Navigator>
+      <TabTwoStack.Screen name="Root" component={TabOneScreen} options={{ headerShown: false }} />
+    </TabTwoStack.Navigator>
+  )
+}
+
+const TabThreeStack = createNativeStackNavigator();
+function TabThreeStackScreen() {
+  return (
+    <TabThreeStack.Navigator>
+      <TabThreeStack.Screen name="Root" component={TabTwoScreen} options={{ headerShown: false }} />
+    </TabThreeStack.Navigator>
+  )
+}
+
+const TabFourStack = createNativeStackNavigator();
+function TabFourStackScreen() {
+  return (
+    <TabFourStack.Navigator>
+      <TabFourStack.Screen name="Root" component={PrivateProfile} options={{ headerShown: false }} />
+      <TabFourStack.Screen name="PublicProfile" component={PublicProfile} options={{ headerShown: false }} />
+    </TabFourStack.Navigator>
+  )
 }
 
 /**
@@ -135,7 +153,7 @@ function BottomTabNavigator() {
       }}>
       <BottomTab.Screen
         name="TabOne"
-        component={TabTwoScreen}
+        component={TabOneStackScreen}
         options={({ navigation }: RootTabScreenProps<'TabOne'>) => ({
           title: 'Home',
           tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
@@ -144,7 +162,7 @@ function BottomTabNavigator() {
       />
       <BottomTab.Screen
         name="TabTwo"
-        component={TabOneScreen}
+        component={TabTwoStackScreen}
         options={{
           title: 'Explore',
           tabBarIcon: ({ color }) => <TabBarIcon name="explore" color={color} />,
@@ -152,7 +170,7 @@ function BottomTabNavigator() {
       />
       <BottomTab.Screen
         name="TabThree"
-        component={TabTwoScreen}
+        component={TabThreeStackScreen}
         options={{
           title: 'Message',
           tabBarIcon: ({ color }) => <TabBarIcon name="chat-bubble" color={color} />,
@@ -160,7 +178,7 @@ function BottomTabNavigator() {
       />
       <BottomTab.Screen
         name="TabFour"
-        component={PrivateProfile}
+        component={TabFourStackScreen}
         options={{
           title: 'Profile',
           tabBarIcon: ({ color }) => <TabBarIcon name="person" color={color} />,
