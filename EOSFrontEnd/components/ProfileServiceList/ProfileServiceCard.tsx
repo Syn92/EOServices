@@ -1,44 +1,47 @@
 import React from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { Icon } from 'react-native-elements'
+import { ServiceInfo } from '../../interfaces/Services';
 import { AuthenticatedUserContext } from '../../navigation/AuthenticatedUserProvider';
 
 interface Prop {
-    icon: string,
-    iconType: string,
-    title: string,
-    editable?: boolean,
-    children: React.ReactNode,
-    callback?: any
+    serviceInfo: ServiceInfo
+}
+
+function getIcon(category: string) {
+
+    //TODO: choose icon by category, (waiting on category list from vincent)
+    return 'category';
 }
 
 export function ProfileServiceCard(props: Prop) {
-    
-    const { user, setUser } =  React.useContext(AuthenticatedUserContext);
 
     return (
         <View style={styles.card}>
-            <Icon name={props.icon} 
-                  type={props.iconType} 
-                  color='#04b388' 
-                  style={styles.icon} />
+            <View style={styles.iconContainer}>
+                <Icon name={getIcon(props.serviceInfo.category)} 
+                    type='material'
+                    color='#04b388'
+                    size={37} />
+                <Text style={styles.imageTitle}>{props.serviceInfo.title}</Text>
+            </View>
             <View style={styles.container}>
-                <View style={{flexDirection: 'row'}}>
-                    <Text style={styles.title}>{props.title}</Text>
-                    {props.editable ? 
-                    <TouchableOpacity onPress={props.callback}>
-                        <Icon style={styles.edit} name='edit' type='material' size={20} color='#04b388' />
-                    </TouchableOpacity> : null}
+                <View style={styles.row}>
+                    <Icon name="storefront" color="#04B388"></Icon>
+                    <Text style={styles.text}>{props.serviceInfo.owner}</Text>
                 </View>
-                <View style={styles.content}>
-                    {props.children}
+                <View style={styles.row}>
+                    <Icon name="attach-money" color="#04B388"></Icon>
+                    <Text style={styles.text}>{props.serviceInfo.price} EOS</Text>
+                </View>
+                <View style={styles.row}>
+                    <Icon name="place" color="#04B388"></Icon>
+                    <Text style={styles.text}>{props.serviceInfo.position}</Text>
                 </View>
             </View>
         </View>
     )
 }
-
-ProfileServiceCard.defaultProps = {editable: true}
 
 const styles = StyleSheet.create({
     card: {
@@ -67,21 +70,26 @@ const styles = StyleSheet.create({
         marginBottom: 5,
         overflow: 'hidden',
     },
-    content: {
-        flex: 1,
-        marginRight: 10,
-        marginBottom: 10,
-        overflow: 'hidden',
-    },
-    title: {
-        fontSize: 18,
-    },
-    icon: {
-        flex: 1,
+    iconContainer: {
+        flexDirection: 'column',
         justifyContent: 'center',
-        marginRight: 10,
+        alignContent: 'center',
+        width: '25%',
+        marginHorizontal: '2%'
     },
-    edit: {
-        marginLeft: 10
-    }
+    imageTitle: {
+        // fontStyle: 'italic',
+        fontWeight: 'bold',
+        color: '#000',
+        fontSize: 16,
+        textTransform: 'capitalize',
+        alignSelf: 'center'
+    },
+    text: {
+        marginLeft: 10,
+    },
+    row: {
+        display: 'flex',
+        flexDirection: 'row'
+    },
 })

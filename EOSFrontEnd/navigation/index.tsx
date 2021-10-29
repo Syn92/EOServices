@@ -14,7 +14,6 @@ import { ActivityIndicator, ColorSchemeName, Pressable, View } from 'react-nativ
 import Firebase from '../config/firebase';
 import Colors from '../constants/Colors';
 import ServerConstants from '../constants/Server';
-import useColorScheme from '../hooks/useColorScheme';
 import { User } from '../interfaces/User';
 import ModalScreen from '../screens/ModalScreen';
 import NotFoundScreen from '../screens/NotFoundScreen';
@@ -26,6 +25,7 @@ import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../typ
 import { AuthenticatedUserContext } from './AuthenticatedUserProvider';
 import AuthStack from './AuthStack';
 import AddPostScreen from '../screens/AddPostScreen';
+import { PublicProfile } from '../screens/PublicProfile';
 import PostDetailsScreen from '../screens/PostDetailsScreen';
 
 const auth = Firebase.auth();
@@ -33,12 +33,13 @@ const auth = Firebase.auth();
 async function checkUser(user: any) {
 
   try {
-    const res = await axios.get<any>(ServerConstants.local + 'auth', { params: { uid: user.uid } });
+    const res = await axios.get<any>(ServerConstants.prod + 'auth', { params: { uid: user.uid } });
     // if user exists, return user
     if (res.data){
       delete res.data._id;
       return res.data;
     }
+
     // add user to mongodb
 
     const newUsr: User = {
@@ -47,7 +48,7 @@ async function checkUser(user: any) {
       name: user.displayName,
       joinedDate: GetFormatedDate(new Date())
     };
-    await axios.post(ServerConstants.local + 'auth', newUsr);
+    await axios.post(ServerConstants.prod + 'auth', newUsr);
 
     return newUsr;    
   } catch (err) {
@@ -56,7 +57,7 @@ async function checkUser(user: any) {
   }
 }
 
-export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
+export default function Navigation() {
   const { user, setUser } =  React.useContext(AuthenticatedUserContext);
   const [isLoading, setIsLoading] = React.useState(true);
 
@@ -91,8 +92,7 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
   }
 
   return (
-    <NavigationContainer
-      theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <NavigationContainer>
       {user ? <RootNavigator /> : <AuthStack />}
     </NavigationContainer>
   );
@@ -108,6 +108,7 @@ function RootNavigator() {
   return (
     <Stack.Navigator>
       <Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: false }} />
+      <Stack.Screen name="PublicProfile" component={PublicProfile} options={{ headerShown: false }} />
       <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
       <Stack.Screen name="AddPost" component={AddPostScreen} />
       <Stack.Screen name="PostDetails" component={PostDetailsScreen} />
@@ -125,15 +126,12 @@ function RootNavigator() {
 const BottomTab = createBottomTabNavigator<RootTabParamList>();
 
 function BottomTabNavigator() {
-  const colorScheme = useColorScheme();
 
   return (
     <BottomTab.Navigator
       initialRouteName="TabOne"
       screenOptions={{
         headerShown: false,
-        tabBarInactiveTintColor: Colors[colorScheme].tabIconDefault,
-        tabBarActiveTintColor: Colors[colorScheme].tint,
       }}>
       <BottomTab.Screen
         name="TabOne"
