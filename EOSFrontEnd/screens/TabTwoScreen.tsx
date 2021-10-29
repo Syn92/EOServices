@@ -1,11 +1,10 @@
 import axios from 'axios';
 import * as React from 'react';
-import { ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Button } from 'react-native-elements/dist/buttons/Button';
 import Map from '../components/Map';
 
 import EditScreenInfo from '../components/EditScreenInfo';
-import { Text, View } from '../components/Themed';
 import { RootTabScreenProps } from '../types';
 import Firebase from '../config/firebase';
 import { Icon } from 'react-native-elements';
@@ -73,15 +72,15 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
         <Map pressable={false} services={data} />
       </View>
       <View style={styles.searchSection}>
-    <Icon style={styles.searchIcon} name="search" size={20} color="#04B388"/>
-    <TextInput
-        style={styles.input}
-        placeholder="Search in marketplace..."
-        placeholderTextColor="#04B388"
-        onChangeText={(searchString) => {setSearchString(searchString)}}
-        underlineColorAndroid="transparent"
-    />
-</View>
+        <Icon style={styles.searchIcon} name="search" size={20} color="#04B388"/>
+        <TextInput
+            style={styles.input}
+            placeholder="Search in marketplace..."
+            placeholderTextColor="#04B388"
+            onChangeText={(searchString) => {setSearchString(searchString)}}
+            underlineColorAndroid="transparent"
+        />
+      </View>
       <View style={styles.listContainer}>
         <View style={styles.headerRow}>
           <Text style={styles.headerText}>Posts</Text>
@@ -158,6 +157,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     // minHeight: '100%',
+    backgroundColor: 'white',
     height: '55%',
     // flexBasis: '50%',
     display: 'flex',
