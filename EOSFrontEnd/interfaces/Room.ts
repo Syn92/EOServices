@@ -1,6 +1,8 @@
+import { Service } from "./Service";
+import { User } from "./User";
+
 export interface IRoom {
-  roomId: string;
-  userId: string;
-  userName: string;
-  product: string;
+  _id: string;
+  user: User;
+  service: Service;
 }

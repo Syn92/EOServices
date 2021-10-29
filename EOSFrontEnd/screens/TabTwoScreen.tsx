@@ -1,10 +1,8 @@
-import axios from 'axios';
 import * as React from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { Button } from 'react-native-elements/dist/buttons/Button';
 import Map from '../components/Map';
 
-import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
 import { RootTabScreenProps } from '../types';
 import Firebase from '../config/firebase';
@@ -13,24 +11,8 @@ import { useState, useEffect } from 'react';
 import ServerConstants from '../constants/Server';
 import { PostCard } from '../components/PostCard';
 import { TextInput } from 'react-native-gesture-handler';
-import { CustomFeature, getAddress } from '../utils/Cadastre';
-import { LatLng } from 'react-native-maps';
-
-export interface Service {
-  title: string;
-  description: string;
-  material: string;
-  priceEOS: number;
-  serviceType: string;
-  category: string;
-  cadastre: CustomFeature;
-  markerPos: LatLng;
-  owner: string;
-  ownerName: string;
-  thumbnail: string;
-  _id: string;
-}
-
+import { getAddress } from '../utils/Cadastre';
+import { Service } from '../interfaces/Service';
 
 const auth = Firebase.auth()
 

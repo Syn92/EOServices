@@ -21,7 +21,7 @@ export function ChatRoomCard(props: IProp) {
         </View>
         <View style={styles.descriptionContainer}>
             <View style={styles.titleContainer}>
-                <Text style={[styles.text, styles.title]} numberOfLines={1}>{props.roomCard.room.userName + " - " + props.roomCard.room.product }</Text>
+                <Text style={[styles.text, styles.title]} numberOfLines={1}>{props.roomCard.room.user.name + " - " + props.roomCard.room.service.title }</Text>
                 <Text style={styles.text}>{props.roomCard.lastTime}</Text>
             </View>
             <View style={styles.lastMessageContainer}>
