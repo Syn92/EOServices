@@ -36,8 +36,8 @@ export interface Service {
 }
 const { height } = Dimensions.get('window');
 
-const servTypeSell = "Offering"
-const servTypeBuy = "Looking For"
+export const servTypeSell = "Offering"
+export const servTypeBuy = "Looking For"
 
 export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPost'>) {
   const [step, setStep] = useState(1)

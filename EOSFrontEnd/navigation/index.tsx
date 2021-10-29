@@ -26,6 +26,7 @@ import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../typ
 import { AuthenticatedUserContext } from './AuthenticatedUserProvider';
 import AuthStack from './AuthStack';
 import AddPostScreen from '../screens/AddPostScreen';
+import PostDetailsScreen from '../screens/PostDetailsScreen';
 
 const auth = Firebase.auth();
 
@@ -109,6 +110,7 @@ function RootNavigator() {
       <Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: false }} />
       <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
       <Stack.Screen name="AddPost" component={AddPostScreen} />
+      <Stack.Screen name="PostDetails" component={PostDetailsScreen} />
       <Stack.Group screenOptions={{ presentation: 'modal' }}>
         <Stack.Screen name="Modal" component={ModalScreen} />
       </Stack.Group>
