@@ -27,6 +27,8 @@ import { AuthenticatedUserContext } from './AuthenticatedUserProvider';
 import AuthStack from './AuthStack';
 import AddPostScreen from '../screens/AddPostScreen';
 import PostDetailsScreen from '../screens/PostDetailsScreen';
+import { LinkWallet } from '../screens/LinkWallet';
+import { CreateWalletTutorial } from '../screens/CreateWalletTutorial';
 
 const auth = Firebase.auth();
 
@@ -35,12 +37,14 @@ async function checkUser(user: any) {
   try {
     const res = await axios.get<any>(ServerConstants.local + 'auth', { params: { uid: user.uid } });
     // if user exists, return user
+
     if (res.data){
+      console.log("user exists", res.data);
       delete res.data._id;
       return res.data;
     }
     // add user to mongodb
-
+    console.log("user does not exists", res.data);
     const newUsr: User = {
       uid: user.uid,
       email: user.email,
@@ -54,6 +58,10 @@ async function checkUser(user: any) {
     console.log('checkuser')
     console.log(err);
   }
+}
+
+export async function addLinkAccountName(eosName) {
+  await axios.p(ServerConstants.local + 'auth', newUsr);
 }
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
@@ -108,6 +116,8 @@ function RootNavigator() {
   return (
     <Stack.Navigator>
       <Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: false }} />
+      <Stack.Screen name="Link" component={LinkWallet} options={{ headerShown: false }} />
+      <Stack.Screen name="CreateWalletTutorial" component={CreateWalletTutorial} options={{ headerShown: false }} />
       <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
       <Stack.Screen name="AddPost" component={AddPostScreen} />
       <Stack.Screen name="PostDetails" component={PostDetailsScreen} />
