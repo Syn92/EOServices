@@ -24,7 +24,6 @@ export function PublicProfile({route, navigation}: any) {
     const [ services, setServices ] = useState([])
 
     React.useEffect(() => {
-        console.log(publicUser)
         fetchPublicUser();
         fetchUserServices();
     }, []);
@@ -34,7 +33,7 @@ export function PublicProfile({route, navigation}: any) {
             const res = await axios.get<any>(ServerConstants.local + 'post/list', { params: { owner: uid } });
             setServices(res.data);
         } catch (e) {
-            console.error('Fetch User Services: ', e)
+            console.error('Fetch User Services Public: ', e)
         }
     }
 
@@ -51,7 +50,6 @@ export function PublicProfile({route, navigation}: any) {
         console.log(uid)
         const res = await axios.get<any>(ServerConstants.local + 'auth', { params: { uid: uid } });
         if (res.data){
-            console.log(res.data)
             const data: any = res.data
             delete data._id
             setPublicUser(data)

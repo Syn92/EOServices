@@ -52,7 +52,7 @@ export function PrivateProfile({navigation}: {navigation: any}) {
             const res = await axios.get<any>(ServerConstants.local + 'post/list', { params: { owner: user?.uid } });
             setServices(res.data);
         } catch (e) {
-            console.error('Fetch User Services: ', e)
+            console.error('Fetch User Services Private: ', e)
         }
     }
 
