@@ -14,29 +14,24 @@ import Firebase from '../config/firebase';
 const WIDTH = Dimensions.get('window').width;
 const auth = Firebase.auth()
 
-enum ModalType {
-    description,
-    contactInfo,
-}
+export function PublicProfile({route, navigation}: any) {
 
-interface ContactInfo {
-    name: string | undefined,
-    phone: string | undefined,
-}
-
-export function PublicProfile() {
+    const { uid } = route.params;
 
     const { user, setUser } =  React.useContext(AuthenticatedUserContext);
+    const [ publicUser, setPublicUser] = useState<User | null>(null);
     const [ description, setDescription ] = useState(user?.description);
     const [ services, setServices ] = useState([])
 
     React.useEffect(() => {
+        console.log(publicUser)
+        fetchPublicUser();
         fetchUserServices();
     }, []);
 
     async function fetchUserServices() {
         try {
-            const res = await axios.get<any>(ServerConstants.local + 'post/list', { params: { owner: user?.uid } });
+            const res = await axios.get<any>(ServerConstants.local + 'post/list', { params: { owner: uid } });
             setServices(res.data);
         } catch (e) {
             console.error('Fetch User Services: ', e)
@@ -52,15 +47,60 @@ export function PublicProfile() {
         }
       }
 
-    async function fetchUser() {
-        const res = await axios.get<any>(ServerConstants.local + 'auth', { params: { uid: user?.uid } });
+    async function fetchPublicUser() {
+        console.log(uid)
+        const res = await axios.get<any>(ServerConstants.local + 'auth', { params: { uid: uid } });
         if (res.data){
+            console.log(res.data)
             const data: any = res.data
             delete data._id
-            if (setUser) setUser(data as User)
+            setPublicUser(data)
         } else {
-            throw new Error('Error retrieving user after modifying description')
+            throw new Error('Error retrieving user')
         }
+    }
+
+    function renderPage() {
+        return (
+            <View>
+                <View style={styles.avatar}>
+                    <TouchableOpacity style={styles.logoutIcon} onPress={handleLogout}>
+                        <Icon name='logout' 
+                            type='material'
+                            color='#04b388'
+                            size={37} />
+                    </TouchableOpacity>
+                    <Image resizeMode='cover' style={styles.photo} source={require('../assets/images/avatar.webp')} />
+                    <Text style={styles.username}>{publicUser?.name}</Text>
+                    <Text>⭐⭐⭐⭐⭐</Text>
+                </View>
+
+                {/* ---- Description ---- */}
+                <View style={styles.descriptionContainer}>
+                    <Text style={styles.description}>{publicUser?.description}</Text>
+                </View>
+
+                {/* ---- Profile cards ---- */}
+                <ProfileCard icon='calendar-today' iconType='material' title='Joined Date' editable={ false }>
+                    <Text style={{fontSize: 20,}}>{publicUser?.joinedDate}</Text>
+                </ProfileCard>
+
+                <TouchableOpacity style={styles.button}>
+                    <Text style={{fontSize: 18, color: 'white'}}>Send Message</Text>
+                </TouchableOpacity>
+                
+                
+                {/* Orders list */}
+                <View style={styles.listContainer}>
+                    <View style={styles.refresh}>
+                        <TouchableOpacity style={{paddingHorizontal: '20%'}} activeOpacity={0.2} onPress={fetchUserServices}>
+                            <Icon name='refresh' type='material' color='#04b388'/>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+                <ProfileServiceList data={services}/>
+            </View>
+        )
     }
     return (
         <ScrollView contentContainerStyle={{flexGrow: 1}}>
@@ -68,42 +108,7 @@ export function PublicProfile() {
                 <ImageBackground style={{ flex: 1 }} source={require('../assets/images/bg.png')}>
                     <StatusBar style='light'/>
                     {/* ---- Avatar + ratings ---- */}
-                    <View style={styles.avatar}>
-                        <TouchableOpacity style={styles.logoutIcon} onPress={handleLogout}>
-                            <Icon name='logout' 
-                                type='material'
-                                color='#04b388'
-                                size={37} />
-                        </TouchableOpacity>
-                        <Image resizeMode='cover' style={styles.photo} source={require('../assets/images/avatar.webp')} />
-                        <Text style={styles.username}>{user?.name}</Text>
-                        <Text>⭐⭐⭐⭐⭐</Text>
-                    </View>
-
-                    {/* ---- Description ---- */}
-                    <View style={styles.descriptionContainer}>
-                        <Text style={styles.description}>{user?.description}</Text>
-                    </View>
-
-                    {/* ---- Profile cards ---- */}
-                    <ProfileCard icon='calendar-today' iconType='material' title='Joined Date' editable={ false }>
-                        <Text style={{fontSize: 20,}}>{user?.joinedDate}</Text>
-                    </ProfileCard>
-
-                    <TouchableOpacity style={styles.button}>
-                        <Text style={{fontSize: 18, color: 'white'}}>Send Message</Text>
-                    </TouchableOpacity>
-                    
-                    
-                    {/* Orders list */}
-                    <View style={styles.listContainer}>
-                        <View style={styles.refresh}>
-                            <TouchableOpacity style={{paddingHorizontal: '20%'}} activeOpacity={0.2} onPress={fetchUserServices}>
-                                <Icon name='refresh' type='material' color='#04b388'/>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                    <ProfileServiceList data={services}/>
+                    { !publicUser ? null : renderPage()}                    
                 </ImageBackground>
             </View>
         </ScrollView>

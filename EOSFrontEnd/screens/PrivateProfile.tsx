@@ -273,7 +273,7 @@ export function PrivateProfile({navigation}: {navigation: any}) {
                                 color='#04b388'
                                 size={37} />
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => navigation.navigate('PublicProfile')}>
+                        <TouchableOpacity onPress={() => navigation.navigate('PublicProfile', {uid: 'HSkPJjeaFca96K98Xpqw76DGo303'})}>
                             <Image resizeMode='cover' style={styles.photo} source={require('../assets/images/avatar.webp')} />
                         </TouchableOpacity>
                         <Text style={styles.username}>{user?.name}</Text>
