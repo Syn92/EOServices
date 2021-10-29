@@ -20,7 +20,7 @@ export function CreateWalletTutorial() {
                     <Image style={styles.image} source={require('../assets/images/anchorWalletLogo.png')} />
                     <View>
                         <TouchableOpacity onPress={openAnchor}>
-                            <Text style={styles.iconText}>1. Install the Greymass Anchor Wallet app</Text>
+                            <Text style={styles.iconTextLink}>1. Install the Greymass Anchor Wallet app</Text>
                         </TouchableOpacity>
                         <Text style={styles.iconText}>2. Tap on "Add account"</Text>
                         <Text style={styles.iconText}>3. Tap the "Create account" option</Text>
@@ -100,6 +100,13 @@ const styles = StyleSheet.create({
         marginLeft: 10,
         fontSize: 13,
         paddingVertical: 15
+    },
+    iconTextLink: {
+        color: '#04b388',
+        marginLeft: 10,
+        fontSize: 13,
+        paddingVertical: 15,
+        textDecorationLine: "underline",
     },
     iconTextLastLine: {
         color: '#04b388',
