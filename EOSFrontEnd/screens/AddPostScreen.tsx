@@ -1,7 +1,6 @@
 import * as React from 'react';
-import { Platform, StyleSheet, TextInput, Image, ScrollView, TouchableOpacity, Modal, Pressable } from 'react-native';
+import { Image, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Button } from 'react-native-elements/dist/buttons/Button';
-import { Text, View } from '../components/Themed';
 import ActionButton from '../components/ActionButton';
 import ActionButtonSecondary from '../components/ActionButtonSecondary';
 import { useEffect, useState } from 'react';
@@ -303,7 +302,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: '#16254b',
+    backgroundColor: 'white',
     alignItems: 'center',
     flexDirection: 'column'
   },
@@ -327,6 +326,7 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     display: 'flex',
+    backgroundColor: 'white',
     flexDirection: 'column',
     width: '75%',
     borderRadius: 15,

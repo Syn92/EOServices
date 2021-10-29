@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { StatusBar } from 'expo-status-bar';
-import { Dimensions, Image, ImageBackground, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableHighlight, View } from 'react-native'
+import { Dimensions, Image, ImageBackground, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableHighlight, TouchableOpacity, View } from 'react-native'
 
 import { ProfileCard } from '../components/ProfileCard'
 import { Icon } from 'react-native-elements';
@@ -10,8 +10,10 @@ import axios from 'axios';
 import ServerConstants from '../constants/Server';
 import Loading from '../components/Loading';
 import { ProfileServiceList } from '../components/ProfileServiceList/ProfileServiceList';
+import Firebase from '../config/firebase';
 
 const WIDTH = Dimensions.get('window').width;
+const auth = Firebase.auth()
 
 enum ModalType {
     description,
@@ -23,14 +25,15 @@ interface ContactInfo {
     phone: string | undefined,
 }
 
-export function PrivateProfile() {
+export function PrivateProfile({navigation}: {navigation: any}) {
 
     const { user, setUser } =  React.useContext(AuthenticatedUserContext);
     const [ modalVisible, setModalVisible ] = useState(false);
     const [ modalType, setModalType] = useState<ModalType>();
     const [ description, setDescription ] = useState(user?.description);
     const [ descriptionLength, setDescriptionLength ] = useState(0);
-    const [ isLoading, setisLoading ] = useState(false);
+    const [ isPageLoading, setisPageLoading ] = useState(false);
+    const [ services, setServices ] = useState([])
 
     const [nameError, setNameError] = useState('');
     const [phoneError, setPhoneError] = useState('');
@@ -40,6 +43,19 @@ export function PrivateProfile() {
         phone: user?.phone
     });
 
+    React.useEffect(() => {
+        fetchUserServices();
+    }, []);
+
+    async function fetchUserServices() {
+        try {
+            const res = await axios.get<any>(ServerConstants.local + 'post/list', { params: { owner: user?.uid } });
+            setServices(res.data);
+        } catch (e) {
+            console.error('Fetch User Services: ', e)
+        }
+    }
+
     function resetContactInfoModal() {
         setContactInfo({
             name: user?.name,
@@ -48,6 +64,15 @@ export function PrivateProfile() {
         setNameError('')
         setPhoneError('')
     }
+
+    async function handleLogout() {
+        try {
+          await auth.signOut()
+        } catch (error: any) {
+          console.log('logout')
+          console.log(error)
+        }
+      }
 
     async function fetchUser() {
         const res = await axios.get<any>(ServerConstants.local + 'auth', { params: { uid: user?.uid } });
@@ -108,7 +133,7 @@ export function PrivateProfile() {
         const originalDescription = user?.description;
         return (
             <View style={styles.modalView}>
-                {isLoading ? Loading({}): null}
+                {isPageLoading ? Loading({}): null}
 
                 <Text style={styles.modalText}>Edit Description</Text>
                 
@@ -140,9 +165,9 @@ export function PrivateProfile() {
                         style={styles.openButton}
                         onPress={async () => {
                             if (description != originalDescription){
-                                setisLoading(true)
+                                setisPageLoading(true)
                                 await editDescription()
-                                setisLoading(false)
+                                setisPageLoading(false)
                             }
                             setModalVisible(!modalVisible);
                         }
@@ -210,9 +235,9 @@ export function PrivateProfile() {
                         const submitCond = nameError.length == 0 && phoneError.length == 0
 
                         if (submitCond) {
-                            setisLoading(true)
+                            setisPageLoading(true)
                             await editContactInfo()
-                            setisLoading(false)
+                            setisPageLoading(false)
 
                             setModalVisible(!modalVisible);
                         }
@@ -242,7 +267,15 @@ export function PrivateProfile() {
                     <StatusBar style='light'/>
                     {/* ---- Avatar + ratings ---- */}
                     <View style={styles.avatar}>
-                        <Image resizeMode='cover' style={styles.photo} source={require('../assets/images/avatar.webp')} />
+                        <TouchableOpacity style={styles.logoutIcon} onPress={handleLogout}>
+                            <Icon name='logout' 
+                                type='material'
+                                color='#04b388'
+                                size={37} />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => navigation.navigate('PublicProfile')}>
+                            <Image resizeMode='cover' style={styles.photo} source={require('../assets/images/avatar.webp')} />
+                        </TouchableOpacity>
                         <Text style={styles.username}>{user?.name}</Text>
                         <Text>⭐⭐⭐⭐⭐</Text>
                     </View>
@@ -270,7 +303,14 @@ export function PrivateProfile() {
                     </ProfileCard>
                     
                     {/* Orders list */}
-                    <ProfileServiceList/>
+                    <View style={styles.listContainer}>
+                        <View style={styles.refresh}>
+                            <TouchableOpacity style={{paddingHorizontal: '20%'}} activeOpacity={0.2} onPress={fetchUserServices}>
+                                <Icon name='refresh' type='material' color='#04b388'/>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                    <ProfileServiceList data={services}/>
                 </ImageBackground>
             </View>
         </ScrollView>
@@ -281,10 +321,21 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
+    listContainer: {
+        alignItems: 'center',
+        marginTop: 10
+    },
+    refresh: {
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        // paddingHorizontal: '20%',
+        backgroundColor: 'white'
+    },
     avatar: {
-        marginTop: '20%',
+        marginTop: '10%',
         marginBottom: '3%',
         alignItems: 'center',
+        // backgroundColor: 'pink'
     },
     username: {
         color: 'white',
@@ -390,5 +441,10 @@ const styles = StyleSheet.create({
         color: 'red',
         fontStyle: 'italic',
         fontSize: 10
-    }
+    },
+    logoutIcon: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        width: '90%',
+    },
 });

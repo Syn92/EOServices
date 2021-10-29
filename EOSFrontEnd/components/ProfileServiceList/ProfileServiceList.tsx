@@ -1,9 +1,16 @@
 import React, { useState } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { ButtonGroup, Tab, TabView } from 'react-native-elements'
+import { ServiceInfo } from '../../interfaces/Services'
+import { getAddress } from '../../utils/Cadastre'
+import Loading from '../Loading'
 import { ProfileServiceCard } from './ProfileServiceCard'
 
-export function ProfileServiceList() {
+interface Props {
+    data: Array<Object>,
+}
+
+export function ProfileServiceList(props: Props) {
 
     const [ index, setIndex ] = useState(0)
 
@@ -14,15 +21,18 @@ export function ProfileServiceList() {
                 selectedIndex={index}
                 buttons={['Offers', 'Completed']}
                 containerStyle={styles.buttonGroup}/>
-            <ProfileServiceCard icon='calendar-today' iconType='material' title='Joined Date' editable={ false }>
-                <Text>dfgdfg</Text>
-            </ProfileServiceCard>
-            <ProfileServiceCard icon='calendar-today' iconType='material' title='Joined Date' editable={ false }>
-                <Text>dfgdfg</Text>
-            </ProfileServiceCard>
-            <ProfileServiceCard icon='calendar-today' iconType='material' title='Joined Date' editable={ false }>
-                <Text>dfgdfg</Text>
-            </ProfileServiceCard>
+            {
+                props.data.map((elem: any) => {
+                    const serviceInfo: ServiceInfo = {
+                        category: elem.category,
+                        title: elem.title,
+                        owner: elem.ownerName,
+                        price: elem.priceEOS,
+                        position: getAddress(elem.cadastre)
+                    }
+                    return (<ProfileServiceCard serviceInfo={serviceInfo} key={serviceInfo.title}/>)
+                })
+            }
         </View>
     )
 }
@@ -30,7 +40,7 @@ export function ProfileServiceList() {
 const styles = StyleSheet.create({
     container: {
         width: '88%',
-        marginVertical: 10, 
+        marginBottom: 10, 
         alignSelf: 'center',
         padding: 5,
         
