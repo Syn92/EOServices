@@ -9,6 +9,7 @@ import axios from 'axios';
 import ServerConstants from '../constants/Server';
 import Loading from '../components/Loading';
 import Carousel, { Pagination } from 'react-native-snap-carousel';
+import { getAddress } from '../utils/Cadastre';
 
 
 export default function PostDetailsScreen({route, navigation }: RootTabScreenProps<'PostDetails'>) {
@@ -28,7 +29,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
     const _renderItem = ({item, index}) => {
         return (
             <View>
-                <Image key={index} source={{uri: 'data:image/png;base64,' + item, width: 250, height: 250}}/>
+                <Image key={index} source={{uri: item, width: 250, height: 250}}/>
             </View>
         );
     }
@@ -40,7 +41,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
         return (
           !loading ? <View style={styles.container}>
               <View style={styles.cardContainer}>
-                <Image style={styles.image} source={{uri: 'data:image/png;base64,' + service.thumbnail, width: 50, height: 50}}/>
+                <Image style={styles.image} source={{uri: service.thumbnail, width: 50, height: 50}}/>
                 <Text style={styles.imageTitle}>{service.title}</Text>
                 <View style={styles.contentCard}>
                     <Icon style={styles.iconCard} name="storefront" color="#04B388"></Icon>
@@ -49,7 +50,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
 
                 <View style={styles.contentCard}>
                     <Icon style={styles.iconCard} name="place" color="#04B388"></Icon>
-                    <Text style={styles.textCard}>insert ADRESS</Text>
+                    <Text style={styles.textCard}>{getAddress(service.cadastre)}</Text>
                 </View>
 
                 <View style={styles.contentCard}>
@@ -67,11 +68,6 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
                     <Text style={styles.textCard}>{service.description}</Text>
                 </View>
 
-                {/* {   
-                    service.images ? service.images.map((e: any, i: number) => {
-                        return (<Image key={i} source={{uri: 'data:image/png;base64,' + e, width: 150, height: 150}}/>)
-                    }) : <View></View>
-                } */}
                 <Carousel
                   layout={"default"}
                   data={service.images}

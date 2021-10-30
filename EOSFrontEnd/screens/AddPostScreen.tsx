@@ -67,7 +67,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
         priceEOS: Number(price),
         description: description,
         material: material,
-        images: image.filter((e,i) => i!=0),
+        images: image,
         cadastreId: cadastre.properties.ID_UEV,
         markerPos: getCenter(cadastre),
         thumbnail: image[0],
@@ -258,7 +258,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
                     <Text style={styles.modalText}>Post succesfully submited</Text>
                     <Pressable
                       style={[styles.button, styles.buttonClose]}
-                      onPress={() => {setModalVisible(!modalVisible); navigation.navigate('TabTwo')}}
+                      onPress={() => {setModalVisible(!modalVisible); navigation.navigate('TabOne')}}
                     >
                       <Text style={styles.textStyle}>Ok</Text>
                     </Pressable>
@@ -279,7 +279,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
                   autoCorrect: false,
                   autoCapitalize: "none",
                 }}/>
-                <View style={{height: 200}}>
+                <View style={{height: 400}}>
                   <Map pressable={true} selectedCadastre={cadastre}
                   onPressed={(item) => {
                     acDropdownController.clear()

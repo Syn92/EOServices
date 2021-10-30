@@ -48,10 +48,15 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
-    const resp = await fetch(ServerConstants.local + 'post/list');
-    const data = await resp.json();
-    setData(data);
-    setLoading(false);
+    try{
+      const resp = await fetch(ServerConstants.local + 'post/list');
+      const data = await resp.json();
+      setData(data);
+      setLoading(false);
+    } catch (e) {
+      setLoading(false)
+      console.error('Fetch annonces tab one: ', e)
+    }
   };
 
   const onCardPress = (serv: Service) => {
