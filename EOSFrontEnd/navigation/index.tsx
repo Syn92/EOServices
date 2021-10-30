@@ -41,7 +41,7 @@ async function checkUser(user: any) {
     if (res.data){
       console.log("user exists", res.data);
       delete res.data._id;
-      return res.data;
+      return [res.data, false];
     }
 
     // add user to mongodb
@@ -54,27 +54,27 @@ async function checkUser(user: any) {
     };
     await axios.post(ServerConstants.prod + 'auth', newUsr);
 
-    return newUsr;    
+    return [newUsr, true];    
   } catch (err) {
     console.log('checkuser')
     console.log(err);
   }
 }
 
-export async function addLinkAccountName(eosName) {
-  await axios.p(ServerConstants.local + 'auth', newUsr);
-}
-
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
-  const { user, setUser } =  React.useContext(AuthenticatedUserContext);
+  const { user, setUser, isNewUser, setIsNewUser } =  React.useContext(AuthenticatedUserContext);
+  //const { isNewUser, setIsNewUser } =  React.useContext(AuthenticatedUserContext);
   const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {
     // onAuthStateChanged returns an unsubscriber
     const unsubscribeAuth = auth.onAuthStateChanged(async (authenticatedUser: any) => {
       try {
-        if (authenticatedUser)
-          authenticatedUser = await checkUser(authenticatedUser)
+        if (authenticatedUser) {
+          var response = await checkUser(authenticatedUser);
+          authenticatedUser = response[0];
+          setIsNewUser(response[1]);
+        }
         
         // setUser to either null or return value of checkUser
         if (setUser) await setUser(authenticatedUser);
@@ -136,6 +136,7 @@ function RootNavigator() {
 const BottomTab = createBottomTabNavigator<RootTabParamList>();
 
 function BottomTabNavigator() {
+  
 
   return (
     <BottomTab.Navigator

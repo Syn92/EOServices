@@ -21,17 +21,10 @@ export function LinkWallet({ navigation }: { navigation: any }) {
     try {
         let res = await axios.patch(ServerConstants.local + 'auth', { 
             uid: user?.uid,
-            patch: { description: description }
+            patch: { walletAccountName: eosUsername }
         })
         console.log(res)
-        if (res.status == 200) {
-            await fetchUser()
-        } else {
-            setDescription(user?.description)
-            throw new Error(`Error updating description (status ${res.status}): ${res.statusText}`)
-        }
     } catch (e) {
-        setDescription(user?.description)
         console.error('Edit description error: ', e)
     }
   }
