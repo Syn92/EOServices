@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, Text, Image } from 'react-native';
-import { View } from '../components/Themed';
+import { StyleSheet, Text, Image, View } from 'react-native';
 import { RootTabScreenProps } from '../types';
 import { LatLng } from 'react-native-maps';
 import { Service } from './TabTwoScreen';
@@ -21,7 +20,6 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
 
     const fetchData = async () => {
         axios.get(ServerConstants.local + 'post/?id='+id).then((response) => {
-            console.log(response);
             setService(response.data);
             setLoading(false);
         })

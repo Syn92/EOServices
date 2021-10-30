@@ -5,6 +5,7 @@ import Geocoder from 'react-native-geocoding';
 import axios, { CancelTokenSource } from 'axios';
 import { CustomFeature, CustomFeatureColl, getCenter } from '../utils/Cadastre';
 import ServerConstants from '../constants/Server';
+import { Service } from '../screens/TabTwoScreen';
 
 interface IMarker {
     key: string;
@@ -18,6 +19,7 @@ interface IProps {
     pressable: boolean;
     onPressed?: ((cadastre: CustomFeature) => any);
     selectedCadastre?: CustomFeature;
+    services?: Service[];
 }
 
 Geocoder.init("AIzaSyCcPFzHoC-XT8h-3MZt8CfIz5J-w9BeMHA");
@@ -50,10 +52,6 @@ export default function Map(props: IProps) {
 
     let cancelTokenSource: CancelTokenSource | null;
 
-    if(!props.pressable) {
-        //todo: set existing markers from the DB here
-    }
-
     useEffect( () => {
         if(props.selectedCadastre) {
             if(selectedGeoJson.features.length > 0 && selectedGeoJson.features[0].properties.ID_UEV == props.selectedCadastre.properties.ID_UEV) {
@@ -75,6 +73,17 @@ export default function Map(props: IProps) {
             setSelectedGeoJson({type: selectedGeoJson.type, features: []});
         }
     }, [props.selectedCadastre]);
+
+    useEffect( () => {
+        if(props.services) {
+            setMarkers(props.services.map((x) => { return {
+                key: x.cadastre.properties.ID_UEV,
+                coordinate: x.markerPos
+            } as IMarker}))
+        } else {
+            setMarkers([])
+        }
+    }, [props.services]);
 
     // if pressable, react to the onPress event by adding a marker
     // and calling onPressed with the corresponding address
