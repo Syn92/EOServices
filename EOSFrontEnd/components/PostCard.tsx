@@ -25,7 +25,7 @@ export function PostCard(props: Prop) {
                         <Text style={styles.text}>{props.owner}</Text>
                     </View>
                     <View style={styles.row}>
-                        <Icon name="attach-money" color="#04B388"></Icon>
+                        <Icon name="money" color="#04B388"></Icon>
                         <Text style={styles.text}>{props.price} EOS</Text>
                     </View>
                     <View style={styles.row}>

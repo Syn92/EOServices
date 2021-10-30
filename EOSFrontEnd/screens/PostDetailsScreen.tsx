@@ -9,6 +9,7 @@ import axios from 'axios';
 import ServerConstants from '../constants/Server';
 import Loading from '../components/Loading';
 import Carousel, { Pagination } from 'react-native-snap-carousel';
+import { getAddress } from '../utils/Cadastre';
 
 
 export default function PostDetailsScreen({route, navigation }: RootTabScreenProps<'PostDetails'>) {
@@ -49,7 +50,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
 
                 <View style={styles.contentCard}>
                     <Icon style={styles.iconCard} name="place" color="#04B388"></Icon>
-                    <Text style={styles.textCard}>insert ADRESS</Text>
+                    <Text style={styles.textCard}>{getAddress(service.cadastre)}</Text>
                 </View>
 
                 <View style={styles.contentCard}>

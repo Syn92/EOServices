@@ -258,7 +258,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
                     <Text style={styles.modalText}>Post succesfully submited</Text>
                     <Pressable
                       style={[styles.button, styles.buttonClose]}
-                      onPress={() => {setModalVisible(!modalVisible); navigation.navigate('TabTwo')}}
+                      onPress={() => {setModalVisible(!modalVisible); navigation.navigate('TabOne')}}
                     >
                       <Text style={styles.textStyle}>Ok</Text>
                     </Pressable>
@@ -279,7 +279,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
                   autoCorrect: false,
                   autoCapitalize: "none",
                 }}/>
-                <View style={{height: 200}}>
+                <View style={{height: 400}}>
                   <Map pressable={true} selectedCadastre={cadastre}
                   onPressed={(item) => {
                     acDropdownController.clear()
