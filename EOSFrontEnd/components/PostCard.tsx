@@ -16,7 +16,7 @@ export function PostCard(props: Prop) {
         <View style={styles.mainContainer}>
             <View style={styles.mainRow}>
                 <View style={styles.imageContainer}>
-                    <Image style={styles.image} source={{uri: 'data:image/png;base64,' + props.thumbnail, width: 50, height: 50}}/>
+                    <Image style={styles.image} source={{uri: props.thumbnail, width: 50, height: 50}}/>
                     <Text style={styles.imageTitle}>{props.title}</Text>
                 </View>
                 <View style={styles.card}>

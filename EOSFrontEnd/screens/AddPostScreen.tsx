@@ -68,7 +68,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
         priceEOS: Number(price),
         description: description,
         material: material,
-        images: image.filter((e,i) => i!=0),
+        images: image,
         cadastreId: cadastre.properties.ID_UEV,
         markerPos: getCenter(cadastre),
         thumbnail: image[0],
