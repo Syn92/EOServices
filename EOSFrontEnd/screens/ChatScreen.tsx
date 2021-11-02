@@ -3,33 +3,63 @@ import * as React from 'react';
 import { useState } from 'react';
 import { ActivityIndicator, ImageBackground, StyleSheet, Text } from 'react-native';
 import { GiftedChat, IMessage as IGiftedMessage } from 'react-native-gifted-chat';
+import { io } from 'socket.io-client';
 import { View } from '../components/Themed';
 import ServerConstants from '../constants/Server';
-import { IMessage, toGiftedMessage } from '../interfaces/Chat';
+import { IMessage, toGiftedMessage, toIMessage } from '../interfaces/Chat';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
 import { RootStackScreenProps } from '../types';
 
 export default function ChatScreen({ navigation, route }: RootStackScreenProps<'Chat'>) {
-  const [messages, setMessages] = useState<IGiftedMessage[]>([]);
+  const [giftedMessages, setGiftedMessages] = useState<IGiftedMessage[]>([]);
 
   const [isLoading, setIsLoading] = useState(true);
 
   const { user } =  React.useContext(AuthenticatedUserContext);
 
-  axios.get(ServerConstants.local + 'chatMessages', { params: {roomId: route.params._id } })
-  .then(function (response) {
-    const receivedMessages = response.data as IMessage[];
-    setMessages(receivedMessages.map(x => toGiftedMessage(x, x.userId == user?.uid ? user : route.params.user)));
-    setIsLoading(false);
-  }).catch(function (error) {
-    console.log(error);
-  });
+  const socket = io(ServerConstants.local + "chat");
+
+  function setMessages(messages: IMessage[]) {
+    setGiftedMessages(messages.map(x => toGiftedMessage(x, x.userId == user?.uid ? user : route.params.user)))
+  }
+
+  function appendMessage(message: IMessage) {
+    setGiftedMessages(previousMessages =>
+      GiftedChat.append(previousMessages, [toGiftedMessage(message, message.userId == user?.uid ? user : route.params.user)])
+    )
+  }
+
+  React.useEffect(() => {
+    axios.get(ServerConstants.local + 'chatMessages', { params: {roomId: route.params._id } })
+    .then(function (response) {
+      setMessages(response.data as IMessage[]);
+      setIsLoading(false);
+    }).catch(function (error) {
+      console.log(error);
+    });
+
+    socket.on("connect_error", (err) => {
+      console.log(err.message);
+    });
+    socket.connect();
+    socket.emit('joinRoom', route.params._id);
+    socket.on('newMessage', (message: IMessage) => {
+      appendMessage(message)
+    });
+  }, [])
+
+  function sendMessage(newMessages: IGiftedMessage[]) {
+    for(const message of newMessages) {
+      socket.emit('newMessage', toIMessage(message, route.params._id))
+    }
+  }
 
   return (
     <ImageBackground style={styles.container} source={require('../assets/images/bg.png')}>
       <Text style={styles.title} numberOfLines={1}>{route.params.user.name + " - " + route.params.service.title}</Text>
       <View style={styles.chatContainer}>
-        <GiftedChat messages={messages} user={{_id: user!.uid, name: user!.name}}/>
+        <GiftedChat messages={giftedMessages}
+        user={{_id: user!.uid, name: user!.name}} onSend={sendMessage}/>
       </View>
       {isLoading && (<View style={styles.loadingContainer}>
         <ActivityIndicator size='large' color='white'/>

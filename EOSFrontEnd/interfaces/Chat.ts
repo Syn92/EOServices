@@ -24,3 +24,13 @@ export function toGiftedMessage(message: IMessage, user: User): IGiftedMessage {
         user: {_id: user.uid, name: user.name}
     }
 }
+
+export function toIMessage(message: IGiftedMessage, roomId: string): IMessage {
+    return {
+        _id: message._id.toString(),
+        text: message.text,
+        createdAt: new Date(message.createdAt),
+        userId: message.user._id.toString(),
+        roomId: roomId
+    }
+}
