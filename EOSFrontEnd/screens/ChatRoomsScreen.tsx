@@ -8,7 +8,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { ChatRoomCard, IRoomCard } from '../components/Chat/ChatRoomCard';
 import { View } from '../components/Themed';
 import ServerConstants from '../constants/Server';
-import { IMessage, IRoom } from '../interfaces/Chat';
+import { IRoom } from '../interfaces/Chat';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
 import { RootTabScreenProps } from '../types';
 
@@ -17,38 +17,22 @@ export default function ChatRoomsScreen({ navigation }: RootTabScreenProps<'Chat
   const [roomCards, setRoomCards] = useState<IRoomCard[]>([]);
 
   function onChannelPress(room: IRoom) {
-    axios.get(ServerConstants.local + 'chatMessages', { params: {roomId: room._id } })
-    .then(function (response) {
-      // handle success
-      const messages = response.data as IMessage[];
-      console.log(messages[0])
-      navigation.navigate('Chat', {room, messages})
-    }).catch(function (error) {
-      // handle error
-      console.log(error);
-    });
+    navigation.navigate('Chat', room)
   }
 
   const { user } =  React.useContext(AuthenticatedUserContext);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      axios.get(ServerConstants.local + 'chatRooms', { params: {userId: user?.uid } })
-      .then(function (response) {
-        // handle success
-        const rooms = response.data as IRoom[];
-        // console.log(rooms[0])
-        setRoomCards([{
-          room: rooms[0],
-          lastMessage:  'Hi! I was wondering if you still have that PS5 available, hopefully before christmas. Thanks!',
-          lastTime: '28/10/2021'
-        }])
-      }).catch(function (error) {
-        // handle error
-        console.log(error);
-      });
-    }, [])
-  )
+  axios.get(ServerConstants.local + 'chatRooms', { params: {userId: user?.uid } })
+  .then(function (response) {
+    const rooms = response.data as IRoom[];
+    setRoomCards([{
+        room: rooms[0],
+        lastMessage:  'Hi! I was wondering if you still have that PS5 available, hopefully before christmas. Thanks!',
+        lastTime: '28/10/2021'
+    }])
+  }).catch(function (error) {
+    console.log(error);
+  });
 
   return (
     <ImageBackground style={styles.container} source={require('../assets/images/bg.png')}>

@@ -11,16 +11,16 @@ export interface IRoom {
 export interface IMessage {
     _id: string;
     roomId: string;
-    user: User;
+    userId: string;
     text: string;
     createdAt: Date;
 }
 
-export function toGiftedMessage(message: IMessage): IGiftedMessage {
+export function toGiftedMessage(message: IMessage, user: User): IGiftedMessage {
     return {
         _id: message._id,
         text: message.text,
         createdAt: message.createdAt,
-        user: {_id: message.user.uid, name: message.user.name}
+        user: {_id: user.uid, name: user.name}
     }
 }
