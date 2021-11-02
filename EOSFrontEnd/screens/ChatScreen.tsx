@@ -46,6 +46,10 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
     socket.on('newMessage', (message: IMessage) => {
       appendMessage(message)
     });
+
+    return function cleanup() {
+      socket.close();
+    };
   }, [])
 
   function sendMessage(newMessages: IGiftedMessage[]) {
