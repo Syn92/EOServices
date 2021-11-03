@@ -24,6 +24,7 @@ import GetFormatedDate from '../services/DateFormater';
 import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
 import { AuthenticatedUserContext } from './AuthenticatedUserProvider';
 import AuthStack from './AuthStack';
+import LinkWalletStack from './LinkWalletStack';
 import AddPostScreen from '../screens/AddPostScreen';
 import { PublicProfile } from '../screens/PublicProfile';
 import PostDetailsScreen from '../screens/PostDetailsScreen';
@@ -68,12 +69,14 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
 
   React.useEffect(() => {
     // onAuthStateChanged returns an unsubscriber
-    const unsubscribeAuth = auth.onAuthStateChanged(async (authenticatedUser: any) => {
+    const unsubscribeAuth = auth.onIdTokenChanged(async (authenticatedUser: any) => {
       try {
         if (authenticatedUser) {
           var response = await checkUser(authenticatedUser);
           authenticatedUser = response[0];
-          setIsNewUser(response[1]);
+          if (setIsNewUser) await setIsNewUser(response[1]);
+          console.log('HEY');
+          console.log(response[1]); 
         }
         
         // setUser to either null or return value of checkUser
@@ -96,6 +99,14 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size='large' />
       </View>
+    )
+  }
+
+  if (isNewUser) {
+    return (
+      <NavigationContainer>
+        <LinkWalletStack/>
+      </NavigationContainer>
     )
   }
 
@@ -122,8 +133,6 @@ function TabTwoStackScreen() {
   return (
     <TabTwoStack.Navigator>
       <TabTwoStack.Screen name="Root" component={TabOneScreen} options={{ headerShown: false }} />
-      <TabTwoStack.Screen name="Link" component={LinkWallet} options={{ headerShown: false }} />
-      <TabTwoStack.Screen name="CreateWalletTutorial" component={CreateWalletTutorial} options={{ headerShown: false }} />
       <TabTwoStack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
       <TabTwoStack.Group screenOptions={{ presentation: 'modal' }}>
         <TabTwoStack.Screen name="Modal" component={ModalScreen} />
