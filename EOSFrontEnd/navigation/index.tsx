@@ -112,7 +112,7 @@ function TabOneStackScreen() {
     <TabOneStack.Navigator>
       <TabOneStack.Screen name="Root" component={TabTwoScreen} options={{ headerShown: false }} />
       <TabOneStack.Screen name="AddPost" component={AddPostScreen} />
-      <TabOneStack.Screen name="PostDetails" component={PostDetailsScreen} />
+      <TabOneStack.Screen name="PostDetails" component={PostDetailsScreen} options={{headerShown: false}}/>
     </TabOneStack.Navigator>
   )
 }
@@ -125,6 +125,7 @@ function TabTwoStackScreen() {
       <TabTwoStack.Screen name="Link" component={LinkWallet} options={{ headerShown: false }} />
       <TabTwoStack.Screen name="CreateWalletTutorial" component={CreateWalletTutorial} options={{ headerShown: false }} />
       <TabTwoStack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
+      <TabOneStack.Screen name="PostDetails" component={PostDetailsScreen} options={{headerShown: false}}/>
       <TabTwoStack.Group screenOptions={{ presentation: 'modal' }}>
         <TabTwoStack.Screen name="Modal" component={ModalScreen} />
       </TabTwoStack.Group>

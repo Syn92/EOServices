@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, Text, Image, View } from 'react-native';
+import { StyleSheet, Text, Image, View, Pressable, TouchableOpacity } from 'react-native';
 import { RootTabScreenProps } from '../types';
 import { LatLng } from 'react-native-maps';
 import { Service } from './TabTwoScreen';
@@ -41,11 +41,21 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
         return (
           !loading ? <View style={styles.container}>
               <View style={styles.cardContainer}>
-                <Image style={styles.image} source={{uri: service.thumbnail, width: 50, height: 50}}/>
-                <Text style={styles.imageTitle}>{service.title}</Text>
+                <View style={styles.cardHeader}>
+                  <TouchableOpacity style={styles.backButton} onPress={() => {navigation.goBack()}}>
+                    <Icon name="keyboard-arrow-left" size={40} color="#04B388"/>
+                  </TouchableOpacity>
+                  <Text style={styles.imageTitle}>{service.title}</Text>
+                </View>
+
                 <View style={styles.contentCard}>
                     <Icon style={styles.iconCard} name="storefront" color="#04B388"></Icon>
                     <Text>{service.ServType == servTypeSell ? 'Offered by ' : 'Searched by '}{service.ownerName}</Text>
+                </View>
+
+                <View style={styles.contentCard}>
+                    <Icon style={styles.iconCard} name="category" color="#04B388"></Icon>
+                    <Text style={styles.textCard}>{service.category}</Text>
                 </View>
 
                 <View style={styles.contentCard}>
@@ -93,6 +103,9 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
                     inactiveDotOpacity={0.4}
                     inactiveDotScale={0.6}
                   />
+                  <Pressable onPress={() => console.log('here')}>
+                    <Text style={{textAlign: 'center', fontSize: 18,color: '#04B388', textDecorationLine: 'underline'}}>Contact advertiser</Text>
+                  </Pressable>
               </View>
           </View> : <Loading></Loading>
         )
@@ -104,14 +117,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'column'
   },
+  cardHeader: {
+    display: 'flex',
+    flexDirection: 'row',
+  },
+  backButton: {
+    display: 'flex',
+    flexBasis: '10%',
+    alignSelf: 'flex-start',
+  },
+  imageTitle: {
+    textDecorationLine: 'underline',
+    color: '#04B388',
+    fontSize: 18,
+    textTransform: 'capitalize',
+    flexBasis: '90%',
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    paddingRight: '10%'
+  },
   cardContainer: {
     justifyContent: 'center',
     alignItems: 'center',
     width: '80%',
     display: 'flex',
     flexDirection: 'column',
-    marginVertical: 10,
-    padding: 5,
+    marginVertical: 30,
+    padding: 10,
     borderRadius: 15,
     shadowColor: "#000",
     shadowOffset: {
@@ -127,18 +159,12 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     marginHorizontal: 15,
   },
-  imageTitle: {
-    textDecorationLine: 'underline',
-    color: '#04B388',
-    fontSize: 16,
-    textTransform: 'capitalize'
-  },
   contentCard: {
     alignItems: 'center',
     width: '75%',
     display: 'flex',
     flexDirection: 'row',
-    marginVertical: 10,
+    marginVertical: 7,
     paddingVertical: 15,
     borderRadius: 15,
     shadowColor: "#000",
