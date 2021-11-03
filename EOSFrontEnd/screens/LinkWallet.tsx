@@ -21,6 +21,7 @@ export function LinkWallet({ navigation }: { navigation: any }) {
 
 
   async function addLinkAccountName() {
+    console.log(eosUsername)
     try {
       setLoadingStatus(true);
       let res = await axios.patch(ServerConstants.local + 'auth', {
@@ -52,15 +53,19 @@ export function LinkWallet({ navigation }: { navigation: any }) {
           {/* Wallet username input */}
           <View style={styles.inputView}>
             <Text style={styles.inputLabel}>Link Existing Wallet Account</Text>
+            <View style={{display: "flex",flexDirection: 'row',flexBasis: 100}}>
             <TextInput
-              style={{ color: 'white' }}
+              style={{ color: 'white', width: "80%" }}
               autoCapitalize='none'
               autoCorrect={false}
-              placeholder='Ex: username.gm'
+              maxLength={9}
+              placeholder="Enter account name..."
               placeholderTextColor='#ffffff50'
               value={eosUsername}
               onChangeText={text => setEosUsername(text)}
             />
+            <Text style={{ color: 'white', width: "20%" }}>.gm</Text>
+            </View>
           </View>
           <TouchableOpacity onPress={() => navigation.navigate('CreateWalletTutorial')} style={styles.helpLink}>
             <Text style={styles.helpLinkText}>
@@ -68,7 +73,10 @@ export function LinkWallet({ navigation }: { navigation: any }) {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.button} onPress={addLinkAccountName}>
+          <TouchableOpacity style={styles.button} onPress={() => {
+            setEosUsername(eosUsername.concat(".gm"));
+            addLinkAccountName();
+          }}>
             <Text style={styles.buttonText}>Create Account</Text>
           </TouchableOpacity>
         </ImageBackground>
