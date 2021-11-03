@@ -5,16 +5,17 @@ import { useState } from 'react';
 import { ImageBackground, StyleSheet } from 'react-native';
 import { Icon } from 'react-native-elements';
 import { ScrollView } from 'react-native-gesture-handler';
-import { ChatRoomCard, IRoomCard } from '../components/Chat/ChatRoomCard';
+import { io } from 'socket.io-client';
+import ChatRoomCard from '../components/Chat/ChatRoomCard';
 import { View } from '../components/Themed';
 import ServerConstants from '../constants/Server';
-import { IRoom } from '../interfaces/Chat';
+import { IMessage, IRoom } from '../interfaces/Chat';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
 import { RootTabScreenProps } from '../types';
 
 
 export default function ChatRoomsScreen({ navigation }: RootTabScreenProps<'ChatRooms'>) {
-  const [roomCards, setRoomCards] = useState<IRoomCard[]>([]);
+  const [rooms, setRooms] = useState<IRoom[]>([]);
 
   function onChannelPress(room: IRoom) {
     navigation.navigate('Chat', room)
@@ -22,17 +23,44 @@ export default function ChatRoomsScreen({ navigation }: RootTabScreenProps<'Chat
 
   const { user } =  React.useContext(AuthenticatedUserContext);
 
-  axios.get(ServerConstants.local + 'chatRooms', { params: {userId: user?.uid } })
-  .then(function (response) {
-    const rooms = response.data as IRoom[];
-    setRoomCards([{
-        room: rooms[0],
-        lastMessage:  'Hi! I was wondering if you still have that PS5 available, hopefully before christmas. Thanks!',
-        lastTime: '28/10/2021'
-    }])
-  }).catch(function (error) {
-    console.log(error);
-  });
+  const socket = io(ServerConstants.local + "chat");
+
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log(user?.uid)
+      axios.get(ServerConstants.local + 'chatRooms', { params: {userId: user?.uid } })
+      .then(function (response) {
+        const newRooms = response.data as IRoom[];
+        setRooms(newRooms || [])
+        setUpSockets(newRooms.map(x => x._id));
+      }).catch(function (error) {
+        console.log(error);
+      });
+
+      return function cleanup() {
+        socket.close();
+      };
+    }, [])
+  );
+
+  function setUpSockets(roomIds: string[]): void {
+    socket.on("connect_error", (err) => {
+      console.log(err.message);
+    });
+    socket.connect();
+    socket.emit('watchRooms', user?.uid, roomIds);
+    socket.on('newRoom', (message: IRoom) => {
+      setRooms([...rooms, message])
+    });
+    socket.on('newMessage', (message: IMessage) => {
+      let newRooms = [...rooms];
+      const cardIndex = newRooms.findIndex(x => x._id == message.roomId);
+      if(cardIndex >= 0) {
+        newRooms[cardIndex].lastMessage = message
+      }
+      setRooms(newRooms)
+    });
+  }
 
   return (
     <ImageBackground style={styles.container} source={require('../assets/images/bg.png')}>
@@ -40,8 +68,8 @@ export default function ChatRoomsScreen({ navigation }: RootTabScreenProps<'Chat
         <Icon style={styles.searchIcon} name="search" size={30} color="white"/>
       </View>
       <ScrollView style={styles.roomsContainer}>
-          {roomCards.map(card =>
-          <ChatRoomCard key={card.room._id} roomCard={card} onPress={onChannelPress}/>)}
+          {rooms.map((room, key) =>
+          <ChatRoomCard key={key} room={room} onPress={onChannelPress}/>)}
       </ScrollView>
     </ImageBackground>
   );

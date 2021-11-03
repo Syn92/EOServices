@@ -6,6 +6,7 @@ export interface IRoom {
   _id: string;
   user: User;
   service: Service;
+  lastMessage: IMessage | undefined;
 }
 
 export interface IMessage {
@@ -13,14 +14,14 @@ export interface IMessage {
     roomId: string;
     userId: string;
     text: string;
-    createdAt: Date;
+    createdAt: string;
 }
 
 export function toGiftedMessage(message: IMessage, user: User): IGiftedMessage {
     return {
         _id: message._id,
         text: message.text,
-        createdAt: message.createdAt,
+        createdAt: new Date(message.createdAt),
         user: {_id: user.uid, name: user.name}
     }
 }
@@ -29,7 +30,7 @@ export function toIMessage(message: IGiftedMessage, roomId: string): IMessage {
     return {
         _id: message._id.toString(),
         text: message.text,
-        createdAt: new Date(message.createdAt),
+        createdAt: message.createdAt.toString(),
         userId: message.user._id.toString(),
         roomId: roomId
     }
