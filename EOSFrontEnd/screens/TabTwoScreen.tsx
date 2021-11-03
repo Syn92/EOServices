@@ -1,6 +1,6 @@
 import axios from 'axios';
 import * as React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Button } from 'react-native-elements/dist/buttons/Button';
 import Map from '../components/Map';
 
@@ -14,6 +14,7 @@ import { PostCard } from '../components/PostCard';
 import { TextInput } from 'react-native-gesture-handler';
 import { CustomFeature, getAddress } from '../utils/Cadastre';
 import { LatLng } from 'react-native-maps';
+import ActionButtonSecondary from '../components/ActionButtonSecondary';
 
 export interface Service {
   title: string;
@@ -41,10 +42,18 @@ async function handleLogout() {
   }
 }
 
+const filterNone: string = 'none';
+const filterCat1: string = 'cat1';
+const filterCat2: string = 'cat2';
+const filterCat3: string = 'cat3';
+
+
 export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'>){
   const [data, setData] = useState([]);
   const [searchString, setSearchString] = useState('');
   // const [services, setServices] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [filterCatSelected, setFilterCatSelected] = useState(filterNone)
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
@@ -85,6 +94,26 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
             onChangeText={(searchString) => {setSearchString(searchString)}}
             underlineColorAndroid="transparent"
         />
+        <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                  setModalVisible(false);
+                }}
+              >
+                <View style={styles.centeredView}>
+                  <View style={styles.modalView}>
+                    <Text style={styles.modalText}>Filter by...</Text>
+                    <View style={styles.modalButtonContainer}>
+                      <ActionButtonSecondary  title="None" styleContainer={[filterCatSelected == filterNone ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'}, {margin: 5}]} styleText={filterCatSelected == filterNone ? {color: 'white'} : {color: '#04B388'}} onPress={() => {setFilterCatSelected(filterNone); setModalVisible(false)}}></ActionButtonSecondary>
+                      <ActionButtonSecondary  title="Cat1" styleContainer={[filterCatSelected == filterCat1 ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'}, {margin: 5}]} styleText={filterCatSelected == filterCat1 ? {color: 'white'} : {color: '#04B388'}} onPress={() => {setFilterCatSelected(filterCat1); setModalVisible(false)}}></ActionButtonSecondary>
+                      <ActionButtonSecondary  title="Cat2" styleContainer={[filterCatSelected == filterCat2 ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'}, {margin: 5}]} styleText={filterCatSelected == filterCat2 ? {color: 'white'} : {color: '#04B388'}} onPress={() => {setFilterCatSelected(filterCat2); setModalVisible(false)}}></ActionButtonSecondary>
+                      <ActionButtonSecondary  title="Cat3" styleContainer={[filterCatSelected == filterCat3 ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'}, {margin: 5}]} styleText={filterCatSelected == filterCat3 ? {color: 'white'} : {color: '#04B388'}} onPress={() => {setFilterCatSelected(filterCat3); setModalVisible(false)}}></ActionButtonSecondary>
+                    </View>
+                  </View>
+                </View>
+              </Modal>
       </View>
       <View style={styles.listContainer}>
         <View style={styles.headerRow}>
@@ -92,14 +121,14 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
           <View style={styles.buttonContainer}>
             <Button icon={<Icon name="refresh" size={30} color="#04B388"/>} onPress={() => {fetchData()}} />
             <Button icon={<Icon name="add" size={30} color="#04B388"/>} onPress={() => {navigation.navigate('AddPost')}} />
-            <Button icon={<Icon name="filter-alt" size={30} color="#04B388"/>} onPress={() => {navigation.navigate('AddPost')}} />
+            <Button icon={<Icon name="filter-alt" size={30} color="#04B388"/>} onPress={() => {setModalVisible(true)}} />
             <Button icon={<Icon name="sort" size={30} color="#04B388"/>} onPress={() => {navigation.navigate('AddPost')}} />
           </View>
         </View>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
 
        {
-         data.filter((e:Service) => e.title.startsWith(searchString.toLowerCase())).map((e: Service) => {
+         data.filter((e:Service) => (e.title.startsWith(searchString.toLowerCase()) && (filterCatSelected == filterNone ? true : e.category == filterCatSelected))).map((e: Service) => {
            return(
              <TouchableOpacity onPress={() => {onCardPress(e)}} key={e._id}>
                <PostCard title={e.title} price={e.priceEOS} position={getAddress(e.cadastre)} owner={e.ownerName} thumbnail={e.thumbnail}></PostCard>
@@ -225,4 +254,51 @@ input: {
     borderRadius: 25,
 
 },
+centeredView: {
+  flex: 1,
+  justifyContent: "center",
+  backgroundColor: 'transparent',
+  alignItems: "center",
+  marginTop: 22
+},
+modalView: {
+  margin: 20,
+  backgroundColor: "white",
+  borderRadius: 20,
+  padding: 35,
+  alignItems: "center",
+  shadowColor: "#000",
+  shadowOffset: {
+    width: 0,
+    height: 2
+  },
+  shadowOpacity: 0.25,
+  shadowRadius: 4,
+  elevation: 5
+},
+modalText: {
+  marginBottom: 15,
+  textAlign: "center"
+},
+button: {
+  borderRadius: 20,
+  padding: 10,
+  elevation: 2
+},
+buttonOpen: {
+  backgroundColor: "#F194FF",
+},
+buttonClose: {
+  backgroundColor: "#2196F3",
+},
+textStyle: {
+  color: "white",
+  fontWeight: "bold",
+  textAlign: "center"
+},
+modalButtonContainer: {
+  display: 'flex',
+  flexDirection: 'column',
+  width: 150
+}
 });

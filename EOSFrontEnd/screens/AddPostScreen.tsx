@@ -118,7 +118,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
   }
 
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
+    let result: any = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       quality: 1,
       base64: true,
