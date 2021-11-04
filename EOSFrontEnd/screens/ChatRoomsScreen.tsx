@@ -3,19 +3,21 @@ import axios from 'axios';
 import * as React from 'react';
 import { useState } from 'react';
 import { ImageBackground, StyleSheet } from 'react-native';
-import { Icon } from 'react-native-elements';
+import { SearchBar } from 'react-native-elements';
 import { ScrollView } from 'react-native-gesture-handler';
 import { io } from 'socket.io-client';
 import ChatRoomCard from '../components/Chat/ChatRoomCard';
 import { View } from '../components/Themed';
 import ServerConstants from '../constants/Server';
-import { IMessage, IRoom } from '../interfaces/Chat';
+import { getCardTitle, IMessage, IRoom } from '../interfaces/Chat';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
 import { RootTabScreenProps } from '../types';
 
 
 export default function ChatRoomsScreen({ navigation }: RootTabScreenProps<'ChatRooms'>) {
   const [rooms, setRooms] = useState<IRoom[]>([]);
+
+  const [search, setSearch] = useState('');
 
   function onChannelPress(room: IRoom) {
     navigation.navigate('Chat', room)
@@ -27,7 +29,6 @@ export default function ChatRoomsScreen({ navigation }: RootTabScreenProps<'Chat
 
   useFocusEffect(
     React.useCallback(() => {
-      console.log(user?.uid)
       axios.get(ServerConstants.local + 'chatRooms', { params: {userId: user?.uid } })
       .then(function (response) {
         const newRooms = response.data as IRoom[];
@@ -62,14 +63,22 @@ export default function ChatRoomsScreen({ navigation }: RootTabScreenProps<'Chat
     });
   }
 
+  function getRoomCards() {
+    return rooms
+    .filter(room => getCardTitle(room).toLowerCase().indexOf(search.toLowerCase()) > -1)
+    .map((room, key) => {
+      return <ChatRoomCard key={key} room={room} onPress={onChannelPress}/>
+    })
+  }
+
   return (
     <ImageBackground style={styles.container} source={require('../assets/images/bg.png')}>
       <View style={styles.searchContainer}>
-        <Icon style={styles.searchIcon} name="search" size={30} color="white"/>
+        {/* @ts-ignore onChangeText wrong type https://github.com/react-native-elements/react-native-elements/issues/3089 */}
+        <SearchBar value={search} containerStyle={styles.search} onChangeText={setSearch} round={true} lightTheme={true} />
       </View>
       <ScrollView style={styles.roomsContainer}>
-          {rooms.map((room, key) =>
-          <ChatRoomCard key={key} room={room} onPress={onChannelPress}/>)}
+        {getRoomCards()}
       </ScrollView>
     </ImageBackground>
   );
@@ -83,18 +92,14 @@ const styles = StyleSheet.create({
     // justifyContent: 'center',
   },
   searchContainer: {
-    marginLeft: 30,
-    marginTop: 30,
+    marginHorizontal: 20,
+    marginTop: 40,
     backgroundColor: 'transparent',
   },
-  searchIcon: {
-    padding: 10,
-    borderRadius: 25,
-    width: 50,
-    height: 50,
-    backgroundColor: 'blue',
-    color: 'white',
-    fontSize: 40,
+  search: {
+    backgroundColor: 'transparent',
+    borderTopWidth: 0,
+    borderBottomWidth: 0,
   },
   roomsContainer: {
       height: '100%',

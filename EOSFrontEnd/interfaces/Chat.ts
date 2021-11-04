@@ -17,6 +17,10 @@ export interface IMessage {
     createdAt: string;
 }
 
+export function getCardTitle(room: IRoom) : string {
+    return room.user.name + ' - ' + room.service.title;
+}
+
 export function toGiftedMessage(message: IMessage, user: User): IGiftedMessage {
     return {
         _id: message._id,

@@ -1,6 +1,6 @@
 import React from 'react'
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
-import { IRoom } from '../../interfaces/Chat';
+import { getCardTitle, IRoom } from '../../interfaces/Chat';
 
 interface IProp {
   room: IRoom;
@@ -15,7 +15,7 @@ export default function ChatRoomCard(props: IProp) {
         </View>
         <View style={styles.descriptionContainer}>
             <View style={styles.titleContainer}>
-                <Text style={[styles.text, styles.title]} numberOfLines={1}>{props.room.user.name + " - " + props.room.service.title}</Text>
+                <Text style={[styles.text, styles.title]} numberOfLines={1}>{getCardTitle(props.room)}</Text>
                 <Text style={styles.text}>{props.room.lastMessage ? new Date(props.room.lastMessage.createdAt).toDateString() : ''}</Text>
             </View>
             <View style={styles.lastMessageContainer}>
