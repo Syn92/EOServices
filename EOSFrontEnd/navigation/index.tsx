@@ -3,16 +3,15 @@
  * https://reactnavigation.org/docs/getting-started
  *
  */
-import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import axios from 'axios';
 import * as React from 'react';
-import { ActivityIndicator, ColorSchemeName, Pressable, View } from 'react-native';
+import { ActivityIndicator, ColorSchemeName, View } from 'react-native';
 
 import Firebase from '../config/firebase';
-import Colors from '../constants/Colors';
 import ServerConstants from '../constants/Server';
 import { User } from '../interfaces/User';
 import ModalScreen from '../screens/ModalScreen';
@@ -21,15 +20,15 @@ import { PrivateProfile } from '../screens/PrivateProfile';
 import TabOneScreen from '../screens/TabOneScreen';
 import TabTwoScreen from '../screens/TabTwoScreen';
 import GetFormatedDate from '../services/DateFormater';
-import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
+import { RootTabParamList, RootTabScreenProps } from '../types';
 import { AuthenticatedUserContext } from './AuthenticatedUserProvider';
 import AuthStack from './AuthStack';
 import LinkWalletStack from './LinkWalletStack';
 import AddPostScreen from '../screens/AddPostScreen';
+import ChatScreen from '../screens/ChatScreen';
+import ChatRoomsScreen from '../screens/ChatRoomsScreen';
 import { PublicProfile } from '../screens/PublicProfile';
 import PostDetailsScreen from '../screens/PostDetailsScreen';
-import { LinkWallet } from '../screens/LinkWallet';
-import { CreateWalletTutorial } from '../screens/CreateWalletTutorial';
 
 const auth = Firebase.auth();
 
@@ -55,7 +54,7 @@ async function checkUser(user: any) {
     };
     await axios.post(ServerConstants.prod + 'auth', newUsr);
 
-    return [newUsr, true];    
+    return [newUsr, true];
   } catch (err) {
     console.log('checkuser')
     console.log(err);
@@ -76,9 +75,9 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
           authenticatedUser = response[0];
           if (setIsNewUser) await setIsNewUser(response[1]);
           console.log('HEY');
-          console.log(response[1]); 
+          console.log(response[1]);
         }
-        
+
         // setUser to either null or return value of checkUser
         if (setUser) await setUser(authenticatedUser);
         else throw new Error('setUser undefined');
@@ -145,7 +144,8 @@ const TabThreeStack = createNativeStackNavigator();
 function TabThreeStackScreen() {
   return (
     <TabThreeStack.Navigator>
-      <TabThreeStack.Screen name="Root" component={TabTwoScreen} options={{ headerShown: false }} />
+      <TabThreeStack.Screen name="ChatRooms" component={ChatRoomsScreen} options={{ headerShown: false }} />
+      <TabThreeStack.Screen name="Chat" component={ChatScreen} options={{ headerShown: false }} />
     </TabThreeStack.Navigator>
   )
 }
@@ -167,7 +167,7 @@ function TabFourStackScreen() {
 const BottomTab = createBottomTabNavigator<RootTabParamList>();
 
 function BottomTabNavigator() {
-  
+
 
   return (
     <BottomTab.Navigator
@@ -181,7 +181,7 @@ function BottomTabNavigator() {
         options={({ navigation }: RootTabScreenProps<'TabOne'>) => ({
           title: 'Home',
           tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
-        
+
         })}
       />
       <BottomTab.Screen

@@ -6,7 +6,7 @@
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { CompositeScreenProps, NavigatorScreenParams } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Service } from './screens/TabTwoScreen';
+import { IRoom } from './interfaces/Chat';
 
 declare global {
   namespace ReactNavigation {
@@ -20,6 +20,8 @@ export type RootStackParamList = {
   Modal: undefined;
   NotFound: undefined;
   AddPost: undefined;
+  ChatRooms: undefined;
+  Chat: IRoom;
   PostDetails: undefined;
 };
 
@@ -35,6 +37,7 @@ export type RootTabParamList = {
   TabTwo: undefined;
   TabThree: undefined;
   TabFour: undefined;
+  ChatRooms: undefined;
 };
 
 export type RootTabScreenProps<Screen extends keyof RootTabParamList> = CompositeScreenProps<
