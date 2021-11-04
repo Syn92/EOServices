@@ -2,12 +2,11 @@ import { useFocusEffect } from '@react-navigation/core';
 import axios from 'axios';
 import * as React from 'react';
 import { useState } from 'react';
-import { ImageBackground, StyleSheet } from 'react-native';
+import { ImageBackground, StyleSheet, View } from 'react-native';
 import { SearchBar } from 'react-native-elements';
 import { ScrollView } from 'react-native-gesture-handler';
 import { io } from 'socket.io-client';
 import ChatRoomCard from '../components/Chat/ChatRoomCard';
-import { View } from '../components/Themed';
 import ServerConstants from '../constants/Server';
 import { getCardTitle, IMessage, IRoom } from '../interfaces/Chat';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
@@ -32,8 +31,10 @@ export default function ChatRoomsScreen({ navigation }: RootTabScreenProps<'Chat
       axios.get(ServerConstants.prod + 'chatRooms', { params: {userId: user?.uid } })
       .then(function (response) {
         const newRooms = response.data as IRoom[];
-        setRooms(newRooms || [])
-        setUpSockets(newRooms.map(x => x._id));
+        if(newRooms && newRooms.length > 0) {
+          setRooms(newRooms)
+          setUpSockets(newRooms.map(x => x._id));
+        }
       }).catch(function (error) {
         console.log(error);
       });
@@ -51,15 +52,18 @@ export default function ChatRoomsScreen({ navigation }: RootTabScreenProps<'Chat
     socket.connect();
     socket.emit('watchRooms', user?.uid, roomIds);
     socket.on('newRoom', (room: IRoom) => {
-      setRooms([...rooms, room])
+      setRooms(oldRooms => [...oldRooms, room])
+      socket.emit('watchRooms', user?.uid, [room._id]);
     });
     socket.on('newMessage', (message: IMessage) => {
-      let newRooms = [...rooms];
-      const cardIndex = newRooms.findIndex(x => x._id == message.roomId);
-      if(cardIndex >= 0) {
-        newRooms[cardIndex].lastMessage = message
-      }
-      setRooms(newRooms)
+      setRooms(oldRooms => {
+        let newRooms = [...oldRooms]
+        const cardIndex = newRooms.findIndex(x => x._id == message.roomId);
+        if(cardIndex >= 0) {
+          newRooms[cardIndex].lastMessage = message
+        }
+        return newRooms
+      });
     });
   }
 

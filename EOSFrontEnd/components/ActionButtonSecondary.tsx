@@ -1,7 +1,7 @@
 import React from 'react'
 import { GestureResponderEvent, StyleSheet, Text, View } from 'react-native'
 import { Button } from 'react-native-elements/dist/buttons/Button';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import { TouchableOpacity } from 'react-native';
 
 interface Props {
     title: string,

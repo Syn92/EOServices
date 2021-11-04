@@ -3,18 +3,16 @@
  * https://reactnavigation.org/docs/getting-started
  *
  */
-import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import axios from 'axios';
 import * as React from 'react';
-import { ActivityIndicator, ColorSchemeName, Pressable, View } from 'react-native';
+import { ActivityIndicator, ColorSchemeName, View } from 'react-native';
 
 import Firebase from '../config/firebase';
-import Colors from '../constants/Colors';
 import ServerConstants from '../constants/Server';
-import useColorScheme from '../hooks/useColorScheme';
 import { User } from '../interfaces/User';
 import ModalScreen from '../screens/ModalScreen';
 import NotFoundScreen from '../screens/NotFoundScreen';
@@ -22,35 +20,41 @@ import { PrivateProfile } from '../screens/PrivateProfile';
 import TabOneScreen from '../screens/TabOneScreen';
 import TabTwoScreen from '../screens/TabTwoScreen';
 import GetFormatedDate from '../services/DateFormater';
-import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
+import { RootTabParamList, RootTabScreenProps } from '../types';
 import { AuthenticatedUserContext } from './AuthenticatedUserProvider';
 import AuthStack from './AuthStack';
+import LinkWalletStack from './LinkWalletStack';
 import AddPostScreen from '../screens/AddPostScreen';
 import ChatScreen from '../screens/ChatScreen';
 import ChatRoomsScreen from '../screens/ChatRoomsScreen';
+import { PublicProfile } from '../screens/PublicProfile';
+import PostDetailsScreen from '../screens/PostDetailsScreen';
 
 const auth = Firebase.auth();
 
 async function checkUser(user: any) {
 
   try {
-    const res = await axios.get<any>(ServerConstants.local + 'auth', { params: { uid: user.uid } });
+    const res = await axios.get<any>(ServerConstants.prod + 'auth', { params: { uid: user.uid } });
     // if user exists, return user
-    if (res.data){
-      delete res.data._id;
-      return res.data;
-    }
-    // add user to mongodb
 
+    if (res.data){
+      console.log("user exists", res.data);
+      delete res.data._id;
+      return [res.data, false];
+    }
+
+    // add user to mongodb
+    console.log("user does not exists", res.data);
     const newUsr: User = {
       uid: user.uid,
       email: user.email,
       name: user.displayName,
       joinedDate: GetFormatedDate(new Date())
     };
-    await axios.post(ServerConstants.local + 'auth', newUsr);
+    await axios.post(ServerConstants.prod + 'auth', newUsr);
 
-    return newUsr;
+    return [newUsr, true];
   } catch (err) {
     console.log('checkuser')
     console.log(err);
@@ -58,15 +62,21 @@ async function checkUser(user: any) {
 }
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
-  const { user, setUser } =  React.useContext(AuthenticatedUserContext);
+  const { user, setUser, isNewUser, setIsNewUser } =  React.useContext(AuthenticatedUserContext);
+  //const { isNewUser, setIsNewUser } =  React.useContext(AuthenticatedUserContext);
   const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {
     // onAuthStateChanged returns an unsubscriber
-    const unsubscribeAuth = auth.onAuthStateChanged(async (authenticatedUser: any) => {
+    const unsubscribeAuth = auth.onIdTokenChanged(async (authenticatedUser: any) => {
       try {
-        if (authenticatedUser)
-          authenticatedUser = await checkUser(authenticatedUser)
+        if (authenticatedUser) {
+          var response = await checkUser(authenticatedUser);
+          authenticatedUser = response[0];
+          if (setIsNewUser) await setIsNewUser(response[1]);
+          console.log('HEY');
+          console.log(response[1]);
+        }
 
         // setUser to either null or return value of checkUser
         if (setUser) await setUser(authenticatedUser);
@@ -91,33 +101,63 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
     )
   }
 
+  if (isNewUser) {
+    return (
+      <NavigationContainer>
+        <LinkWalletStack/>
+      </NavigationContainer>
+    )
+  }
+
   return (
-    <NavigationContainer
-      theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      {user ? <RootNavigator /> : <AuthStack />}
+    <NavigationContainer>
+      {user ? <BottomTabNavigator /> : <AuthStack />}
     </NavigationContainer>
   );
 }
 
-/**
- * A root stack navigator is often used for displaying modals on top of all other content.
- * https://reactnavigation.org/docs/modal
- */
-const Stack = createNativeStackNavigator<RootStackParamList>();
-
-function RootNavigator() {
+const TabOneStack = createNativeStackNavigator();
+function TabOneStackScreen() {
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: false }} />
-      <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
-      <Stack.Screen name="AddPost" component={AddPostScreen} />
-      <Stack.Screen name="ChatRooms" component={ChatRoomsScreen} />
-      <Stack.Screen name="Chat" component={ChatScreen} />
-      <Stack.Group screenOptions={{ presentation: 'modal' }}>
-        <Stack.Screen name="Modal" component={ModalScreen} />
-      </Stack.Group>
-    </Stack.Navigator>
-  );
+    <TabOneStack.Navigator>
+      <TabOneStack.Screen name="Root" component={TabTwoScreen} options={{ headerShown: false }} />
+      <TabOneStack.Screen name="AddPost" component={AddPostScreen} />
+      <TabOneStack.Screen name="PostDetails" component={PostDetailsScreen} />
+    </TabOneStack.Navigator>
+  )
+}
+
+const TabTwoStack = createNativeStackNavigator();
+function TabTwoStackScreen() {
+  return (
+    <TabTwoStack.Navigator>
+      <TabTwoStack.Screen name="Root" component={TabOneScreen} options={{ headerShown: false }} />
+      <TabTwoStack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
+      <TabTwoStack.Group screenOptions={{ presentation: 'modal' }}>
+        <TabTwoStack.Screen name="Modal" component={ModalScreen} />
+      </TabTwoStack.Group>
+    </TabTwoStack.Navigator>
+  )
+}
+
+const TabThreeStack = createNativeStackNavigator();
+function TabThreeStackScreen() {
+  return (
+    <TabThreeStack.Navigator>
+      <TabThreeStack.Screen name="ChatRooms" component={ChatRoomsScreen} options={{ headerShown: false }} />
+      <TabThreeStack.Screen name="Chat" component={ChatScreen} options={{ headerShown: false }} />
+    </TabThreeStack.Navigator>
+  )
+}
+
+const TabFourStack = createNativeStackNavigator();
+function TabFourStackScreen() {
+  return (
+    <TabFourStack.Navigator>
+      <TabFourStack.Screen name="Root" component={PrivateProfile} options={{ headerShown: false }} />
+      <TabFourStack.Screen name="PublicProfile" component={PublicProfile} options={{ headerShown: false }} />
+    </TabFourStack.Navigator>
+  )
 }
 
 /**
@@ -127,19 +167,17 @@ function RootNavigator() {
 const BottomTab = createBottomTabNavigator<RootTabParamList>();
 
 function BottomTabNavigator() {
-  const colorScheme = useColorScheme();
+
 
   return (
     <BottomTab.Navigator
       initialRouteName="TabOne"
       screenOptions={{
         headerShown: false,
-        tabBarInactiveTintColor: Colors[colorScheme].tabIconDefault,
-        tabBarActiveTintColor: Colors[colorScheme].tint,
       }}>
       <BottomTab.Screen
         name="TabOne"
-        component={TabTwoScreen}
+        component={TabOneStackScreen}
         options={({ navigation }: RootTabScreenProps<'TabOne'>) => ({
           title: 'Home',
           tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
@@ -148,7 +186,7 @@ function BottomTabNavigator() {
       />
       <BottomTab.Screen
         name="TabTwo"
-        component={TabOneScreen}
+        component={TabTwoStackScreen}
         options={{
           title: 'Explore',
           tabBarIcon: ({ color }) => <TabBarIcon name="explore" color={color} />,
@@ -156,7 +194,7 @@ function BottomTabNavigator() {
       />
       <BottomTab.Screen
         name="TabThree"
-        component={ChatRoomsScreen}
+        component={TabThreeStackScreen}
         options={{
           title: 'Message',
           tabBarIcon: ({ color }) => <TabBarIcon name="chat-bubble" color={color} />,
@@ -164,7 +202,7 @@ function BottomTabNavigator() {
       />
       <BottomTab.Screen
         name="TabFour"
-        component={PrivateProfile}
+        component={TabFourStackScreen}
         options={{
           title: 'Profile',
           tabBarIcon: ({ color }) => <TabBarIcon name="person" color={color} />,

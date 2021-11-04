@@ -3,6 +3,7 @@ export interface User {
     email: string,
     name: string,
     phone?: string,
-    description?: string
-    joinedDate: string
+    description?: string,
+    joinedDate: string,
+    walletAccountName?: string
 }

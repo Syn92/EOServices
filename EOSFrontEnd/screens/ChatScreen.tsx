@@ -1,10 +1,9 @@
 import axios from 'axios';
 import * as React from 'react';
 import { useState } from 'react';
-import { ActivityIndicator, ImageBackground, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, ImageBackground, StyleSheet, Text, View } from 'react-native';
 import { GiftedChat, IMessage as IGiftedMessage } from 'react-native-gifted-chat';
 import { io } from 'socket.io-client';
-import { View } from '../components/Themed';
 import ServerConstants from '../constants/Server';
 import { IMessage, toGiftedMessage, toIMessage } from '../interfaces/Chat';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';

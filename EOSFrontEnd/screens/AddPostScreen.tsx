@@ -1,7 +1,6 @@
 import * as React from 'react';
-import { Platform, StyleSheet, TextInput, Image, ScrollView, TouchableOpacity, Modal, Pressable } from 'react-native';
+import { Image, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Button } from 'react-native-elements/dist/buttons/Button';
-import { Text, View } from '../components/Themed';
 import ActionButton from '../components/ActionButton';
 import ActionButtonSecondary from '../components/ActionButtonSecondary';
 import { useEffect, useState } from 'react';
@@ -36,8 +35,8 @@ export interface Service {
 }
 const { height } = Dimensions.get('window');
 
-const servTypeSell = "Offering"
-const servTypeBuy = "Looking For"
+export const servTypeSell = "Offering"
+export const servTypeBuy = "Looking For"
 
 export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPost'>) {
   const [step, setStep] = useState(1)
@@ -68,7 +67,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
         priceEOS: Number(price),
         description: description,
         material: material,
-        images: image.filter((e,i) => i!=0),
+        images: image,
         cadastreId: cadastre.properties.ID_UEV,
         markerPos: getCenter(cadastre),
         thumbnail: image[0],
@@ -259,7 +258,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
                     <Text style={styles.modalText}>Post succesfully submited</Text>
                     <Pressable
                       style={[styles.button, styles.buttonClose]}
-                      onPress={() => {setModalVisible(!modalVisible); navigation.navigate('TabTwo')}}
+                      onPress={() => {setModalVisible(!modalVisible); navigation.navigate('TabOne')}}
                     >
                       <Text style={styles.textStyle}>Ok</Text>
                     </Pressable>
@@ -280,7 +279,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
                   autoCorrect: false,
                   autoCapitalize: "none",
                 }}/>
-                <View style={{height: 200}}>
+                <View style={{height: 400}}>
                   <Map pressable={true} selectedCadastre={cadastre}
                   onPressed={(item) => {
                     acDropdownController.clear()
@@ -303,7 +302,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: '#16254b',
+    backgroundColor: 'white',
     alignItems: 'center',
     flexDirection: 'column'
   },
@@ -327,6 +326,7 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     display: 'flex',
+    backgroundColor: 'white',
     flexDirection: 'column',
     width: '75%',
     borderRadius: 15,
