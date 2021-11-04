@@ -25,11 +25,11 @@ export default function ChatRoomsScreen({ navigation }: RootTabScreenProps<'Chat
 
   const { user } =  React.useContext(AuthenticatedUserContext);
 
-  const socket = io(ServerConstants.local + "chat");
+  const socket = io(ServerConstants.prod + "chat");
 
   useFocusEffect(
     React.useCallback(() => {
-      axios.get(ServerConstants.local + 'chatRooms', { params: {userId: user?.uid } })
+      axios.get(ServerConstants.prod + 'chatRooms', { params: {userId: user?.uid } })
       .then(function (response) {
         const newRooms = response.data as IRoom[];
         setRooms(newRooms || [])
@@ -50,8 +50,8 @@ export default function ChatRoomsScreen({ navigation }: RootTabScreenProps<'Chat
     });
     socket.connect();
     socket.emit('watchRooms', user?.uid, roomIds);
-    socket.on('newRoom', (message: IRoom) => {
-      setRooms([...rooms, message])
+    socket.on('newRoom', (room: IRoom) => {
+      setRooms([...rooms, room])
     });
     socket.on('newMessage', (message: IMessage) => {
       let newRooms = [...rooms];
@@ -63,14 +63,6 @@ export default function ChatRoomsScreen({ navigation }: RootTabScreenProps<'Chat
     });
   }
 
-  function getRoomCards() {
-    return rooms
-    .filter(room => getCardTitle(room).toLowerCase().indexOf(search.toLowerCase()) > -1)
-    .map((room, key) => {
-      return <ChatRoomCard key={key} room={room} onPress={onChannelPress}/>
-    })
-  }
-
   return (
     <ImageBackground style={styles.container} source={require('../assets/images/bg.png')}>
       <View style={styles.searchContainer}>
@@ -78,7 +70,8 @@ export default function ChatRoomsScreen({ navigation }: RootTabScreenProps<'Chat
         <SearchBar value={search} containerStyle={styles.search} onChangeText={setSearch} round={true} lightTheme={true} />
       </View>
       <ScrollView style={styles.roomsContainer}>
-        {getRoomCards()}
+        {rooms.filter(room => getCardTitle(room).toLowerCase().indexOf(search.toLowerCase()) > -1)
+          .map((room, key) => { return <ChatRoomCard key={key} room={room} onPress={onChannelPress}/>})}
       </ScrollView>
     </ImageBackground>
   );

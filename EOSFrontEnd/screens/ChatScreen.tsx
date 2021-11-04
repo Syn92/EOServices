@@ -17,7 +17,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
 
   const { user } =  React.useContext(AuthenticatedUserContext);
 
-  const socket = io(ServerConstants.local + "chat");
+  const socket = io(ServerConstants.prod + "chat");
 
   function setMessages(messages: IMessage[]) {
     setGiftedMessages(messages.map(x => toGiftedMessage(x, x.userId == user?.uid ? user : route.params.user)))
@@ -30,7 +30,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
   }
 
   React.useEffect(() => {
-    axios.get(ServerConstants.local + 'chatMessages', { params: {roomId: route.params._id } })
+    axios.get(ServerConstants.prod + 'chatMessages', { params: {roomId: route.params._id } })
     .then(function (response) {
       setMessages(response.data as IMessage[]);
       setIsLoading(false);
