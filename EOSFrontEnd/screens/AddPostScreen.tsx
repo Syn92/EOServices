@@ -18,6 +18,7 @@ import { CustomFeature, CustomFeatureColl, getAddress, getCenter } from '../util
 import { LatLng } from 'react-native-maps';
 import ServerConstants from '../constants/Server';
 import { AutocompleteDropdown, AutocompleteDropdownProps } from 'react-native-autocomplete-dropdown';
+import { ServiceStatus } from '../interfaces/Services';
 
 export interface Service {
   title: string;
@@ -32,6 +33,7 @@ export interface Service {
   markerPos: LatLng;
   thumbnail: string | undefined;
   owner: string;
+  status: ServiceStatus
 }
 const { height } = Dimensions.get('window');
 
@@ -73,6 +75,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
         thumbnail: image[0],
         owner: user.uid,
         ownerName: user.name,
+        status: ServiceStatus.OPEN
       }
       if(!submited){
         setSubmited(true);
@@ -118,7 +121,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
   }
 
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
+    let result: any = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       quality: 1,
       base64: true,
