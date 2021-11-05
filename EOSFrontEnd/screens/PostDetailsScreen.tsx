@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, Text, Image, View, ScrollView, Modal, TouchableOpacity, TextInput, KeyboardAvoidingView } from 'react-native';
+import { StyleSheet, Text, Image, View, Pressable, TouchableOpacity, ScrollView, Modal, KeyboardAvoidingView, TextInput } from 'react-native';
 import { RootTabScreenProps } from '../types';
 import { servTypeSell } from './AddPostScreen';
 import { Icon } from 'react-native-elements';
@@ -118,85 +118,94 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
         fetchData();
     }, [])
     
-    return (
-      service ? 
-      <ScrollView contentContainerStyle={{flexGrow: 1}}>
-        <View style={styles.container}>
-          <Modal
-            statusBarTranslucent={true}
-            animationType='fade'
-            transparent={true}
-            visible={modalVisible}
-            onRequestClose={closeModal}>
-              <View style={styles.centeredView}>
-                  {!offerSent ? modalView() : 
-                    <SuccessModalView message='Offer request sent!'>
-                      <TouchableOpacity style={styles.interestedButton} onPress={closeModal}>
-                        <Text style={styles.buttonText}>Done</Text>
-                      </TouchableOpacity>
-                    </SuccessModalView>}
+        return (
+          service ?
+          <ScrollView contentContainerStyle={{flexGrow: 1}}>
+          <View style={styles.container}>
+            <Modal
+              statusBarTranslucent={true}
+              animationType='fade'
+              transparent={true}
+              visible={modalVisible}
+              onRequestClose={closeModal}>
+                <View style={styles.centeredView}>
+                    {!offerSent ? modalView() : 
+                      <SuccessModalView message='Offer request sent!'>
+                        <TouchableOpacity style={styles.interestedButton} onPress={closeModal}>
+                          <Text style={styles.buttonText}>Done</Text>
+                        </TouchableOpacity>
+                      </SuccessModalView>}
+                </View>
+            </Modal>
+              <View style={styles.cardContainer}>
+                <View style={styles.cardHeader}>
+                  <TouchableOpacity style={styles.backButton} onPress={() => {navigation.goBack()}}>
+                    <Icon name="keyboard-arrow-left" size={40} color="#04B388"/>
+                  </TouchableOpacity>
+                  <Text style={styles.imageTitle}>{service.title}</Text>
+                </View>
+
+                <View style={styles.contentCard}>
+                    <Icon style={styles.iconCard} name="storefront" color="#04B388"></Icon>
+                    <Text>{service.ServType == servTypeSell ? 'Offered by ' : 'Searched by '}{service.ownerName}</Text>
+                </View>
+
+                <View style={styles.contentCard}>
+                    <Icon style={styles.iconCard} name="category" color="#04B388"></Icon>
+                    <Text style={styles.textCard}>{service.category}</Text>
+                </View>
+
+                <View style={styles.contentCard}>
+                    <Icon style={styles.iconCard} name="place" color="#04B388"></Icon>
+                    <Text style={styles.textCard}>{getAddress(service.cadastre)}</Text>
+                </View>
+
+                <View style={styles.contentCard}>
+                    <Icon style={styles.iconCard} name="pan-tool" color="#04B388"></Icon>
+                    <Text style={styles.textCard}>{service.material}</Text>
+                </View>
+
+                <View style={styles.contentCard}>
+                    <Icon style={styles.iconCard} name="attach-money" color="#04B388"></Icon>
+                    <Text style={styles.textCard}>{service.priceEOS} EOS</Text>
+                </View>
+
+                <View style={styles.contentCard}>
+                    <Icon style={styles.iconCard} name="description" color="#04B388"></Icon>
+                    <Text style={styles.textCard}>{service.description}</Text>
+                </View>
+
+                <Carousel
+                  layout={"default"}
+                  data={service.images}
+                  sliderWidth={300}
+                  itemWidth={250}
+                  renderItem={_renderItem}
+                  onSnapToItem = { index => setActiveIndex(index) } 
+                  layoutCardOffset={18}/>
+                  <Pagination
+                    dotsLength={service.images.length}
+                    activeDotIndex={activeIndex}
+                    containerStyle={{ backgroundColor: 'white' }}
+                    dotStyle={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: 5,
+                        marginHorizontal: 8,
+                        backgroundColor: '#04B388'
+                    }}
+                    inactiveDotStyle={{
+                        // Define styles for inactive dots here
+                    }}
+                    inactiveDotOpacity={0.4}
+                    inactiveDotScale={0.6}
+                  />
+                  <TouchableOpacity onPress={() => setModalVisible(true)}>
+                    <Text style={{textAlign: 'center', fontSize: 18,color: '#04B388', textDecorationLine: 'underline'}}>Contact advertiser</Text>
+                  </TouchableOpacity>
               </View>
-          </Modal>
-          <View style={styles.cardContainer}>
-            <Image style={styles.image} source={{uri: service.thumbnail, width: 50, height: 50}}/>
-            <Text style={styles.imageTitle}>{service.title}</Text>
-            <View style={styles.contentCard}>
-                <Icon style={styles.iconCard} name="storefront" color="#04B388"></Icon>
-                <Text>{service.ServiceType == servTypeSell ? 'Offered by ' : 'Searched by '}{service.ownerName}</Text>
-            </View>
-
-            <View style={styles.contentCard}>
-                <Icon style={styles.iconCard} name="place" color="#04B388"></Icon>
-                <Text style={styles.textCard}>{getAddress(service.cadastre)}</Text>
-            </View>
-
-            <View style={styles.contentCard}>
-                <Icon style={styles.iconCard} name="pan-tool" color="#04B388"></Icon>
-                <Text style={styles.textCard}>{service.material}</Text>
-            </View>
-
-            <View style={styles.contentCard}>
-                <Icon style={styles.iconCard} name="attach-money" color="#04B388"></Icon>
-                <Text style={styles.textCard}>{service.priceEOS} EOS</Text>
-            </View>
-
-            <View style={styles.contentCard}>
-                <Icon style={styles.iconCard} name="description" color="#04B388"></Icon>
-                <Text style={styles.textCard}>{service.description}</Text>
-            </View>
-
-            <Carousel
-              layout={"default"}
-              data={service.images}
-              sliderWidth={300}
-              itemWidth={250}
-              renderItem={_renderItem}
-              onSnapToItem = { index => setActiveIndex(index) } 
-              layoutCardOffset={18}/>
-              <Pagination
-                dotsLength={service.images.length}
-                activeDotIndex={activeIndex}
-                containerStyle={{ backgroundColor: 'white' }}
-                dotStyle={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: 5,
-                    marginHorizontal: 8,
-                    backgroundColor: '#04B388'
-                }}
-                inactiveDotStyle={{
-                    // Define styles for inactive dots here
-                }}
-                inactiveDotOpacity={0.4}
-                inactiveDotScale={0.6}
-              />
-            
-            <TouchableOpacity style={styles.interestedButton} onPress={() => setModalVisible(true)}>
-              <Text style={styles.buttonText}>Interested</Text>
-            </TouchableOpacity>
           </View>
-        </View> 
-      </ScrollView>: <Loading/>
+          </ScrollView> : <Loading/>
     )
 }
 
@@ -206,14 +215,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'column'
   },
+  cardHeader: {
+    display: 'flex',
+    flexDirection: 'row',
+  },
+  backButton: {
+    display: 'flex',
+    flexBasis: '10%',
+    alignSelf: 'flex-start',
+  },
+  imageTitle: {
+    textDecorationLine: 'underline',
+    color: '#04B388',
+    fontSize: 18,
+    textTransform: 'capitalize',
+    flexBasis: '90%',
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    paddingRight: '10%'
+  },
   cardContainer: {
     justifyContent: 'center',
     alignItems: 'center',
     width: '80%',
     display: 'flex',
     flexDirection: 'column',
-    marginVertical: 10,
-    padding: 5,
+    marginVertical: 30,
+    padding: 10,
     borderRadius: 15,
     shadowColor: "#000",
     shadowOffset: {
@@ -237,18 +265,12 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     marginHorizontal: 5,
   },
-  imageTitle: {
-    textDecorationLine: 'underline',
-    color: '#04B388',
-    fontSize: 16,
-    textTransform: 'capitalize'
-  },
   contentCard: {
     alignItems: 'center',
     width: '75%',
     display: 'flex',
     flexDirection: 'row',
-    marginVertical: 10,
+    marginVertical: 7,
     paddingVertical: 15,
     borderRadius: 15,
     shadowColor: "#000",
