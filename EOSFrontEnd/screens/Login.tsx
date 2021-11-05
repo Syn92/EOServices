@@ -20,6 +20,7 @@ import Constants from 'expo-constants';
 import Firebase from '../config/firebase';
 import { ScrollView } from 'react-native-gesture-handler';
 import Loading from '../components/Loading';
+import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
 
 export function Login({navigation}: {navigation: any}) {
 

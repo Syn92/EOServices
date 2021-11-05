@@ -9,23 +9,37 @@ import Firebase from '../config/firebase';
 import axios from 'axios';
 import ServerConstants from '../constants/Server';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
+import Loading from '../components/Loading';
 
 const auth = Firebase.auth();
 
 export function LinkWallet({ navigation }: { navigation: any }) {
 
   const [eosUsername, setEosUsername] = useState('');
-  const { user, setUser } =  React.useContext(AuthenticatedUserContext);
+  const { user, setUser } = React.useContext(AuthenticatedUserContext);
+  const [isLoading, setLoadingStatus] = useState(false);
+
 
   async function addLinkAccountName() {
+    console.log(eosUsername)
     try {
-        let res = await axios.patch(ServerConstants.local + 'auth', { 
-            uid: user?.uid,
-            patch: { walletAccountName: eosUsername }
-        })
-        console.log(res)
+      setLoadingStatus(true);
+      let res = await axios.patch(ServerConstants.local + 'auth', {
+        uid: user?.uid,
+        patch: { walletAccountName: eosUsername }
+      })
+      console.log(res);
+      if (res.status == 200) {
+        await auth.updateCurrentUser(auth.currentUser);
+        setLoadingStatus(false);
+      } else {
+        setLoadingStatus(false);
+        throw new Error(`Error adding wallet (status ${res.status}): ${res.statusText}`)
+      }
+      
     } catch (e) {
-        console.error('Edit description error: ', e)
+      setLoadingStatus(false);
+      console.error('Add Wallet error: ', e)
     }
   }
 
@@ -33,29 +47,36 @@ export function LinkWallet({ navigation }: { navigation: any }) {
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
       <View style={{ flex: 1 }}>
         <ImageBackground source={require('../assets/images/bg.png')} style={styles.container}>
-
+          {isLoading ? Loading({}) : null}
           <HorizontalSeparator text='EOS Wallet' fontSize={20} lineColor='#04b388' />
 
           {/* Wallet username input */}
           <View style={styles.inputView}>
             <Text style={styles.inputLabel}>Link Existing Wallet Account</Text>
+            <View style={{display: "flex",flexDirection: 'row',flexBasis: 100}}>
             <TextInput
-              style={{ color: 'white' }}
+              style={{ color: 'white', width: "80%" }}
               autoCapitalize='none'
               autoCorrect={false}
-              placeholder='Ex: username.gm'
+              maxLength={9}
+              placeholder="Enter account name..."
               placeholderTextColor='#ffffff50'
               value={eosUsername}
               onChangeText={text => setEosUsername(text)}
             />
+            <Text style={{ color: 'white', width: "20%" }}>.gm</Text>
+            </View>
           </View>
           <TouchableOpacity onPress={() => navigation.navigate('CreateWalletTutorial')} style={styles.helpLink}>
-              <Text style={styles.helpLinkText}>
-                No wallet? See how to create one here
-              </Text>
+            <Text style={styles.helpLinkText}>
+              No wallet? See how to create one here
+            </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.button} onPress={addLinkAccountName}>
+          <TouchableOpacity style={styles.button} onPress={() => {
+            setEosUsername(eosUsername.concat(".gm"));
+            addLinkAccountName();
+          }}>
             <Text style={styles.buttonText}>Create Account</Text>
           </TouchableOpacity>
         </ImageBackground>

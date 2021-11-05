@@ -1,10 +1,7 @@
-import axios from 'axios';
 import * as React from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Button } from 'react-native-elements/dist/buttons/Button';
 import Map from '../components/Map';
-
-import EditScreenInfo from '../components/EditScreenInfo';
 import { RootTabScreenProps } from '../types';
 import Firebase from '../config/firebase';
 import { Icon } from 'react-native-elements';
@@ -15,22 +12,7 @@ import { TextInput } from 'react-native-gesture-handler';
 import { CustomFeature, getAddress } from '../utils/Cadastre';
 import { LatLng } from 'react-native-maps';
 import ActionButtonSecondary from '../components/ActionButtonSecondary';
-
-export interface Service {
-  title: string;
-  description: string;
-  material: string;
-  priceEOS: number;
-  serviceType: string;
-  category: string;
-  cadastre: CustomFeature;
-  markerPos: LatLng;
-  owner: string;
-  ownerName: string;
-  thumbnail: string;
-  _id: string;
-}
-
+import { Service } from '../interfaces/Service';
 
 const auth = Firebase.auth()
 
