@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
-import { getCardTitle, IRoom } from '../../interfaces/Chat';
+import { getCardTitle, IMessage, IRoom } from '../../interfaces/Chat';
+import { ChatContext } from '../../navigation/SocketProvider';
 
 interface IProp {
   room: IRoom;
@@ -8,6 +9,16 @@ interface IProp {
 }
 
 export default function ChatRoomCard(props: IProp) {
+    const { messages } =  useContext(ChatContext);
+
+    const [lastMessage, setLastMessage] = useState<IMessage | undefined>(undefined);
+
+    useEffect(() => {
+        if(messages.has(props.room._id) && messages.get(props.room._id).length > 0) {
+            setLastMessage(messages.get(props.room._id)[messages.get(props.room._id).length - 1]);
+        }
+    }, [messages])
+
   return (
     <TouchableOpacity style={styles.mainContainer} onPress={() => props.onPress(props.room)}>
         <View>
@@ -16,10 +27,10 @@ export default function ChatRoomCard(props: IProp) {
         <View style={styles.descriptionContainer}>
             <View style={styles.titleContainer}>
                 <Text style={[styles.text, styles.title]} numberOfLines={1}>{getCardTitle(props.room)}</Text>
-                <Text style={styles.text}>{props.room.lastMessage ? new Date(props.room.lastMessage.createdAt).toDateString() : ''}</Text>
+                <Text style={styles.text}>{lastMessage ? new Date(lastMessage.createdAt).toDateString() : ''}</Text>
             </View>
             <View style={styles.lastMessageContainer}>
-                <Text style={styles.text} numberOfLines={1}>{props.room.lastMessage?.text || '(No Messages)'}</Text>
+                <Text style={styles.text} numberOfLines={1}>{lastMessage?.text || '(No Messages)'}</Text>
             </View>
         </View>
     </TouchableOpacity>

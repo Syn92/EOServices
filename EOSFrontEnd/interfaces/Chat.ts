@@ -6,7 +6,6 @@ export interface IRoom {
   _id: string;
   user: User;
   service: Service;
-  lastMessage: IMessage | undefined;
 }
 
 export interface IMessage {

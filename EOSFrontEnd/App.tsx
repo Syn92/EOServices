@@ -4,6 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import useCachedResources from './hooks/useCachedResources';
 import Navigation from './navigation';
 import { AuthenticatedUserProvider } from './navigation/AuthenticatedUserProvider';
+import { SocketProvider } from './navigation/SocketProvider';
 
 export default function App() {
   const isLoadingComplete = useCachedResources();
@@ -13,10 +14,12 @@ export default function App() {
   } else {
     return (
       <AuthenticatedUserProvider>
-        <SafeAreaProvider>
-          <Navigation />
-          <StatusBar />
-        </SafeAreaProvider>
+        <SocketProvider>
+          <SafeAreaProvider>
+            <Navigation />
+            <StatusBar />
+          </SafeAreaProvider>
+        </SocketProvider>
       </AuthenticatedUserProvider>
     );
   }
