@@ -8,7 +8,7 @@ import Firebase from '../config/firebase';
 import ServerConstants from '../constants/Server';
 import { RootTabScreenProps } from '../types';
 import { CustomFeature } from '../utils/Cadastre';
-import { Service } from './TabTwoScreen';
+import { Service } from '../interfaces/Service';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
 const auth = Firebase.auth()

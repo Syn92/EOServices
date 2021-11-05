@@ -113,7 +113,7 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
          data.filter((e:Service) => (e.title.startsWith(searchString.toLowerCase()) && (filterCatSelected == filterNone ? true : e.category == filterCatSelected))).map((e: Service) => {
            return(
              <TouchableOpacity onPress={() => {onCardPress(e)}} key={e._id}>
-               <PostCard title={e.title} price={e.priceEOS} position={getAddress(e.cadastre)} owner={e.ownerName} thumbnail={e.thumbnail}></PostCard>
+               <PostCard title={e.title} price={e.priceEOS} position={getAddress(e.cadastre)} owner={e.ownerName} thumbnail={e.thumbnail ? e.thumbnail : 'https://cdn1.iconfinder.com/data/icons/business-company-1/500/image-512.png'}></PostCard>
              </TouchableOpacity>)
          })
        }
