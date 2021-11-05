@@ -4,8 +4,7 @@ import { useState } from 'react';
 import { Button, ImageBackground, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Icon } from 'react-native-elements/dist/icons/Icon';
 import { ScrollView } from 'react-native-gesture-handler';
-import HorizontalSeparator from '../components/HorizontalSeparator';
-import * as anchor from "../components/Anchor"
+import Loading from '../components/Loading';
 import Firebase from '../config/firebase';
 
 const auth = Firebase.auth();
@@ -16,22 +15,25 @@ export function Register({ navigation }: { navigation: any }) {
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [signupError, setSignupError] = useState('');
-  const [eosUsername, setEosUsername] = useState('');
+  const [isLoading, setLoadingStatus] = useState(false);
 
   async function handleSignup() {
     try {
+      setLoadingStatus(true);
       if (email !== '' && password !== '') {
         if (password == passwordConfirmation)
           await auth.createUserWithEmailAndPassword(email, password);
+        setLoadingStatus(false);
       }
     } catch (error: any) {
+      setLoadingStatus(false);
       setSignupError(error.message);
     }
   };
 
   auth.onAuthStateChanged(function (user: any) {
     if (user) {
-      user.updateProfile({ displayName: "NEW USER NAME" })
+      user.updateProfile({ displayName: "NEW USER NAME" });
     }
   });
 
@@ -39,6 +41,7 @@ export function Register({ navigation }: { navigation: any }) {
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
       <View style={{ flex: 1 }}>
         <ImageBackground source={require('../assets/images/bg.png')} style={styles.container}>
+          {isLoading ? Loading({}) : null}
           <StatusBar style='light' />
 
 
@@ -82,40 +85,8 @@ export function Register({ navigation }: { navigation: any }) {
             />
           </View>
 
-          <HorizontalSeparator text='EOS Wallet' fontSize={20} lineColor='#04b388' />
 
           {signupError ? <Text style={styles.errorText}>{signupError}</Text> : null}
-
-          {/* Wallet username input */}
-          <View style={styles.inputView}>
-            <Text style={styles.inputLabel}>Account Name</Text>
-            <TextInput
-              style={{ color: 'white' }}
-              autoCapitalize='none'
-              autoCorrect={false}
-              placeholder='Ex: username.gm'
-              placeholderTextColor='#ffffff50'
-              value={eosUsername}
-              onChangeText={text => setEosUsername(text)}
-            />
-          </View>
-          <TouchableOpacity onPress={() => navigation.navigate('CreateWalletTutorial')} style={styles.helpLink}>
-              <Text style={styles.helpLinkText}>
-                No wallet? See how to create one here
-              </Text>
-          </TouchableOpacity>
-
-          {/* <TouchableOpacity style={styles.iconView} onPress={anchor.transact}>
-            <Icon name='sync-alt' type='material' size={30} color='white' />
-            <Text style={styles.iconText}>Link</Text>
-          </TouchableOpacity> */}
-{/* 
-          <Text style={styles.text}>Or</Text>
-
-          <View style={styles.iconView}>
-            <Icon name='update' type='material' size={30} color='white' />
-            <Text style={styles.iconText}>Create</Text>
-          </View> */}
 
           <TouchableOpacity style={styles.button} onPress={handleSignup}>
             <Text style={styles.buttonText}>Create Account</Text>
