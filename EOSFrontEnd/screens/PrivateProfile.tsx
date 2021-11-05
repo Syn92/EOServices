@@ -11,6 +11,7 @@ import ServerConstants from '../constants/Server';
 import Loading from '../components/Loading';
 import { ProfileServiceList } from '../components/ProfileServiceList/ProfileServiceList';
 import Firebase from '../config/firebase';
+import { ServiceStatus } from '../interfaces/Services';
 
 const WIDTH = Dimensions.get('window').width;
 const auth = Firebase.auth()
@@ -33,7 +34,12 @@ export function PrivateProfile({navigation}: {navigation: any}) {
     const [ description, setDescription ] = useState(user?.description);
     const [ descriptionLength, setDescriptionLength ] = useState(0);
     const [ isPageLoading, setisPageLoading ] = useState(false);
-    const [ services, setServices ] = useState([])
+
+    const [ services, setServices ] = useState<{open: Array<Object>, inProgress: Array<Object>, completed: Array<Object>}>();
+    const [ servicesDisplayed, setOrdersDisplayed ] = useState(true);
+    const [ pendingRequests, setPendingRequests ] = useState<{outgoing: Array<Object>, incoming: Array<Object>}>();
+    const [ pendingRequestsDisplayed, setPendingRequestsDisplayed ] = useState(true);
+
 
     const [nameError, setNameError] = useState('');
     const [phoneError, setPhoneError] = useState('');
@@ -45,14 +51,28 @@ export function PrivateProfile({navigation}: {navigation: any}) {
 
     React.useEffect(() => {
         fetchUserServices();
+        fetchPendingRequests();
     }, []);
 
     async function fetchUserServices() {
         try {
             const res = await axios.get<any>(ServerConstants.local + 'post/list', { params: { owner: user?.uid } });
-            setServices(res.data);
+            setServices({
+                open: res.data.filter(i => i.status == ServiceStatus.OPEN),
+                inProgress: res.data.filter(i => i.status == ServiceStatus.IN_PROGRESS),
+                completed: res.data.filter(i => i.status == ServiceStatus.COMPLETED),
+             });
         } catch (e) {
             console.error('Fetch User Services Private: ', e)
+        }
+    }
+
+    async function fetchPendingRequests() {
+        try {
+            const res = await axios.get<any>(ServerConstants.local + 'post/requests', { params: { uid: user?.uid } });
+            setPendingRequests(res.data)
+        } catch (e) {
+            console.error('Fetch Pending Requests: ', e)
         }
     }
 
@@ -63,6 +83,14 @@ export function PrivateProfile({navigation}: {navigation: any}) {
         });
         setNameError('')
         setPhoneError('')
+    }
+
+    function toggleServices() {
+        setOrdersDisplayed(!servicesDisplayed)
+    }
+
+    function togglePendingRequests() {
+        setPendingRequestsDisplayed(!pendingRequestsDisplayed)
     }
 
     async function handleLogout() {
@@ -254,6 +282,7 @@ export function PrivateProfile({navigation}: {navigation: any}) {
             <View style={styles.container}>
                 <ImageBackground style={{ flex: 1 }} source={require('../assets/images/bg.png')}>
                     <Modal
+                    statusBarTranslucent={true}
                     animationType='fade'
                     transparent={true}
                     visible={modalVisible}
@@ -304,13 +333,34 @@ export function PrivateProfile({navigation}: {navigation: any}) {
                     
                     {/* Orders list */}
                     <View style={styles.listContainer}>
-                        <View style={styles.refresh}>
-                            <TouchableOpacity style={{paddingHorizontal: '20%'}} activeOpacity={0.2} onPress={fetchUserServices}>
-                                <Icon name='refresh' type='material' color='#04b388'/>
+                        <View style={servicesDisplayed ? styles.refresh : styles.refreshToggle}>
+                            {servicesDisplayed ?
+                                <TouchableOpacity style={{paddingLeft: '5%', marginRight: '2%' }} activeOpacity={0.2} onPress={fetchUserServices}>
+                                    <Icon name='refresh' type='material' color='#04b388'/>
+                                </TouchableOpacity> : 
+                                <Text style={{marginLeft: '5%', fontWeight: 'bold'}}>Orders</Text> 
+                            }
+                            <TouchableOpacity style={{ paddingRight: '5%', marginLeft: '2%'}} activeOpacity={0.2} onPress={toggleServices}>
+                                <Icon name='remove' type='material' color='#04b388'/>
                             </TouchableOpacity>
                         </View>
+                        {servicesDisplayed && services? <ProfileServiceList data={services}/> : null}
                     </View>
-                    <ProfileServiceList data={services}/>
+
+                    <View style={styles.listContainer}>
+                        <View style={pendingRequestsDisplayed ? styles.refresh : styles.refreshToggle}>
+                            {pendingRequestsDisplayed ?
+                                <TouchableOpacity style={{paddingLeft: '5%', marginRight: '2%' }} activeOpacity={0.2} onPress={fetchPendingRequests}>
+                                    <Icon name='refresh' type='material' color='#04b388'/>
+                                </TouchableOpacity> : 
+                                <Text style={{marginLeft: '5%', fontWeight: 'bold'}}>Pending requests</Text> 
+                            }
+                            <TouchableOpacity style={{ paddingRight: '5%', marginLeft: '2%'}} activeOpacity={0.2} onPress={togglePendingRequests}>
+                                <Icon name='remove' type='material' color='#04b388'/>
+                            </TouchableOpacity>
+                        </View>
+                        {pendingRequestsDisplayed && pendingRequests? <ProfileServiceList data={pendingRequests}/> : null}
+                    </View>
                 </ImageBackground>
             </View>
         </ScrollView>
@@ -326,10 +376,16 @@ const styles = StyleSheet.create({
         marginTop: 10
     },
     refresh: {
+        flexDirection: 'row',
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
-        // paddingHorizontal: '20%',
         backgroundColor: 'white'
+    },
+    refreshToggle: {
+        flexDirection: 'row',
+        borderRadius: 20,
+        backgroundColor: 'white',
+        paddingVertical: '1%'
     },
     avatar: {
         marginTop: '10%',
