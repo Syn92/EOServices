@@ -13,6 +13,7 @@ import { CustomFeature, getAddress } from '../utils/Cadastre';
 import { LatLng } from 'react-native-maps';
 import ActionButtonSecondary from '../components/ActionButtonSecondary';
 import { Service } from '../interfaces/Service';
+import { filterCat, servTypeSell, servTypeBuy } from '../constants/Utils';
 
 const auth = Firebase.auth()
 
@@ -25,9 +26,9 @@ async function handleLogout() {
 }
 
 const filterNone: string = 'none';
-const filterCat1: string = 'cat1';
-const filterCat2: string = 'cat2';
-const filterCat3: string = 'cat3';
+const noneServType: string = 'none';
+
+
 
 
 export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'>){
@@ -37,6 +38,7 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
   const [modalVisible, setModalVisible] = useState(false);
   const [filterCatSelected, setFilterCatSelected] = useState(filterNone)
   const [loading, setLoading] = useState(true);
+  const [selectedType, setSelectedType] = useState(noneServType)
 
   const fetchData = async () => {
     try{
@@ -87,12 +89,12 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
                 <View style={styles.centeredView}>
                   <View style={styles.modalView}>
                     <Text style={styles.modalText}>Filter by...</Text>
-                    <View style={styles.modalButtonContainer}>
-                      <ActionButtonSecondary  title="None" styleContainer={[filterCatSelected == filterNone ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'}, {margin: 5}]} styleText={filterCatSelected == filterNone ? {color: 'white'} : {color: '#04B388'}} onPress={() => {setFilterCatSelected(filterNone); setModalVisible(false)}}></ActionButtonSecondary>
-                      <ActionButtonSecondary  title="Cat1" styleContainer={[filterCatSelected == filterCat1 ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'}, {margin: 5}]} styleText={filterCatSelected == filterCat1 ? {color: 'white'} : {color: '#04B388'}} onPress={() => {setFilterCatSelected(filterCat1); setModalVisible(false)}}></ActionButtonSecondary>
-                      <ActionButtonSecondary  title="Cat2" styleContainer={[filterCatSelected == filterCat2 ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'}, {margin: 5}]} styleText={filterCatSelected == filterCat2 ? {color: 'white'} : {color: '#04B388'}} onPress={() => {setFilterCatSelected(filterCat2); setModalVisible(false)}}></ActionButtonSecondary>
-                      <ActionButtonSecondary  title="Cat3" styleContainer={[filterCatSelected == filterCat3 ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'}, {margin: 5}]} styleText={filterCatSelected == filterCat3 ? {color: 'white'} : {color: '#04B388'}} onPress={() => {setFilterCatSelected(filterCat3); setModalVisible(false)}}></ActionButtonSecondary>
-                    </View>
+                    <ScrollView style={styles.modalButtonContainer}>
+                      {filterCat.map((cat: string) => {
+                        return(
+                        <ActionButtonSecondary key={cat}  title={cat} styleContainer={[filterCatSelected == cat ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'}, {margin: 5}]} styleText={filterCatSelected == cat ? {color: 'white'} : {color: '#04B388'}} onPress={() => {setFilterCatSelected(cat); setModalVisible(false)}}></ActionButtonSecondary>)
+                      })}
+                    </ScrollView>
                   </View>
                 </View>
               </Modal>
@@ -107,10 +109,14 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
             <Button icon={<Icon name="sort" size={30} color="#04B388"/>} onPress={() => {navigation.navigate('AddPost')}} />
           </View>
         </View>
+          <View style={styles.buttonTypeContainer}>
+            <ActionButtonSecondary styleContainer={[styles.typeButtonLeft, (selectedType == servTypeSell) ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'}]} title="Offering" onPress={() => {if(selectedType != servTypeSell) setSelectedType(servTypeSell); else {setSelectedType(noneServType)}}} styleText={selectedType == servTypeSell ? {color: 'white'} : {color: '#04B388'}}></ActionButtonSecondary>
+            <ActionButtonSecondary styleContainer={[styles.typeButtonRight,(selectedType == servTypeBuy) ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'} ]} title="Looking for" onPress={() => {if(selectedType != servTypeBuy) setSelectedType(servTypeBuy); else {setSelectedType(noneServType)}}} styleText={selectedType == servTypeBuy ? {color: 'white'} : {color: '#04B388'}}></ActionButtonSecondary>
+          </View>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
 
        {
-         data.filter((e:Service) => (e.title.startsWith(searchString.toLowerCase()) && (filterCatSelected == filterNone ? true : e.category == filterCatSelected))).map((e: Service) => {
+         data.filter((e:Service) => (e.title.startsWith(searchString.toLowerCase()) && (filterCatSelected == filterNone ? true : e.category == filterCatSelected) && (selectedType == noneServType ? true : e.serviceType == selectedType))).map((e: Service) => {
            return(
              <TouchableOpacity onPress={() => {onCardPress(e)}} key={e._id}>
                <PostCard title={e.title} price={e.priceEOS} position={getAddress(e.cadastre)} owner={e.ownerName} thumbnail={e.thumbnail ? e.thumbnail : 'https://cdn1.iconfinder.com/data/icons/business-company-1/500/image-512.png'}></PostCard>
@@ -170,6 +176,34 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     width: '90%',
     flexBasis: '30%',
+  },
+  buttonTypeContainer: {
+    alignContent: 'center',
+    justifyContent: 'space-between',
+    alignSelf: 'center',
+    width: '90%',
+    display: 'flex',
+    flexDirection: 'row',
+    borderRadius: 25,
+    marginBottom: 5,
+  },
+  typeButtonLeft: {
+    width: '50%',
+    borderBottomLeftRadius: 25,
+    borderTopLeftRadius: 25,
+    borderBottomRightRadius: 0,
+    borderTopRightRadius: 0,
+    borderRightWidth: 1,
+    borderRightColor: '#04B388',
+  },
+  typeButtonRight: {
+    width: '50%',
+    borderBottomRightRadius: 25,
+    borderTopRightRadius: 25,
+    borderBottomLeftRadius: 0,
+    borderTopLeftRadius: 0,
+    borderLeftWidth: 1,
+    borderLeftColor: '#04B388'
   },
   listContainer: {
     // minHeight: '100%',
@@ -247,6 +281,7 @@ modalView: {
   margin: 20,
   backgroundColor: "white",
   borderRadius: 20,
+  height: '50%',
   padding: 35,
   alignItems: "center",
   shadowColor: "#000",
@@ -281,6 +316,6 @@ textStyle: {
 modalButtonContainer: {
   display: 'flex',
   flexDirection: 'column',
-  width: 150
+  width: '80%',
 }
 });

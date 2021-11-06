@@ -5,7 +5,7 @@ import Geocoder from 'react-native-geocoding';
 import axios, { CancelTokenSource } from 'axios';
 import { CustomFeature, CustomFeatureColl, getCenter } from '../utils/Cadastre';
 import ServerConstants from '../constants/Server';
-import { Service } from '../screens/TabTwoScreen';
+import { Service } from '../interfaces/Service';
 
 interface IMarker {
     key: string;
@@ -152,7 +152,6 @@ export default function Map(props: IProps) {
         const existingIndex = markers.findIndex(x => x.key == markerKey);
         if(marker) {
             marker.key = markerKey;
-            props.onMarkerPressed(markerKey);
             if(existingIndex > -1) {
                 markers[existingIndex] = marker;
             } else {

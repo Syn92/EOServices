@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { StyleSheet, Text, Image, View, Pressable, TouchableOpacity, ScrollView, Modal, KeyboardAvoidingView, TextInput } from 'react-native';
 import { RootTabScreenProps } from '../types';
-import { servTypeSell } from './AddPostScreen';
+import { servTypeSell } from '../constants/Utils';
 import { Icon } from 'react-native-elements';
 import axios from 'axios';
 import ServerConstants from '../constants/Server';
@@ -147,7 +147,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
 
                 <View style={styles.contentCard}>
                     <Icon style={styles.iconCard} name="storefront" color="#04B388"></Icon>
-                    <Text>{service.ServType == servTypeSell ? 'Offered by ' : 'Searched by '}{service.ownerName}</Text>
+                    <Text>{service.serviceType == servTypeSell ? 'Offered by ' : 'Searched by '}{service.ownerName}</Text>
                 </View>
 
                 <View style={styles.contentCard}>
