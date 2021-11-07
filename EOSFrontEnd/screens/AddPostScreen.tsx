@@ -29,7 +29,6 @@ export interface Service {
   priceEOS: number;
   serviceType: string;
   category: string;
-  ownerName?: string;
   cadastreId: string;
   markerPos: LatLng;
   thumbnail: string | undefined;
@@ -74,7 +73,6 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
         markerPos: getCenter(cadastre),
         thumbnail: image[0],
         owner: user.uid,
-        ownerName: user.name,
         status: ServiceStatus.OPEN
       }
       if(!submited){
@@ -260,12 +258,12 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
                 <View style={styles.centeredView}>
                   <View style={styles.modalView}>
                     <Text style={styles.modalText}>Post succesfully submited</Text>
-                    <Pressable
+                    <TouchableOpacity
                       style={[styles.button, styles.buttonClose]}
                       onPress={() => {setModalVisible(!modalVisible); navigation.goBack()}}
                     >
                       <Text style={styles.textStyle}>Ok</Text>
-                    </Pressable>
+                    </TouchableOpacity>
                   </View>
                 </View>
               </Modal>

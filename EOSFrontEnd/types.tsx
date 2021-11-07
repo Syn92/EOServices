@@ -22,7 +22,7 @@ export type RootStackParamList = {
   AddPost: undefined;
   ChatRooms: undefined;
   Chat: IRoom;
-  PostDetails: undefined;
+  PostDetails: any;
 };
 
 export type RootStackScreenProps<Screen extends keyof RootStackParamList> = NativeStackScreenProps<

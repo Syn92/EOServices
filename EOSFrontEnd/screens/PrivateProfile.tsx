@@ -11,7 +11,7 @@ import ServerConstants from '../constants/Server';
 import Loading from '../components/Loading';
 import { ProfileServiceList } from '../components/ProfileServiceList/ProfileServiceList';
 import Firebase from '../config/firebase';
-import { ServiceStatus } from '../interfaces/Services';
+import { RequestData, ServiceStatus } from '../interfaces/Services';
 
 const WIDTH = Dimensions.get('window').width;
 const auth = Firebase.auth()
@@ -37,7 +37,7 @@ export function PrivateProfile({navigation}: {navigation: any}) {
 
     const [ services, setServices ] = useState<{open: Array<Object>, inProgress: Array<Object>, completed: Array<Object>}>();
     const [ servicesDisplayed, setOrdersDisplayed ] = useState(true);
-    const [ pendingRequests, setPendingRequests ] = useState<{outgoing: Array<Object>, incoming: Array<Object>}>();
+    const [ pendingRequests, setPendingRequests ] = useState<RequestData>();
     const [ pendingRequestsDisplayed, setPendingRequestsDisplayed ] = useState(true);
 
 
@@ -50,9 +50,12 @@ export function PrivateProfile({navigation}: {navigation: any}) {
     });
 
     React.useEffect(() => {
-        fetchUserServices();
-        fetchPendingRequests();
+        fetchRoutine()
     }, []);
+
+    async function fetchRoutine(): Promise<void> {
+        await Promise.all([fetchUserServices(), fetchPendingRequests()])
+    }
 
     async function fetchUserServices() {
         try {
@@ -133,7 +136,6 @@ export function PrivateProfile({navigation}: {navigation: any}) {
     }
 
     async function editContactInfo(){
-        console.log('editContactInfo')
         try {
             let res = await axios.patch(ServerConstants.local + 'auth', {
                 uid: user?.uid,
@@ -333,8 +335,8 @@ export function PrivateProfile({navigation}: {navigation: any}) {
                     
                     {/* Orders list */}
                     <View style={styles.listContainer}>
-                        <View style={servicesDisplayed ? styles.refresh : styles.refreshToggle}>
-                            {servicesDisplayed ?
+                        <View style={servicesDisplayed && services ? styles.refresh : styles.refreshToggle}>
+                            {servicesDisplayed && services ?
                                 <TouchableOpacity style={{paddingLeft: '5%', marginRight: '2%' }} activeOpacity={0.2} onPress={fetchUserServices}>
                                     <Icon name='refresh' type='material' color='#04b388'/>
                                 </TouchableOpacity> : 
@@ -348,8 +350,8 @@ export function PrivateProfile({navigation}: {navigation: any}) {
                     </View>
 
                     <View style={styles.listContainer}>
-                        <View style={pendingRequestsDisplayed ? styles.refresh : styles.refreshToggle}>
-                            {pendingRequestsDisplayed ?
+                        <View style={pendingRequestsDisplayed && pendingRequests? styles.refresh : styles.refreshToggle}>
+                            {pendingRequestsDisplayed && pendingRequests ?
                                 <TouchableOpacity style={{paddingLeft: '5%', marginRight: '2%' }} activeOpacity={0.2} onPress={fetchPendingRequests}>
                                     <Icon name='refresh' type='material' color='#04b388'/>
                                 </TouchableOpacity> : 
@@ -359,7 +361,7 @@ export function PrivateProfile({navigation}: {navigation: any}) {
                                 <Icon name='remove' type='material' color='#04b388'/>
                             </TouchableOpacity>
                         </View>
-                        {pendingRequestsDisplayed && pendingRequests? <ProfileServiceList data={pendingRequests}/> : null}
+                        {pendingRequestsDisplayed && pendingRequests? <ProfileServiceList data={pendingRequests} onUpdate={fetchRoutine}/> : null}
                     </View>
                 </ImageBackground>
             </View>
@@ -422,7 +424,7 @@ const styles = StyleSheet.create({
         width: '100%',
         marginTop: 22,
         backgroundColor: 'rgba(0, 0, 0, 0.57)',
-      },
+    },
     modalView: {
         margin: 20,
         width: '80%',

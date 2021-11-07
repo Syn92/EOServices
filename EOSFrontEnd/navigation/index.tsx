@@ -157,6 +157,7 @@ function TabFourStackScreen() {
     <TabFourStack.Navigator>
       <TabFourStack.Screen name="Root" component={PrivateProfile} options={{ headerShown: false }} />
       <TabFourStack.Screen name="PublicProfile" component={PublicProfile} options={{ headerShown: false }} />
+      <TabOneStack.Screen name="PostDetails" component={PostDetailsScreen} />
     </TabFourStack.Navigator>
   )
 }
