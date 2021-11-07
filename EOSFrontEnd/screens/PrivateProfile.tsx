@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { StatusBar } from 'expo-status-bar';
-import { Dimensions, Image, ImageBackground, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableHighlight, TouchableOpacity, View } from 'react-native'
+import { Button, Dimensions, Image, ImageBackground, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableHighlight, TouchableOpacity, View } from 'react-native'
 
 import { ProfileCard } from '../components/ProfileCard'
 import { Icon } from 'react-native-elements';
@@ -12,6 +12,7 @@ import Loading from '../components/Loading';
 import { ProfileServiceList } from '../components/ProfileServiceList/ProfileServiceList';
 import Firebase from '../config/firebase';
 import { RequestData, ServiceStatus } from '../interfaces/Services';
+import * as ImagePicker from 'expo-image-picker';
 
 const WIDTH = Dimensions.get('window').width;
 const auth = Firebase.auth()
@@ -19,6 +20,7 @@ const auth = Firebase.auth()
 enum ModalType {
     description,
     contactInfo,
+    avatar,
 }
 
 interface ContactInfo {
@@ -31,6 +33,7 @@ export function PrivateProfile({navigation}: {navigation: any}) {
     const { user, setUser } =  React.useContext(AuthenticatedUserContext);
     const [ modalVisible, setModalVisible ] = useState(false);
     const [ modalType, setModalType] = useState<ModalType>();
+    const [ avatar, setAvatar ] = useState(user?.avatar);
     const [ description, setDescription ] = useState(user?.description);
     const [ descriptionLength, setDescriptionLength ] = useState(0);
     const [ isPageLoading, setisPageLoading ] = useState(false);
@@ -40,6 +43,8 @@ export function PrivateProfile({navigation}: {navigation: any}) {
     const [ pendingRequests, setPendingRequests ] = useState<RequestData>();
     const [ pendingRequestsDisplayed, setPendingRequestsDisplayed ] = useState(true);
 
+
+    const [image, setImage] = useState<(string | undefined)>();
 
     const [nameError, setNameError] = useState('');
     const [phoneError, setPhoneError] = useState('');
@@ -153,9 +158,64 @@ export function PrivateProfile({navigation}: {navigation: any}) {
         }
     }
 
+    const pickImage = async () => {
+        let result: any = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.All,
+          quality: 1,
+          base64: true,
+        });
+    
+        if (!result.cancelled) {
+          await setImage(result.base64);
+        }
+      };
+
     function openModal(type: ModalType) {
         setModalType(type)
         setModalVisible(true);
+    }
+
+    async function uploadAvatar(image: string){
+        try {
+            let res = await axios.post(ServerConstants.local + 'auth/avatar', { 
+                uid: user?.uid,
+                avatar: image
+            })
+            console.log(res.status)
+            if (res.status == 200) {
+                await fetchUser()
+            } else {
+                setAvatar(user?.avatar)
+                throw new Error(`Error updating avatar (status ${res.status}): ${res.statusText}`)
+            }
+        } catch (e) {
+            setAvatar(user?.avatar)
+            console.error('Edit avatar error: ', e)
+        }
+    }
+
+    function avatarModal() {
+        return (
+            <View style={styles.modalView}>
+                {isPageLoading ? Loading({}): null}
+
+                <Text style={styles.modalText}>Edit Avatar</Text>
+                <Button title="Upload avatar" onPress={pickImage}></Button>
+                {image ? <Image source={{uri: 'data:image/png;base64,' + image, width: WIDTH/2.5, height: WIDTH/2.5}}/> : null}
+                <TouchableHighlight
+                        style={styles.openButton}
+                        onPress={async () => {
+                            setisPageLoading(true)
+                            await uploadAvatar(image)
+                            setisPageLoading(false)
+                            setModalVisible(!modalVisible);
+                        }
+                    }>
+                        <Text style={styles.textStyle}>Confirm</Text>
+                    </TouchableHighlight>
+
+            </View>
+        )
     }
 
     function descriptionModal() {
@@ -279,6 +339,22 @@ export function PrivateProfile({navigation}: {navigation: any}) {
         )
     }
 
+    function renderSwitchModal(param: ModalType){
+        switch (param) {
+            case ModalType.description:
+                return descriptionModal();
+
+            case ModalType.contactInfo:
+                return contactInfoModal();
+
+            case ModalType.avatar:
+                return avatarModal();
+        
+            default:
+                return descriptionModal();
+        }
+    }
+
     return (
         <ScrollView contentContainerStyle={{flexGrow: 1}}>
             <View style={styles.container}>
@@ -292,7 +368,7 @@ export function PrivateProfile({navigation}: {navigation: any}) {
                         setModalVisible(false)
                     }}>
                         <View style={styles.centeredView}>
-                            {modalType == ModalType.description ? descriptionModal() : contactInfoModal()}
+                            {renderSwitchModal(modalType)}
                         </View>
                     </Modal>
                     <StatusBar style='light'/>
@@ -304,8 +380,15 @@ export function PrivateProfile({navigation}: {navigation: any}) {
                                 color='#04b388'
                                 size={37} />
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => navigation.navigate('PublicProfile', {uid: 'HSkPJjeaFca96K98Xpqw76DGo303'})}>
-                            <Image resizeMode='cover' style={styles.photo} source={require('../assets/images/avatar.webp')} />
+                        <Image resizeMode='cover' style={styles.photo} source={user?.avatar ? {uri: user?.avatar} : require('../assets/images/avatar.webp')} />
+                        {/* <TouchableOpacity onPress={() => navigation.navigate('PublicProfile', {uid: 'HSkPJjeaFca96K98Xpqw76DGo303'})}> */}
+                        <TouchableOpacity onPress={() => {openModal(ModalType.avatar)}}>
+                            <Icon name='edit' 
+                                type='material'
+                                color='#04b388'
+                                backgroundColor="white"
+                                style={{borderRadius: 15, padding: 3}}
+                                size={20} />
                         </TouchableOpacity>
                         <Text style={styles.username}>{user?.name}</Text>
                         <Text>⭐⭐⭐⭐⭐</Text>

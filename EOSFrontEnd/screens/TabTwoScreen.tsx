@@ -41,7 +41,9 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
   const [filterCatSelected, setFilterCatSelected] = useState(filterNone)
   const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState(noneServType)
-
+  const [selectedCadastre, setSelectedCadastre] = useState<string>()
+  var scrollViewRef: any = React.useRef();
+  var mapid_y: any = {};
   const fetchData = async () => {
     try{
       const resp = await axios.get<Array<Object>>(ServerConstants.local + 'post/list', { params: { status: ServiceStatus.OPEN } });
@@ -69,7 +71,7 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
         <Text style={styles.title}>EOS MARKETPLACE</Text>
       </View>
       <View style={styles.mapContainer}>
-        <Map pressable={false} services={data} />
+        <Map pressable={false} services={data} onMarkerPressed={(id) => { setSelectedCadastre(id);scrollViewRef.current?.scrollTo({y: mapid_y[id], animated: true})}} />
       </View>
       <View style={styles.searchSection}>
         <Icon style={styles.searchIcon} name="search" size={20} color="#04B388"/>
@@ -115,12 +117,12 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
             <ActionButtonSecondary styleContainer={[styles.typeButtonLeft, (selectedType == servTypeSell) ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'}]} title="Offering" onPress={() => {if(selectedType != servTypeSell) setSelectedType(servTypeSell); else {setSelectedType(noneServType)}}} styleText={selectedType == servTypeSell ? {color: 'white'} : {color: '#04B388'}}></ActionButtonSecondary>
             <ActionButtonSecondary styleContainer={[styles.typeButtonRight,(selectedType == servTypeBuy) ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'} ]} title="Looking for" onPress={() => {if(selectedType != servTypeBuy) setSelectedType(servTypeBuy); else {setSelectedType(noneServType)}}} styleText={selectedType == servTypeBuy ? {color: 'white'} : {color: '#04B388'}}></ActionButtonSecondary>
           </View>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <ScrollView  onScrollBeginDrag={()=> {setSelectedCadastre('')}} ref={scrollViewRef} contentContainerStyle={styles.scrollContainer}>
 
        {
          data.filter((e:Service) => (e.title.startsWith(searchString.toLowerCase()) && (filterCatSelected == filterNone ? true : e.category == filterCatSelected) && (selectedType == noneServType ? true : e.serviceType == selectedType))).map((e: Service) => {
            return(
-             <TouchableOpacity onPress={() => {onCardPress(e)}} key={e._id}>
+             <TouchableOpacity onLayout={(x) => {mapid_y[e.cadastreId] = x.nativeEvent.layout.y }} onPress={() => {onCardPress(e)}} key={e._id} style={selectedCadastre == e.cadastreId ? {borderWidth: 1, borderColor: '#04B388'} : null}>
                <PostCard title={e.title} price={e.priceEOS} position={getAddress(e.cadastre)} owner={e.ownerName} thumbnail={e.thumbnail ? e.thumbnail : 'https://cdn1.iconfinder.com/data/icons/business-company-1/500/image-512.png'}></PostCard>
              </TouchableOpacity>)
          })

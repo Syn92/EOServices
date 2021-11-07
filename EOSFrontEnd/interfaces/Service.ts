@@ -13,6 +13,7 @@ export interface Service {
     owner: string;
     ownerName: string;
     thumbnail: string;
+    cadastreId?: string;
     _id: string;
     acceptedBy?: string
 }

@@ -5,5 +5,6 @@ export interface User {
     phone?: string,
     description?: string,
     joinedDate: string,
-    walletAccountName?: string
+    walletAccountName?: string,
+    avatar?: string,
 }
