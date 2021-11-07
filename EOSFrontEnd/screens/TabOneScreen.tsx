@@ -68,7 +68,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
            </TouchableOpacity>
         <View style={styles.postRowContainer}>
           <View style={styles.imageContainer}>
-            <Image style={styles.image} source={{uri: selectedService.thumbnail, width: 70, height: 70}}/>
+            <Image style={styles.image} source={{uri: selectedService.thumbnail ? selectedService.thumbnail : 'https://cdn1.iconfinder.com/data/icons/business-company-1/500/image-512.png', width: 70, height: 70}}/>
             <Text style={styles.imageTitle}>{selectedService.title}</Text>
           </View>
           <View style={styles.postDetailsContainer}>
