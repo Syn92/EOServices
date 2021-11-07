@@ -5,7 +5,7 @@ import { SearchBar } from 'react-native-elements';
 import { ScrollView } from 'react-native-gesture-handler';
 import ChatRoomCard from '../components/Chat/ChatRoomCard';
 import { getCardTitle, IRoom } from '../interfaces/Chat';
-import { ChatContext } from '../navigation/SocketProvider';
+import { ChatContext } from '../navigation/ChatSocketProvider';
 import { RootTabScreenProps } from '../types';
 
 export default function ChatRoomsScreen({ navigation }: RootTabScreenProps<'ChatRooms'>) {
@@ -17,19 +17,6 @@ export default function ChatRoomsScreen({ navigation }: RootTabScreenProps<'Chat
   }
 
   const { rooms } =  React.useContext(ChatContext);
-
-  // useFocusEffect(
-  //   React.useCallback(() => {
-
-  //   }, [])
-  // );
-
-  // useEffect(() => {
-  //   console.log('CONNECTED!')
-  //   return function cleanup() {
-  //     console.log('disconnected!')
-  //   };
-  // });
 
   return (
     <ImageBackground style={styles.container} source={require('../assets/images/bg.png')}>

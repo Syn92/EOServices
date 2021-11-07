@@ -29,6 +29,7 @@ import ChatScreen from '../screens/ChatScreen';
 import ChatRoomsScreen from '../screens/ChatRoomsScreen';
 import { PublicProfile } from '../screens/PublicProfile';
 import PostDetailsScreen from '../screens/PostDetailsScreen';
+import { ChatContext, ChatSocketContext } from './ChatSocketProvider';
 
 const auth = Firebase.auth();
 
@@ -65,6 +66,7 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
   const { user, setUser, isNewUser, setIsNewUser } =  React.useContext(AuthenticatedUserContext);
   //const { isNewUser, setIsNewUser } =  React.useContext(AuthenticatedUserContext);
   const [isLoading, setIsLoading] = React.useState(true);
+
 
   React.useEffect(() => {
     // onAuthStateChanged returns an unsubscriber
@@ -167,7 +169,7 @@ function TabFourStackScreen() {
 const BottomTab = createBottomTabNavigator<RootTabParamList>();
 
 function BottomTabNavigator() {
-
+  const { notifsCount } =  React.useContext(ChatContext);
 
   return (
     <BottomTab.Navigator
@@ -198,6 +200,7 @@ function BottomTabNavigator() {
         options={{
           title: 'Message',
           tabBarIcon: ({ color }) => <TabBarIcon name="chat-bubble" color={color} />,
+          tabBarBadge: notifsCount
         }}
       />
       <BottomTab.Screen

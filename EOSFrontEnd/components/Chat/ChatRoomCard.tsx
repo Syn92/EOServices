@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
 import { getCardTitle, IMessage, IRoom } from '../../interfaces/Chat';
-import { ChatContext } from '../../navigation/SocketProvider';
+import { ChatContext } from '../../navigation/ChatSocketProvider';
 
 interface IProp {
   room: IRoom;
