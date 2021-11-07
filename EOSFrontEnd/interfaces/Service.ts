@@ -14,4 +14,5 @@ export interface Service {
     ownerName: string;
     thumbnail: string;
     _id: string;
-  }
+    acceptedBy?: string
+}

@@ -13,6 +13,8 @@ import { CustomFeature, getAddress } from '../utils/Cadastre';
 import { LatLng } from 'react-native-maps';
 import ActionButtonSecondary from '../components/ActionButtonSecondary';
 import { Service } from '../interfaces/Service';
+import { ServiceStatus } from '../interfaces/Services';
+import axios from 'axios';
 import { filterCat, servTypeSell, servTypeBuy } from '../constants/Utils';
 
 const auth = Firebase.auth()
@@ -42,9 +44,9 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
 
   const fetchData = async () => {
     try{
-      const resp = await fetch(ServerConstants.local + 'post/list');
-      const data = await resp.json();
-      setData(data);
+      const resp = await axios.get<Array<Object>>(ServerConstants.local + 'post/list', { params: { status: ServiceStatus.OPEN } });
+      const respData: Array<Object> = resp.data
+      setData(respData);
       setLoading(false);
     } catch (e) {
       setLoading(false)
