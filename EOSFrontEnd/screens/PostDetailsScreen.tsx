@@ -200,9 +200,9 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
                     inactiveDotOpacity={0.4}
                     inactiveDotScale={0.6}
                   />
-                  <TouchableOpacity style={styles.interestedButton} onPress={() => setModalVisible(true)}>
+                  { service.owner != user.uid ? <TouchableOpacity style={styles.interestedButton} onPress={() => setModalVisible(true)}>
                     <Text style={{...styles.buttonText, textDecorationLine: 'underline'}}>Contact advertiser</Text>
-                  </TouchableOpacity>
+                  </TouchableOpacity> : null}
               </View>
           </View>
           </ScrollView> : <Loading/>
