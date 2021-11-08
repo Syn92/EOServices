@@ -35,9 +35,6 @@ export default function ChatRoomsScreen({ navigation }: RootTabScreenProps<'Chat
 const styles = StyleSheet.create({
   container: {
     maxHeight: '100%'
-    // flex: 1,
-    // alignItems: 'center',
-    // justifyContent: 'center',
   },
   searchContainer: {
     marginHorizontal: 20,
@@ -51,7 +48,6 @@ const styles = StyleSheet.create({
   },
   roomsContainer: {
       height: '100%',
-      display: 'flex',
       flexDirection: 'column',
       margin: 20,
       borderRadius: 15,

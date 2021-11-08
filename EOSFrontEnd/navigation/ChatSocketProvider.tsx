@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React, { useState, createContext, useEffect } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { useImmer } from 'use-immer';
 import ServerConstants from '../constants/Server';
 import { IMessage, IRoom } from '../interfaces/Chat';
 import { AuthenticatedUserContext } from './AuthenticatedUserProvider';
@@ -24,8 +25,8 @@ export const ChatContext = createContext<ChatContextType | undefined>({rooms: []
   notifsCount: 0, roomWatchedId: null, setRoomWatchedId: () => {}});
 
 export function ChatSocketProvider({ children }:{ children: any }) {
-  const [rooms, setRooms] = useState<IRoom[]>([]);
-  const [messages, setMessages] = useState<Map<string, IMessage[]>>();
+  const [rooms, setRooms] = useImmer<IRoom[]>([]);
+  const [messages, setMessages] = useImmer<Map<string, IMessage[]>>( new Map<string, IMessage[]>());
   const [notifsCount, setNotifsCount] = useState<number>(0);
   const [roomWatchedId, setRoomWatchedId] = useState<string | null>(null);
 
@@ -34,7 +35,7 @@ export function ChatSocketProvider({ children }:{ children: any }) {
   useEffect(() => {
     if(!user){
       setRooms([]);
-      setMessages(new Map<string, IMessage[]>());
+      setMessages(old => old.clear());
       setNotifsCount(0);
       socket.close();
       return;
@@ -63,11 +64,11 @@ export function ChatSocketProvider({ children }:{ children: any }) {
     socket.connect();
     socket.emit('watchRooms', user?.uid, roomIds);
     socket.on('newRoom', (room: IRoom) => {
-      setRooms(oldRooms => [...oldRooms, room])
+      setRooms(oldRooms => {oldRooms.push(room)})
       socket.emit('joinRoom', user?.uid, room._id);
     });
     socket.on('messagesSeen', (userId: string, roomId: string) => {
-      messages.get(roomId)?.forEach(x => { if(!x.seen && x.userId != userId) x.seen = true });
+      setMessages(old => {old.get(roomId)?.forEach(x => { if(!x.seen && x.userId != userId) x.seen = true })});
     })
   }
 
@@ -77,7 +78,7 @@ export function ChatSocketProvider({ children }:{ children: any }) {
       axios.get(ServerConstants.local + 'chatMessages', { params: {roomId: newRoom._id } })
       .then(function (response) {
         const newMessages = response.data as IMessage[] || []
-        setMessages(oldMessages => new Map(oldMessages).set(newRoom._id, newMessages));
+        setMessages(oldMessages => {oldMessages.set(newRoom._id, newMessages)});
         setNotifsCount(oldNotifs => oldNotifs + newMessages.filter(x => !x.seen && x.userId != user.uid).length)
       }).catch(function (error) {
         console.log(error);
@@ -94,9 +95,7 @@ export function ChatSocketProvider({ children }:{ children: any }) {
         setNotifsCount(notifs => notifs + 1)
       }
     }
-    setMessages(oldMessages => {
-      return new Map(oldMessages).set(message.roomId, [...oldMessages.get(message.roomId), message]);
-    })
+    setMessages(oldMessages => {oldMessages.get(message.roomId).push(message)});
   };
 
   useEffect(() => {
@@ -104,12 +103,12 @@ export function ChatSocketProvider({ children }:{ children: any }) {
 
     if(roomWatchedId) {
       let count = 0;
-      messages.get(roomWatchedId)?.forEach(x => {
+      setMessages(old => { old.get(roomWatchedId)?.forEach(x => {
         if(!x.seen && x.userId != user.uid) {
           x.seen = true;
           count++;
         }
-      })
+      })})
       setNotifsCount(old => old - count)
       socket.emit('messagesSeen', user.uid, roomWatchedId)
     }

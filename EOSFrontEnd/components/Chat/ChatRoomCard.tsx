@@ -15,29 +15,36 @@ export default function ChatRoomCard(props: IProp) {
     const [lastMessage, setLastMessage] = useState<IMessage | undefined>(undefined);
 
     const messagesSeenListener =  (userId: string, roomId: string) => {
-        if(roomId == props.room._id)
-        setLastMessage(last => {
-            if(last && !last.seen && last.userId != userId) {
-                return {...last, seen: true}
-            } else {
-                return last
-            }
-        })
+        if (roomId == props.room._id) {
+            setLastMessage(last => {
+                if(last && !last.seen && last.userId != userId) {
+                    return {...last, seen: true}
+                } else {
+                    return last
+                }
+            })
+        }
     }
 
-    useEffect(() => {
-        socket.on('messagesSeen', messagesSeenListener)
-
-        return () => {
-            socket.off('messagesSeen', messagesSeenListener)
+    const newMessageListener =  (message: IMessage) => {
+        if (message.roomId == props.room._id) {
+            setLastMessage(message)
         }
-    }, [props.room._id])
+    }
 
     useEffect(() => {
         if(messages.has(props.room._id) && messages.get(props.room._id).length > 0) {
             setLastMessage(messages.get(props.room._id)[messages.get(props.room._id).length - 1]);
         }
-    }, [messages, props.room._id])
+
+        socket.on('messagesSeen', messagesSeenListener)
+        socket.on('newMessage', newMessageListener)
+
+        return () => {
+            socket.off('messagesSeen', messagesSeenListener)
+            socket.off('newMessage', newMessageListener)
+        }
+    }, [props.room._id])
 
   return (
     <TouchableOpacity style={styles.mainContainer} onPress={() => props.onPress(props.room)}>

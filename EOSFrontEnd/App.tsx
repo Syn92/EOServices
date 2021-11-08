@@ -1,4 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
+import { enableMapSet } from 'immer';
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import useCachedResources from './hooks/useCachedResources';
@@ -8,6 +9,7 @@ import { ChatSocketProvider } from './navigation/ChatSocketProvider';
 
 export default function App() {
   const isLoadingComplete = useCachedResources();
+  enableMapSet();
 
   if (!isLoadingComplete) {
     return null;
