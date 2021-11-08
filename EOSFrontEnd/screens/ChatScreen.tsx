@@ -87,7 +87,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
 
   return (
     <ImageBackground style={styles.container} source={require('../assets/images/bg.png')}>
-      <Text style={styles.title} numberOfLines={1}>{route.params.user.name + " - " + route.params.service.title}</Text>
+      {/* <Text style={styles.title} numberOfLines={1}>{route.params.user.name + " - " + route.params.service.title}</Text> */}
       <View style={styles.chatContainer}>
         <GiftedChat messages={giftedMessages}
         shouldUpdateMessage={(props, nextProps) => props.currentMessage !== nextProps.currentMessage}
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderRadius: 25,
     paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingBottom: 20,
     flexGrow: 1,
     flexShrink: 1,
   },

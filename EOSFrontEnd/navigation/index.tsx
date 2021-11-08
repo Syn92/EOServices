@@ -30,6 +30,7 @@ import ChatRoomsScreen from '../screens/ChatRoomsScreen';
 import { PublicProfile } from '../screens/PublicProfile';
 import PostDetailsScreen from '../screens/PostDetailsScreen';
 import { ChatContext, ChatSocketContext } from './ChatSocketProvider';
+import { IRoom } from '../interfaces/Chat';
 
 const auth = Firebase.auth();
 
@@ -147,7 +148,7 @@ function TabThreeStackScreen() {
   return (
     <TabThreeStack.Navigator>
       <TabThreeStack.Screen name="ChatRooms" component={ChatRoomsScreen} options={{ headerShown: false }} />
-      <TabThreeStack.Screen name="Chat" component={ChatScreen} options={{ headerShown: false }} />
+      <TabThreeStack.Screen name="Chat" component={ChatScreen} options={({ route }) => ({ title: (route.params as IRoom).user.name + " - " + (route.params as IRoom).service.title })} />
     </TabThreeStack.Navigator>
   )
 }
