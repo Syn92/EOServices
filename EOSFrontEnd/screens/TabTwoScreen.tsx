@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Button } from 'react-native-elements/dist/buttons/Button';
 import Map from '../components/Map';
 import { RootTabScreenProps } from '../types';
@@ -9,8 +9,7 @@ import { useState, useEffect } from 'react';
 import ServerConstants from '../constants/Server';
 import { PostCard } from '../components/PostCard';
 import { TextInput } from 'react-native-gesture-handler';
-import { CustomFeature, getAddress } from '../utils/Cadastre';
-import { LatLng } from 'react-native-maps';
+import { getAddress } from '../utils/Cadastre';
 import ActionButtonSecondary from '../components/ActionButtonSecondary';
 import { Service } from '../interfaces/Service';
 import { ServiceStatus } from '../interfaces/Services';
