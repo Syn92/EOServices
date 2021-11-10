@@ -37,6 +37,7 @@ export function PrivateProfile({navigation}: {navigation: any}) {
     const [ description, setDescription ] = useState(user?.description);
     const [ descriptionLength, setDescriptionLength ] = useState(0);
     const [ isPageLoading, setisPageLoading ] = useState(false);
+    const [ rating, setRating ] = useState([]);
 
     const [ services, setServices ] = useState<{open: Array<Object>, inProgress: Array<Object>, completed: Array<Object>}>();
     const [ servicesDisplayed, setOrdersDisplayed ] = useState(true);
@@ -56,6 +57,7 @@ export function PrivateProfile({navigation}: {navigation: any}) {
 
     React.useEffect(() => {
         fetchRoutine()
+        displayRating(user?.rating)
     }, []);
 
     async function fetchRoutine(): Promise<void> {
@@ -115,10 +117,31 @@ export function PrivateProfile({navigation}: {navigation: any}) {
         if (res.data){
             const data: any = res.data
             delete data._id
-            if (setUser) setUser(data as User)
+            console.log('heereee')
+            if (setUser) {
+                setUser(data as User)
+            }
         } else {
             throw new Error('Error retrieving user after modifying description')
         }
+    }
+    
+    function displayRating(rating: number){
+        let ratingDisplayable: number = Math.round(rating*2)/2
+        let fullStars: number = Math.floor(ratingDisplayable);
+        let halfStars: number = (ratingDisplayable - fullStars) == 0.5 ? 1 : 0;
+        let emptyStars: number = 5 - fullStars - halfStars;
+        let stars = [];
+        for (let i = 0; i < fullStars; i++) {
+            stars.push(<Icon name='star' type='material' color='#04b388' size={37}  key={'fullStars' + i}></Icon>)
+        }
+        for (let i = 0; i < halfStars; i++) {
+            stars.push(<Icon name='star-half' type='material' color='#04b388' size={37}  key={'halfStars' + i}  ></Icon>)
+        }
+        for (let i = 0; i < emptyStars; i++) {
+            stars.push(<Icon name='star-outline' type='material' color='#04b388' size={37} key={'emptyStars' + i} ></Icon>)
+        }
+        setRating(stars);
     }
 
     async function editDescription(){
@@ -391,7 +414,12 @@ export function PrivateProfile({navigation}: {navigation: any}) {
                                 size={20} />
                         </TouchableOpacity>
                         <Text style={styles.username}>{user?.name}</Text>
-                        <Text>⭐⭐⭐⭐⭐</Text>
+                        <View style={{display: 'flex', flexDirection: 'row'}}>
+                        {
+                            rating.map((e) => {return (e)})
+                        }
+                        </View>
+                        <Text style={{color: 'white'}}>{user?.rating.toFixed(2)}</Text>
                     </View>
                     {/* ---- Profile cards ---- */}
                     <ProfileCard icon='calendar-today' iconType='material' title='Joined Date' editable={ false }>
