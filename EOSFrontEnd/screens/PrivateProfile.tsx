@@ -331,8 +331,11 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
                             </View>
                         </View>
                     </ProfileCard>
-
-
+                    <View style={styles.listContainer}>
+                        <TouchableOpacity style={{ ...styles.button, ...styles.mailButton }} onPress={() => { navigation.navigate('BuyCrypto') }}>
+                            <Text style={{ ...styles.text, fontSize: 20, fontWeight: 'bold' }}>BUY CRYPTO</Text>
+                        </TouchableOpacity>
+                    </View>
                     {/* Orders list */}
                     <View style={styles.listContainer}>
                         <View style={servicesDisplayed ? styles.refresh : styles.refreshToggle}>
@@ -362,11 +365,6 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
                             </TouchableOpacity>
                         </View>
                         {pendingRequestsDisplayed && pendingRequests ? <ProfileServiceList data={pendingRequests} /> : null}
-                    </View>
-                    <View style={styles.listContainer}>
-                        <TouchableOpacity style={{ ...styles.button, ...styles.mailButton }} onPress={() => { navigation.navigate('BuyCrypto') }}>
-                            <Text style={{ ...styles.text, fontSize: 20, fontWeight: 'bold' }}>BUY CRYPTO</Text>
-                        </TouchableOpacity>
                     </View>
                 </ImageBackground>
             </View>

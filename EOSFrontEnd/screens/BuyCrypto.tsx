@@ -10,7 +10,7 @@ export default function BuyCrypto() {
 
   return (
     <WebView 
-      source={{ uri: "https://widget.onramper.com?color=04b388&apiKey=pk_test_x5M_5fdXzn1fxK04seu0JgFjGsu7CH8lOvS9xZWzuSM0" }}
+      source={{ uri: "https://widget.onramper.com?color=04b388&apiKey=pk_test_x5M_5fdXzn1fxK04seu0JgFjGsu7CH8lOvS9xZWzuSM0&onlyGateways=Moonpay&onlyCryptos=EOS&onlyFiat=CAD"}}
     ></WebView>
 //     <div
 //       style={{
