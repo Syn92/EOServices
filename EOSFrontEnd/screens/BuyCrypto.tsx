@@ -1,4 +1,4 @@
-import OnramperWidget from "@onramper/widget";
+// import OnramperWidget from "@onramper/widget";
 import React from "react";
 import {WebView} from "react-native-webview"
 
@@ -10,9 +10,8 @@ export default function BuyCrypto() {
 
   return (
     <WebView 
-      source={{ uri: "https://widget.onramper.com?color=346eeb&apiKey=pk_test_x5M_5fdXzn1fxK04seu0JgFjGsu7CH8lOvS9xZWzuSM0&defaultCrypto=EOS" }}
-    >
-    </WebView>
+      source={{ uri: "https://widget.onramper.com?color=04b388&apiKey=pk_test_x5M_5fdXzn1fxK04seu0JgFjGsu7CH8lOvS9xZWzuSM0" }}
+    ></WebView>
 //     <div
 //       style={{
 //         width: "440px",

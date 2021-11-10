@@ -27,25 +27,25 @@ interface ContactInfo {
     phone: string | undefined,
 }
 
-export function PrivateProfile({navigation}: {navigation: any}) {
+export function PrivateProfile({ navigation }: { navigation: any }) {
 
-    const { user, setUser } =  React.useContext(AuthenticatedUserContext);
-    const [ modalVisible, setModalVisible ] = useState(false);
-    const [ modalType, setModalType] = useState<ModalType>();
-    const [ description, setDescription ] = useState(user?.description);
-    const [ descriptionLength, setDescriptionLength ] = useState(0);
-    const [ isPageLoading, setisPageLoading ] = useState(false);
+    const { user, setUser } = React.useContext(AuthenticatedUserContext);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalType, setModalType] = useState<ModalType>();
+    const [description, setDescription] = useState(user?.description);
+    const [descriptionLength, setDescriptionLength] = useState(0);
+    const [isPageLoading, setisPageLoading] = useState(false);
 
-    const [ services, setServices ] = useState<{open: Array<Object>, inProgress: Array<Object>, completed: Array<Object>}>();
-    const [ servicesDisplayed, setOrdersDisplayed ] = useState(true);
-    const [ pendingRequests, setPendingRequests ] = useState<{outgoing: Array<Object>, incoming: Array<Object>}>();
-    const [ pendingRequestsDisplayed, setPendingRequestsDisplayed ] = useState(true);
+    const [services, setServices] = useState<{ open: Array<Object>, inProgress: Array<Object>, completed: Array<Object> }>();
+    const [servicesDisplayed, setOrdersDisplayed] = useState(true);
+    const [pendingRequests, setPendingRequests] = useState<{ outgoing: Array<Object>, incoming: Array<Object> }>();
+    const [pendingRequestsDisplayed, setPendingRequestsDisplayed] = useState(true);
 
 
     const [nameError, setNameError] = useState('');
     const [phoneError, setPhoneError] = useState('');
 
-    const [ contactInfo, setContactInfo ] = useState<ContactInfo>({
+    const [contactInfo, setContactInfo] = useState<ContactInfo>({
         name: user?.name,
         phone: user?.phone
     });
@@ -62,7 +62,7 @@ export function PrivateProfile({navigation}: {navigation: any}) {
                 open: res.data.filter(i => i.status == ServiceStatus.OPEN),
                 inProgress: res.data.filter(i => i.status == ServiceStatus.IN_PROGRESS),
                 completed: res.data.filter(i => i.status == ServiceStatus.COMPLETED),
-             });
+            });
         } catch (e) {
             console.error('Fetch User Services Private: ', e)
         }
@@ -96,16 +96,16 @@ export function PrivateProfile({navigation}: {navigation: any}) {
 
     async function handleLogout() {
         try {
-          await auth.signOut()
+            await auth.signOut()
         } catch (error: any) {
-          console.log('logout')
-          console.log(error)
+            console.log('logout')
+            console.log(error)
         }
-      }
+    }
 
     async function fetchUser() {
         const res = await axios.get<any>(ServerConstants.local + 'auth', { params: { uid: user?.uid } });
-        if (res.data){
+        if (res.data) {
             const data: any = res.data
             delete data._id
             if (setUser) setUser(data as User)
@@ -114,9 +114,9 @@ export function PrivateProfile({navigation}: {navigation: any}) {
         }
     }
 
-    async function editDescription(){
+    async function editDescription() {
         try {
-            let res = await axios.patch(ServerConstants.local + 'auth', { 
+            let res = await axios.patch(ServerConstants.local + 'auth', {
                 uid: user?.uid,
                 patch: { description: description }
             })
@@ -133,7 +133,7 @@ export function PrivateProfile({navigation}: {navigation: any}) {
         }
     }
 
-    async function editContactInfo(){
+    async function editContactInfo() {
         console.log('editContactInfo')
         try {
             let res = await axios.patch(ServerConstants.local + 'auth', {
@@ -162,12 +162,12 @@ export function PrivateProfile({navigation}: {navigation: any}) {
         const originalDescription = user?.description;
         return (
             <View style={styles.modalView}>
-                {isPageLoading ? Loading({}): null}
+                {isPageLoading ? Loading({}) : null}
 
                 <Text style={styles.modalText}>Edit Description</Text>
-                
-                <View style={{width: '100%'}}>
-                    <TextInput 
+
+                <View style={{ width: '100%' }}>
+                    <TextInput
                         value={description}
                         style={styles.description}
                         numberOfLines={8}
@@ -176,13 +176,13 @@ export function PrivateProfile({navigation}: {navigation: any}) {
                         onChangeText={(text: string) => {
                             setDescription(text)
                             setDescriptionLength(text.length)
-                        }}/>
+                        }} />
                     <Text style={styles.descriptionCounter}>{descriptionLength}/{MAX_LENGTH}</Text>
                 </View>
-                
+
                 <View style={styles.modalButtonContainer}>
                     <TouchableHighlight
-                        style={{...styles.openButton, backgroundColor: 'gray'}}
+                        style={{ ...styles.openButton, backgroundColor: 'gray' }}
                         onPress={async () => {
                             setDescription(user?.description)
                             setModalVisible(!modalVisible)
@@ -193,14 +193,14 @@ export function PrivateProfile({navigation}: {navigation: any}) {
                     <TouchableHighlight
                         style={styles.openButton}
                         onPress={async () => {
-                            if (description != originalDescription){
+                            if (description != originalDescription) {
                                 setisPageLoading(true)
                                 await editDescription()
                                 setisPageLoading(false)
                             }
                             setModalVisible(!modalVisible);
                         }
-                    }>
+                        }>
                         <Text style={styles.textStyle}>Confirm</Text>
                     </TouchableHighlight>
                 </View>
@@ -220,12 +220,12 @@ export function PrivateProfile({navigation}: {navigation: any}) {
                         autoCapitalize='none'
                         value={contactInfo.name}
                         onChangeText={(name) => {
-                            setContactInfo({...contactInfo, ...{name: name}})
+                            setContactInfo({ ...contactInfo, ...{ name: name } })
                             if (name.length != 0)
                                 setNameError('')
                             else
                                 setNameError('Please enter a name')
-                        }}/>
+                        }} />
                     {nameError.length != 0 ? <Text style={styles.errorText}>{nameError}</Text> : null}
                 </View>
 
@@ -238,39 +238,39 @@ export function PrivateProfile({navigation}: {navigation: any}) {
                         textContentType='telephoneNumber'
                         value={contactInfo.phone}
                         onChangeText={(phone) => {
-                            setContactInfo({...contactInfo, ...{phone: phone}})
+                            setContactInfo({ ...contactInfo, ...{ phone: phone } })
                             if (phone.length != 0)
                                 setPhoneError('')
                             else
                                 setPhoneError('Please enter a phone number')
-                        }}/>
+                        }} />
                     {phoneError.length != 0 ? <Text style={styles.errorText}>{phoneError}</Text> : null}
                 </View>
 
                 <View style={styles.modalButtonContainer}>
                     <TouchableHighlight
-                    style={{...styles.openButton, backgroundColor: 'gray'}}
-                    onPress={() => {
-                        resetContactInfoModal()
-                        setModalVisible(!modalVisible)
-                    }}>
+                        style={{ ...styles.openButton, backgroundColor: 'gray' }}
+                        onPress={() => {
+                            resetContactInfoModal()
+                            setModalVisible(!modalVisible)
+                        }}>
                         <Text style={styles.textStyle}>Cancel</Text>
                     </TouchableHighlight>
 
                     <TouchableHighlight
-                    style={styles.openButton}
-                    onPress={async () => {
-                        
-                        const submitCond = nameError.length == 0 && phoneError.length == 0
+                        style={styles.openButton}
+                        onPress={async () => {
 
-                        if (submitCond) {
-                            setisPageLoading(true)
-                            await editContactInfo()
-                            setisPageLoading(false)
+                            const submitCond = nameError.length == 0 && phoneError.length == 0
 
-                            setModalVisible(!modalVisible);
-                        }
-                    }}>
+                            if (submitCond) {
+                                setisPageLoading(true)
+                                await editContactInfo()
+                                setisPageLoading(false)
+
+                                setModalVisible(!modalVisible);
+                            }
+                        }}>
                         <Text style={styles.textStyle}>Confirm</Text>
                     </TouchableHighlight>
                 </View>
@@ -279,48 +279,48 @@ export function PrivateProfile({navigation}: {navigation: any}) {
     }
 
     return (
-        <ScrollView contentContainerStyle={{flexGrow: 1}}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
             <View style={styles.container}>
                 <ImageBackground style={{ flex: 1 }} source={require('../assets/images/bg.png')}>
                     <Modal
-                    statusBarTranslucent={true}
-                    animationType='fade'
-                    transparent={true}
-                    visible={modalVisible}
-                    onRequestClose={() => {
-                        setModalVisible(false)
-                    }}>
+                        statusBarTranslucent={true}
+                        animationType='fade'
+                        transparent={true}
+                        visible={modalVisible}
+                        onRequestClose={() => {
+                            setModalVisible(false)
+                        }}>
                         <View style={styles.centeredView}>
                             {modalType == ModalType.description ? descriptionModal() : contactInfoModal()}
                         </View>
                     </Modal>
-                    <StatusBar style='light'/>
+                    <StatusBar style='light' />
                     {/* ---- Avatar + ratings ---- */}
                     <View style={styles.avatar}>
                         <TouchableOpacity style={styles.logoutIcon} onPress={handleLogout}>
-                            <Icon name='logout' 
+                            <Icon name='logout'
                                 type='material'
                                 color='#04b388'
                                 size={37} />
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => navigation.navigate('PublicProfile', {uid: 'HSkPJjeaFca96K98Xpqw76DGo303'})}>
+                        <TouchableOpacity onPress={() => navigation.navigate('PublicProfile', { uid: 'HSkPJjeaFca96K98Xpqw76DGo303' })}>
                             <Image resizeMode='cover' style={styles.photo} source={require('../assets/images/avatar.webp')} />
                         </TouchableOpacity>
                         <Text style={styles.username}>{user?.name}</Text>
                         <Text>⭐⭐⭐⭐⭐</Text>
                     </View>
                     {/* ---- Profile cards ---- */}
-                    <ProfileCard icon='calendar-today' iconType='material' title='Joined Date' editable={ false }>
-                        <Text style={{fontSize: 20,}}>{user?.joinedDate}</Text>
+                    <ProfileCard icon='calendar-today' iconType='material' title='Joined Date' editable={false}>
+                        <Text style={{ fontSize: 20, }}>{user?.joinedDate}</Text>
                     </ProfileCard>
-                    
+
                     <ProfileCard icon='document-text-outline' iconType='ionicon' title='Description' callback={() => openModal(ModalType.description)}>
                         {/* Max 240 char */}
-                        <Text style={{fontSize: 11}}>{user?.description}</Text>
+                        <Text style={{ fontSize: 11 }}>{user?.description}</Text>
                     </ProfileCard>
-                    
+
                     <ProfileCard icon='document-text-outline' iconType='ionicon' title='Contact Information' callback={() => openModal(ModalType.contactInfo)}>
-                        <View style={{alignItems: 'flex-start',}}>
+                        <View style={{ alignItems: 'flex-start', }}>
                             <View style={styles.info}>
                                 <Icon name='alternate-email' type='material' size={18} style={styles.infoIcon} />
                                 <Text style={styles.infoText}>{user?.email}</Text>
@@ -332,40 +332,42 @@ export function PrivateProfile({navigation}: {navigation: any}) {
                         </View>
                     </ProfileCard>
 
-                    
+
                     {/* Orders list */}
                     <View style={styles.listContainer}>
                         <View style={servicesDisplayed ? styles.refresh : styles.refreshToggle}>
                             {servicesDisplayed ?
-                                <TouchableOpacity style={{paddingLeft: '5%', marginRight: '2%' }} activeOpacity={0.2} onPress={fetchUserServices}>
-                                    <Icon name='refresh' type='material' color='#04b388'/>
-                                </TouchableOpacity> : 
-                                <Text style={{marginLeft: '5%', fontWeight: 'bold'}}>Orders</Text> 
+                                <TouchableOpacity style={{ paddingLeft: '5%', marginRight: '2%' }} activeOpacity={0.2} onPress={fetchUserServices}>
+                                    <Icon name='refresh' type='material' color='#04b388' />
+                                </TouchableOpacity> :
+                                <Text style={{ marginLeft: '5%', fontWeight: 'bold' }}>Orders</Text>
                             }
-                            <TouchableOpacity style={{ paddingRight: '5%', marginLeft: '2%'}} activeOpacity={0.2} onPress={toggleServices}>
-                                <Icon name='remove' type='material' color='#04b388'/>
+                            <TouchableOpacity style={{ paddingRight: '5%', marginLeft: '2%' }} activeOpacity={0.2} onPress={toggleServices}>
+                                <Icon name='remove' type='material' color='#04b388' />
                             </TouchableOpacity>
                         </View>
-                        {servicesDisplayed && services? <ProfileServiceList data={services}/> : null}
+                        {servicesDisplayed && services ? <ProfileServiceList data={services} /> : null}
                     </View>
 
                     <View style={styles.listContainer}>
                         <View style={pendingRequestsDisplayed ? styles.refresh : styles.refreshToggle}>
                             {pendingRequestsDisplayed ?
-                                <TouchableOpacity style={{paddingLeft: '5%', marginRight: '2%' }} activeOpacity={0.2} onPress={fetchPendingRequests}>
-                                    <Icon name='refresh' type='material' color='#04b388'/>
-                                </TouchableOpacity> : 
-                                <Text style={{marginLeft: '5%', fontWeight: 'bold'}}>Pending requests</Text> 
+                                <TouchableOpacity style={{ paddingLeft: '5%', marginRight: '2%' }} activeOpacity={0.2} onPress={fetchPendingRequests}>
+                                    <Icon name='refresh' type='material' color='#04b388' />
+                                </TouchableOpacity> :
+                                <Text style={{ marginLeft: '5%', fontWeight: 'bold' }}>Pending requests</Text>
                             }
-                            <TouchableOpacity style={{ paddingRight: '5%', marginLeft: '2%'}} activeOpacity={0.2} onPress={togglePendingRequests}>
-                                <Icon name='remove' type='material' color='#04b388'/>
+                            <TouchableOpacity style={{ paddingRight: '5%', marginLeft: '2%' }} activeOpacity={0.2} onPress={togglePendingRequests}>
+                                <Icon name='remove' type='material' color='#04b388' />
                             </TouchableOpacity>
                         </View>
-                        {pendingRequestsDisplayed && pendingRequests? <ProfileServiceList data={pendingRequests}/> : null}
+                        {pendingRequestsDisplayed && pendingRequests ? <ProfileServiceList data={pendingRequests} /> : null}
                     </View>
-                    <TouchableOpacity onPress={() => {navigation.navigate('BuyCrypto')}}>
-                            <Text>BUY CRYPTO</Text>
-                    </TouchableOpacity>
+                    <View style={styles.listContainer}>
+                        <TouchableOpacity style={{ ...styles.button, ...styles.mailButton }} onPress={() => { navigation.navigate('BuyCrypto') }}>
+                            <Text style={{ ...styles.text, fontSize: 20, fontWeight: 'bold' }}>BUY CRYPTO</Text>
+                        </TouchableOpacity>
+                    </View>
                 </ImageBackground>
             </View>
         </ScrollView>
@@ -403,9 +405,9 @@ const styles = StyleSheet.create({
         fontSize: 24
     },
     photo: {
-        width: WIDTH/2.5,
-        height: WIDTH/2.5,
-        borderRadius: WIDTH/5,
+        width: WIDTH / 2.5,
+        height: WIDTH / 2.5,
+        borderRadius: WIDTH / 5,
         borderColor: 'white',
         borderWidth: 2
     },
@@ -427,7 +429,7 @@ const styles = StyleSheet.create({
         width: '100%',
         marginTop: 22,
         backgroundColor: 'rgba(0, 0, 0, 0.57)',
-      },
+    },
     modalView: {
         margin: 20,
         width: '80%',
@@ -482,7 +484,7 @@ const styles = StyleSheet.create({
     inputView: {
         width: "85%",
         marginBottom: 10,
-      },
+    },
     inputLabel: {
         fontSize: 16,
         fontWeight: 'bold',
@@ -507,5 +509,20 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-end',
         width: '90%',
+    },
+    button: {
+        backgroundColor: '#04b388',
+        width: "60%",
+        borderRadius: 25,
+        height: 50,
+        marginVertical: 15,
+        alignItems: "center",
+    },
+    mailButton: {
+        justifyContent: "center",
+    },
+    text: {
+        color: 'white',
+        letterSpacing: 1.1,
     },
 });
