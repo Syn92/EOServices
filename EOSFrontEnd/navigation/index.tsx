@@ -29,6 +29,7 @@ import ChatScreen from '../screens/ChatScreen';
 import ChatRoomsScreen from '../screens/ChatRoomsScreen';
 import { PublicProfile } from '../screens/PublicProfile';
 import PostDetailsScreen from '../screens/PostDetailsScreen';
+import BuyCrypto from '../screens/BuyCrypto';
 import { ChatContext, ChatSocketContext } from './ChatSocketProvider';
 import { IRoom } from '../interfaces/Chat';
 
@@ -159,6 +160,7 @@ function TabFourStackScreen() {
   return (
     <TabFourStack.Navigator>
       <TabFourStack.Screen name="Root" component={PrivateProfile} options={{ headerShown: false }} />
+      <TabFourStack.Screen name="BuyCrypto" component={BuyCrypto} options={{ headerShown: false }} />
       <TabFourStack.Screen name="PublicProfile" component={PublicProfile} options={{ headerShown: false }} />
       <TabOneStack.Screen name="PostDetails" component={PostDetailsScreen} />
     </TabFourStack.Navigator>
