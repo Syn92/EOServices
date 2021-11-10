@@ -12,6 +12,7 @@ import Loading from '../components/Loading';
 import { ProfileServiceList } from '../components/ProfileServiceList/ProfileServiceList';
 import Firebase from '../config/firebase';
 import { ServiceStatus } from '../interfaces/Services';
+import { color } from 'react-native-elements/dist/helpers';
 
 const WIDTH = Dimensions.get('window').width;
 const auth = Firebase.auth()
@@ -330,6 +331,7 @@ export function PrivateProfile({navigation}: {navigation: any}) {
                             </View>
                         </View>
                     </ProfileCard>
+
                     
                     {/* Orders list */}
                     <View style={styles.listContainer}>
@@ -361,6 +363,9 @@ export function PrivateProfile({navigation}: {navigation: any}) {
                         </View>
                         {pendingRequestsDisplayed && pendingRequests? <ProfileServiceList data={pendingRequests}/> : null}
                     </View>
+                    <TouchableOpacity onPress={() => {navigation.navigate('BuyCrypto')}}>
+                            <Text>BUY CRYPTO</Text>
+                    </TouchableOpacity>
                 </ImageBackground>
             </View>
         </ScrollView>

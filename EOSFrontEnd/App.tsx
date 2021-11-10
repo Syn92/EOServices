@@ -5,19 +5,19 @@ import useCachedResources from './hooks/useCachedResources';
 import Navigation from './navigation';
 import { AuthenticatedUserProvider } from './navigation/AuthenticatedUserProvider';
 
-export default function App() {
+export default function App({...extras}) {
   const isLoadingComplete = useCachedResources();
 
   if (!isLoadingComplete) {
     return null;
   } else {
     return (
-      <AuthenticatedUserProvider>
-        <SafeAreaProvider>
-          <Navigation />
-          <StatusBar />
-        </SafeAreaProvider>
-      </AuthenticatedUserProvider>
+        <AuthenticatedUserProvider>
+          <SafeAreaProvider>
+            <Navigation/>
+            <StatusBar />
+          </SafeAreaProvider>
+        </AuthenticatedUserProvider>
     );
   }
 }
