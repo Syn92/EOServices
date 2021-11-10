@@ -1,8 +1,9 @@
 import { useFocusEffect } from '@react-navigation/native';
 import * as React from 'react';
 import { useCallback, useEffect } from 'react';
-import { ImageBackground, StyleSheet, View } from 'react-native';
-import { GiftedChat, IMessage as IGiftedMessage } from 'react-native-gifted-chat';
+import { Alert, ImageBackground, StyleSheet, View } from 'react-native';
+import { colors, Icon } from 'react-native-elements';
+import { Actions, Composer, GiftedChat, IMessage as IGiftedMessage, InputToolbarProps, Send } from 'react-native-gifted-chat';
 import { useImmer } from 'use-immer';
 import { IMessage, toGiftedMessage, toISentMessage } from '../interfaces/Chat';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
@@ -78,13 +79,45 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
     setGiftedMessages(newMessages.map(message => toGiftedMessage(message, message.userId == user?.uid ? user : route.params.user)).reverse())
   }
 
+  function renderInputToolbar(props: InputToolbarProps) {
+    return (
+      <View style={styles.inputToolbar}>
+        <Composer {...props} textInputStyle={styles.textInput}/>
+        <Send {...props} containerStyle={styles.send}>
+          <Icon name="send" color="#0084ff"/>
+        </Send>
+        <Actions
+          containerStyle={styles.sendContract}
+          icon={() => <Icon name="description" color="grey"/>}
+          onPressActionButton={askSendContract}/>
+    </View>
+    )
+  }
+
+  function askSendContract() {
+    const cleanTitle = route.params.service.title.length > 15 ? route.params.service.title.substring(0, 15) : route.params.service.title
+    Alert.alert(
+      'Sending Contract',
+      'Are you sure you want to send the contract: "' + cleanTitle + '" for ' + route.params.service.priceEOS + " EOS ?",
+      [
+        { text: "Yes", onPress: sendContract },
+        { text: "No" },
+      ]
+    );
+  }
+
+  function sendContract() {
+    console.log('SEND CONTRACT')
+  }
+
   return (
     <ImageBackground style={styles.container} source={require('../assets/images/bg.png')}>
       {/* <Text style={styles.title} numberOfLines={1}>{route.params.user.name + " - " + route.params.service.title}</Text> */}
       <View style={styles.chatContainer}>
         <GiftedChat messages={giftedMessages}
         shouldUpdateMessage={(props, nextProps) => props.currentMessage !== nextProps.currentMessage}
-        user={{_id: user.uid, name: user.name}} onSend={sendMessage}/>
+        user={{_id: user.uid, name: user.name}} onSend={sendMessage}
+        renderInputToolbar={renderInputToolbar}/>
       </View>
     </ImageBackground>
   );
@@ -113,4 +146,34 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: 'white',
   },
+  inputToolbar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    // height: 45,
+    backgroundColor: 'white',
+    borderRadius: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    // paddingVertical: 8,
+    paddingHorizontal: 10,
+  },
+  textInput: {
+    justifyContent:'center',
+    backgroundColor: 'white',
+    marginBottom: 3,
+    marginTop: 3,
+    lineHeight: 22,
+  },
+  send: {
+    justifyContent: 'center',
+    marginBottom: 0,
+    maxHeight: '100%',
+  },
+  sendContract: {
+    marginBottom: 0,
+    justifyContent: 'center'
+  }
 });
