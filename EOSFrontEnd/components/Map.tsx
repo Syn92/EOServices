@@ -5,7 +5,7 @@ import Geocoder from 'react-native-geocoding';
 import axios, { CancelTokenSource } from 'axios';
 import { CustomFeature, CustomFeatureColl, getCenter } from '../utils/Cadastre';
 import ServerConstants from '../constants/Server';
-import { Service } from '../screens/TabTwoScreen';
+import { Service } from '../interfaces/Service';
 
 interface IMarker {
     key: string;
@@ -18,6 +18,7 @@ interface IMarker {
 interface IProps {
     pressable: boolean;
     onPressed?: ((cadastre: CustomFeature) => any);
+    onMarkerPressed?: ((id: string) => any)
     selectedCadastre?: CustomFeature;
     services?: Service[];
 }
@@ -182,16 +183,16 @@ export default function Map(props: IProps) {
             </MapView>
         </View>
     );
+    function renderMarkers(markers: IMarker[]): JSX.Element[] {
+        return markers.map((marker) => {
+            return (
+                <Marker key={marker.key} onPress={(element) => {if(props.onMarkerPressed)props.onMarkerPressed(marker.key)} } coordinate={marker.coordinate} tracksViewChanges={false} zIndex={5}/>
+            )
+        });
+    }
 };
 
 // customize how the markers are rendered here (icon, etc.)
-function renderMarkers(markers: IMarker[]): JSX.Element[] {
-    return markers.map((marker) => {
-        return (
-            <Marker key={marker.key} coordinate={marker.coordinate} tracksViewChanges={false} zIndex={5}/>
-        )
-    });
-}
 
 const styles = StyleSheet.create({
     container: {

@@ -125,7 +125,7 @@ function TabOneStackScreen() {
     <TabOneStack.Navigator>
       <TabOneStack.Screen name="Root" component={TabTwoScreen} options={{ headerShown: false }} />
       <TabOneStack.Screen name="AddPost" component={AddPostScreen} />
-      <TabOneStack.Screen name="PostDetails" component={PostDetailsScreen} />
+      <TabOneStack.Screen name="PostDetails" component={PostDetailsScreen} options={{headerShown: false}}/>
     </TabOneStack.Navigator>
   )
 }
@@ -136,6 +136,7 @@ function TabTwoStackScreen() {
     <TabTwoStack.Navigator>
       <TabTwoStack.Screen name="Root" component={TabOneScreen} options={{ headerShown: false }} />
       <TabTwoStack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
+      <TabOneStack.Screen name="PostDetails" component={PostDetailsScreen} options={{headerShown: false}}/>
       <TabTwoStack.Group screenOptions={{ presentation: 'modal' }}>
         <TabTwoStack.Screen name="Modal" component={ModalScreen} />
       </TabTwoStack.Group>
@@ -159,6 +160,7 @@ function TabFourStackScreen() {
     <TabFourStack.Navigator>
       <TabFourStack.Screen name="Root" component={PrivateProfile} options={{ headerShown: false }} />
       <TabFourStack.Screen name="PublicProfile" component={PublicProfile} options={{ headerShown: false }} />
+      <TabOneStack.Screen name="PostDetails" component={PostDetailsScreen} />
     </TabFourStack.Navigator>
   )
 }

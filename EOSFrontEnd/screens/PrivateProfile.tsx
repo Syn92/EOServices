@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { StatusBar } from 'expo-status-bar';
-import { Dimensions, Image, ImageBackground, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableHighlight, TouchableOpacity, View } from 'react-native'
+import { Button, Dimensions, Image, ImageBackground, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableHighlight, TouchableOpacity, View } from 'react-native'
 
 import { ProfileCard } from '../components/ProfileCard'
 import { Icon } from 'react-native-elements';
@@ -11,6 +11,8 @@ import ServerConstants from '../constants/Server';
 import Loading from '../components/Loading';
 import { ProfileServiceList } from '../components/ProfileServiceList/ProfileServiceList';
 import Firebase from '../config/firebase';
+import { RequestData, ServiceStatus } from '../interfaces/Services';
+import * as ImagePicker from 'expo-image-picker';
 
 const WIDTH = Dimensions.get('window').width;
 const auth = Firebase.auth()
@@ -18,6 +20,7 @@ const auth = Firebase.auth()
 enum ModalType {
     description,
     contactInfo,
+    avatar,
 }
 
 interface ContactInfo {
@@ -30,10 +33,18 @@ export function PrivateProfile({navigation}: {navigation: any}) {
     const { user, setUser } =  React.useContext(AuthenticatedUserContext);
     const [ modalVisible, setModalVisible ] = useState(false);
     const [ modalType, setModalType] = useState<ModalType>();
+    const [ avatar, setAvatar ] = useState(user?.avatar);
     const [ description, setDescription ] = useState(user?.description);
     const [ descriptionLength, setDescriptionLength ] = useState(0);
     const [ isPageLoading, setisPageLoading ] = useState(false);
-    const [ services, setServices ] = useState([])
+
+    const [ services, setServices ] = useState<{open: Array<Object>, inProgress: Array<Object>, completed: Array<Object>}>();
+    const [ servicesDisplayed, setOrdersDisplayed ] = useState(true);
+    const [ pendingRequests, setPendingRequests ] = useState<RequestData>();
+    const [ pendingRequestsDisplayed, setPendingRequestsDisplayed ] = useState(true);
+
+
+    const [image, setImage] = useState<(string | undefined)>();
 
     const [nameError, setNameError] = useState('');
     const [phoneError, setPhoneError] = useState('');
@@ -44,15 +55,32 @@ export function PrivateProfile({navigation}: {navigation: any}) {
     });
 
     React.useEffect(() => {
-        fetchUserServices();
+        fetchRoutine()
     }, []);
+
+    async function fetchRoutine(): Promise<void> {
+        await Promise.all([fetchUserServices(), fetchPendingRequests()])
+    }
 
     async function fetchUserServices() {
         try {
             const res = await axios.get<any>(ServerConstants.local + 'post/list', { params: { owner: user?.uid } });
-            setServices(res.data);
+            setServices({
+                open: res.data.filter(i => i.status == ServiceStatus.OPEN),
+                inProgress: res.data.filter(i => i.status == ServiceStatus.IN_PROGRESS),
+                completed: res.data.filter(i => i.status == ServiceStatus.COMPLETED),
+             });
         } catch (e) {
             console.error('Fetch User Services Private: ', e)
+        }
+    }
+
+    async function fetchPendingRequests() {
+        try {
+            const res = await axios.get<any>(ServerConstants.local + 'post/requests', { params: { uid: user?.uid } });
+            setPendingRequests(res.data)
+        } catch (e) {
+            console.error('Fetch Pending Requests: ', e)
         }
     }
 
@@ -63,6 +91,14 @@ export function PrivateProfile({navigation}: {navigation: any}) {
         });
         setNameError('')
         setPhoneError('')
+    }
+
+    function toggleServices() {
+        setOrdersDisplayed(!servicesDisplayed)
+    }
+
+    function togglePendingRequests() {
+        setPendingRequestsDisplayed(!pendingRequestsDisplayed)
     }
 
     async function handleLogout() {
@@ -105,7 +141,6 @@ export function PrivateProfile({navigation}: {navigation: any}) {
     }
 
     async function editContactInfo(){
-        console.log('editContactInfo')
         try {
             let res = await axios.patch(ServerConstants.local + 'auth', {
                 uid: user?.uid,
@@ -123,9 +158,64 @@ export function PrivateProfile({navigation}: {navigation: any}) {
         }
     }
 
+    const pickImage = async () => {
+        let result: any = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.All,
+          quality: 1,
+          base64: true,
+        });
+    
+        if (!result.cancelled) {
+          await setImage(result.base64);
+        }
+      };
+
     function openModal(type: ModalType) {
         setModalType(type)
         setModalVisible(true);
+    }
+
+    async function uploadAvatar(image: string){
+        try {
+            let res = await axios.post(ServerConstants.local + 'auth/avatar', { 
+                uid: user?.uid,
+                avatar: image
+            })
+            console.log(res.status)
+            if (res.status == 200) {
+                await fetchUser()
+            } else {
+                setAvatar(user?.avatar)
+                throw new Error(`Error updating avatar (status ${res.status}): ${res.statusText}`)
+            }
+        } catch (e) {
+            setAvatar(user?.avatar)
+            console.error('Edit avatar error: ', e)
+        }
+    }
+
+    function avatarModal() {
+        return (
+            <View style={styles.modalView}>
+                {isPageLoading ? Loading({}): null}
+
+                <Text style={styles.modalText}>Edit Avatar</Text>
+                <Button title="Upload avatar" onPress={pickImage}></Button>
+                {image ? <Image source={{uri: 'data:image/png;base64,' + image, width: WIDTH/2.5, height: WIDTH/2.5}}/> : null}
+                <TouchableHighlight
+                        style={styles.openButton}
+                        onPress={async () => {
+                            setisPageLoading(true)
+                            await uploadAvatar(image)
+                            setisPageLoading(false)
+                            setModalVisible(!modalVisible);
+                        }
+                    }>
+                        <Text style={styles.textStyle}>Confirm</Text>
+                    </TouchableHighlight>
+
+            </View>
+        )
     }
 
     function descriptionModal() {
@@ -249,11 +339,28 @@ export function PrivateProfile({navigation}: {navigation: any}) {
         )
     }
 
+    function renderSwitchModal(param: ModalType){
+        switch (param) {
+            case ModalType.description:
+                return descriptionModal();
+
+            case ModalType.contactInfo:
+                return contactInfoModal();
+
+            case ModalType.avatar:
+                return avatarModal();
+        
+            default:
+                return descriptionModal();
+        }
+    }
+
     return (
         <ScrollView contentContainerStyle={{flexGrow: 1}}>
             <View style={styles.container}>
                 <ImageBackground style={{ flex: 1 }} source={require('../assets/images/bg.png')}>
                     <Modal
+                    statusBarTranslucent={true}
                     animationType='fade'
                     transparent={true}
                     visible={modalVisible}
@@ -261,7 +368,7 @@ export function PrivateProfile({navigation}: {navigation: any}) {
                         setModalVisible(false)
                     }}>
                         <View style={styles.centeredView}>
-                            {modalType == ModalType.description ? descriptionModal() : contactInfoModal()}
+                            {renderSwitchModal(modalType)}
                         </View>
                     </Modal>
                     <StatusBar style='light'/>
@@ -273,8 +380,15 @@ export function PrivateProfile({navigation}: {navigation: any}) {
                                 color='#04b388'
                                 size={37} />
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => navigation.navigate('PublicProfile', {uid: 'HSkPJjeaFca96K98Xpqw76DGo303'})}>
-                            <Image resizeMode='cover' style={styles.photo} source={require('../assets/images/avatar.webp')} />
+                        <Image resizeMode='cover' style={styles.photo} source={user?.avatar ? {uri: user?.avatar} : require('../assets/images/avatar.webp')} />
+                        {/* <TouchableOpacity onPress={() => navigation.navigate('PublicProfile', {uid: 'HSkPJjeaFca96K98Xpqw76DGo303'})}> */}
+                        <TouchableOpacity onPress={() => {openModal(ModalType.avatar)}}>
+                            <Icon name='edit' 
+                                type='material'
+                                color='#04b388'
+                                backgroundColor="white"
+                                style={{borderRadius: 15, padding: 3}}
+                                size={20} />
                         </TouchableOpacity>
                         <Text style={styles.username}>{user?.name}</Text>
                         <Text>⭐⭐⭐⭐⭐</Text>
@@ -304,13 +418,34 @@ export function PrivateProfile({navigation}: {navigation: any}) {
                     
                     {/* Orders list */}
                     <View style={styles.listContainer}>
-                        <View style={styles.refresh}>
-                            <TouchableOpacity style={{paddingHorizontal: '20%'}} activeOpacity={0.2} onPress={fetchUserServices}>
-                                <Icon name='refresh' type='material' color='#04b388'/>
+                        <View style={servicesDisplayed && services ? styles.refresh : styles.refreshToggle}>
+                            {servicesDisplayed && services ?
+                                <TouchableOpacity style={{paddingLeft: '5%', marginRight: '2%' }} activeOpacity={0.2} onPress={fetchUserServices}>
+                                    <Icon name='refresh' type='material' color='#04b388'/>
+                                </TouchableOpacity> : 
+                                <Text style={{marginLeft: '5%', fontWeight: 'bold'}}>Orders</Text> 
+                            }
+                            <TouchableOpacity style={{ paddingRight: '5%', marginLeft: '2%'}} activeOpacity={0.2} onPress={toggleServices}>
+                                <Icon name='remove' type='material' color='#04b388'/>
                             </TouchableOpacity>
                         </View>
+                        {servicesDisplayed && services? <ProfileServiceList data={services}/> : null}
                     </View>
-                    <ProfileServiceList data={services}/>
+
+                    <View style={styles.listContainer}>
+                        <View style={pendingRequestsDisplayed && pendingRequests? styles.refresh : styles.refreshToggle}>
+                            {pendingRequestsDisplayed && pendingRequests ?
+                                <TouchableOpacity style={{paddingLeft: '5%', marginRight: '2%' }} activeOpacity={0.2} onPress={fetchPendingRequests}>
+                                    <Icon name='refresh' type='material' color='#04b388'/>
+                                </TouchableOpacity> : 
+                                <Text style={{marginLeft: '5%', fontWeight: 'bold'}}>Pending requests</Text> 
+                            }
+                            <TouchableOpacity style={{ paddingRight: '5%', marginLeft: '2%'}} activeOpacity={0.2} onPress={togglePendingRequests}>
+                                <Icon name='remove' type='material' color='#04b388'/>
+                            </TouchableOpacity>
+                        </View>
+                        {pendingRequestsDisplayed && pendingRequests? <ProfileServiceList data={pendingRequests} onUpdate={fetchRoutine}/> : null}
+                    </View>
                 </ImageBackground>
             </View>
         </ScrollView>
@@ -326,10 +461,16 @@ const styles = StyleSheet.create({
         marginTop: 10
     },
     refresh: {
+        flexDirection: 'row',
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
-        // paddingHorizontal: '20%',
         backgroundColor: 'white'
+    },
+    refreshToggle: {
+        flexDirection: 'row',
+        borderRadius: 20,
+        backgroundColor: 'white',
+        paddingVertical: '1%'
     },
     avatar: {
         marginTop: '10%',
@@ -366,7 +507,7 @@ const styles = StyleSheet.create({
         width: '100%',
         marginTop: 22,
         backgroundColor: 'rgba(0, 0, 0, 0.57)',
-      },
+    },
     modalView: {
         margin: 20,
         width: '80%',
