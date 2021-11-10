@@ -19,6 +19,7 @@ import { LatLng } from 'react-native-maps';
 import ServerConstants from '../constants/Server';
 import { AutocompleteDropdown, AutocompleteDropdownProps } from 'react-native-autocomplete-dropdown';
 import { ServiceStatus } from '../interfaces/Services';
+import { filterCat, servTypeBuy, servTypeSell } from '../constants/Utils';
 
 export interface Service {
   title: string;
@@ -28,7 +29,6 @@ export interface Service {
   priceEOS: number;
   serviceType: string;
   category: string;
-  ownerName?: string;
   cadastreId: string;
   markerPos: LatLng;
   thumbnail: string | undefined;
@@ -37,8 +37,7 @@ export interface Service {
 }
 const { height } = Dimensions.get('window');
 
-export const servTypeSell = "Offering"
-export const servTypeBuy = "Looking For"
+
 
 export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPost'>) {
   const [step, setStep] = useState(1)
@@ -74,7 +73,6 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
         markerPos: getCenter(cadastre),
         thumbnail: image[0],
         owner: user.uid,
-        ownerName: user.name,
         status: ServiceStatus.OPEN
       }
       if(!submited){
@@ -170,9 +168,10 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
           <Text style={styles.inputLabel}>Categorie</Text>
               <Picker mode="dropdown" style={styles.buttonStyle} selectedValue={selectedCat} onValueChange={(itemValue: any, itemIndex: any) => {if(itemValue != "0")setSelectedCat(itemValue.toString())}}>
                 <Picker.Item label="Select a Cat..." value="0"/>
-                <Picker.Item label="Cat1" value="cat1"/>
-                <Picker.Item label="Cat2" value="cat2"/>
-                <Picker.Item label="Cat3" value="cat3"/>
+                {filterCat.map((cat: string, i: number) => {
+                  if(i != 0)
+                  return (<Picker.Item key={i} label={cat} value={cat}/>)
+                })}
               </Picker>
         </View>
         {errorMessage1 ? <Text style={styles.errorText}>{errorMessage1}</Text> : <Text></Text>}
@@ -253,18 +252,18 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
                 transparent={true}
                 visible={modalVisible}
                 onRequestClose={() => {
-                  navigation.navigate('TabTwo')
+                  navigation.goBack()
                 }}
               >
                 <View style={styles.centeredView}>
                   <View style={styles.modalView}>
                     <Text style={styles.modalText}>Post succesfully submited</Text>
-                    <Pressable
+                    <TouchableOpacity
                       style={[styles.button, styles.buttonClose]}
-                      onPress={() => {setModalVisible(!modalVisible); navigation.navigate('TabOne')}}
+                      onPress={() => {setModalVisible(!modalVisible); navigation.goBack()}}
                     >
                       <Text style={styles.textStyle}>Ok</Text>
-                    </Pressable>
+                    </TouchableOpacity>
                   </View>
                 </View>
               </Modal>

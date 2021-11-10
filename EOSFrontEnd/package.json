@@ -38,6 +38,7 @@
     "fast-text-encoding": "^1.0.3",
     "firebase": "8.2.3",
     "geolib": "^3.3.3",
+    "immer": "^9.0.6",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-native": "https://github.com/expo/react-native/archive/sdk-42.0.0.tar.gz",
@@ -56,6 +57,8 @@
     "react-native-web": "~0.13.12",
     "react-native-webview": "^11.14.2",
     "socket.io-client": "^4.3.2",
+    "use-immer": "^0.6.0",
+    "expo-notifications": "~0.12.3",
     "text-encoding-polyfill": "^0.6.7"
   },
   "devDependencies": {

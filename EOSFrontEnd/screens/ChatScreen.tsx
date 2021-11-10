@@ -1,72 +1,91 @@
-import axios from 'axios';
+import { useFocusEffect } from '@react-navigation/native';
 import * as React from 'react';
-import { useState } from 'react';
-import { ActivityIndicator, ImageBackground, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useEffect } from 'react';
+import { ImageBackground, StyleSheet, View } from 'react-native';
 import { GiftedChat, IMessage as IGiftedMessage } from 'react-native-gifted-chat';
-import { io } from 'socket.io-client';
-import ServerConstants from '../constants/Server';
-import { IMessage, toGiftedMessage, toIMessage } from '../interfaces/Chat';
+import { useImmer } from 'use-immer';
+import { IMessage, toGiftedMessage, toISentMessage } from '../interfaces/Chat';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
+import { ChatContext, ChatSocketContext } from '../navigation/ChatSocketProvider';
 import { RootStackScreenProps } from '../types';
 
 export default function ChatScreen({ navigation, route }: RootStackScreenProps<'Chat'>) {
-  const [giftedMessages, setGiftedMessages] = useState<IGiftedMessage[]>([]);
-
-  const [isLoading, setIsLoading] = useState(true);
+  const [giftedMessages, setGiftedMessages] = useImmer<IGiftedMessage[]>([]);
 
   const { user } =  React.useContext(AuthenticatedUserContext);
+  const { messages, roomWatchedId, setRoomWatchedId }= React.useContext(ChatContext);
+  const { socket } =  React.useContext(ChatSocketContext);
 
-  const socket = io(ServerConstants.prod + "chat");
-
-  function setMessages(messages: IMessage[]) {
-    setGiftedMessages(messages.map(x => toGiftedMessage(x, x.userId == user?.uid ? user : route.params.user)))
+  const messagesSeenListener = (userId: string, roomId: string) => {
+    if(roomId == route.params._id) {
+      setGiftedMessages(old => {old.forEach(x => { if(!x.received && x.user._id != userId) x.received = true})});
+    }
   }
 
-  function appendMessage(message: IMessage) {
+  const newMessageListener = (message: IMessage) => {
+    if(message.roomId != route.params._id) return;
+
+    if (message.userId == user.uid) { // from me, update it
+      setGiftedMessages(old => {
+        const sentIndex = old.findIndex(x => !x.sent)
+        if(sentIndex >= 0) {
+          old[sentIndex].sent = true
+          old[sentIndex]._id = message._id
+        }
+      });
+    } else { // not from me, add it as seen
+      message.seen = true
+      appendMessages([message])
+    }
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      setRoomWatchedId(route.params._id);
+      return () => {
+        setRoomWatchedId(null)
+      }
+    }, [route.params._id])
+  )
+
+  useEffect(() => {
+    setMessages(messages.get(route.params._id))
+    socket.on('messagesSeen', messagesSeenListener)
+    socket.on('newMessage', newMessageListener);
+
+    return function cleanup() {
+      socket.off('messagesSeen', messagesSeenListener)
+      socket.off('newMessage', newMessageListener)
+      setGiftedMessages([])
+    }
+  }, [route.params._id])
+
+  function sendMessage(sentMessages: IGiftedMessage[]) {
+    setGiftedMessages(previousMessages => GiftedChat.append(previousMessages, sentMessages))
+    for(const message of sentMessages.map(x => toISentMessage(x, route.params._id))) {
+      socket.emit('newMessage', message)
+    }
+  }
+
+  function appendMessages(newMessages: IMessage[]) {
     setGiftedMessages(previousMessages =>
-      GiftedChat.append(previousMessages, [toGiftedMessage(message, message.userId == user?.uid ? user : route.params.user)])
+      GiftedChat.append(previousMessages,
+        newMessages.map(message => toGiftedMessage(message, message.userId == user?.uid ? user : route.params.user)).reverse())
     )
   }
 
-  React.useEffect(() => {
-    axios.get(ServerConstants.prod + 'chatMessages', { params: {roomId: route.params._id } })
-    .then(function (response) {
-      setMessages(response.data as IMessage[]);
-      setIsLoading(false);
-    }).catch(function (error) {
-      console.log(error);
-    });
-
-    socket.on("connect_error", (err) => {
-      console.log(err.message);
-    });
-    socket.connect();
-    socket.emit('joinRoom', route.params._id);
-    socket.on('newMessage', (message: IMessage) => {
-      appendMessage(message)
-    });
-
-    return function cleanup() {
-      socket.close();
-    };
-  }, [])
-
-  function sendMessage(newMessages: IGiftedMessage[]) {
-    for(const message of newMessages) {
-      socket.emit('newMessage', toIMessage(message, route.params._id))
-    }
+  function setMessages(newMessages: IMessage[]) {
+    setGiftedMessages(newMessages.map(message => toGiftedMessage(message, message.userId == user?.uid ? user : route.params.user)).reverse())
   }
 
   return (
     <ImageBackground style={styles.container} source={require('../assets/images/bg.png')}>
-      <Text style={styles.title} numberOfLines={1}>{route.params.user.name + " - " + route.params.service.title}</Text>
+      {/* <Text style={styles.title} numberOfLines={1}>{route.params.user.name + " - " + route.params.service.title}</Text> */}
       <View style={styles.chatContainer}>
         <GiftedChat messages={giftedMessages}
-        user={{_id: user!.uid, name: user!.name}} onSend={sendMessage}/>
+        shouldUpdateMessage={(props, nextProps) => props.currentMessage !== nextProps.currentMessage}
+        user={{_id: user.uid, name: user.name}} onSend={sendMessage}/>
       </View>
-      {isLoading && (<View style={styles.loadingContainer}>
-        <ActivityIndicator size='large' color='white'/>
-      </View>)}
     </ImageBackground>
   );
 }
@@ -84,7 +103,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderRadius: 25,
     paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingBottom: 20,
     flexGrow: 1,
     flexShrink: 1,
   },
@@ -93,13 +112,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 20,
     color: 'white',
-  },
-  loadingContainer: {
-    position: 'absolute',
-    top: 0, left: 0, right: 0, bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 200,
-    backgroundColor: '#000000AA'
   },
 });
