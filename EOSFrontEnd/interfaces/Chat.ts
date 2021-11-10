@@ -6,7 +6,6 @@ export interface IRoom {
   _id: string;
   user: User;
   service: Service;
-  lastMessage: IMessage | undefined;
 }
 
 export interface IMessage {
@@ -15,6 +14,15 @@ export interface IMessage {
     userId: string;
     text: string;
     createdAt: string;
+    seen: boolean;
+}
+
+export interface ISentMessage {
+    roomId: string;
+    userId: string;
+    text: string;
+    createdAt: string;
+    seen: boolean;
 }
 
 export function getCardTitle(room: IRoom) : string {
@@ -26,7 +34,9 @@ export function toGiftedMessage(message: IMessage, user: User): IGiftedMessage {
         _id: message._id,
         text: message.text,
         createdAt: new Date(message.createdAt),
-        user: {_id: user.uid, name: user.name}
+        user: {_id: user.uid, name: user.name},
+        sent: true,
+        received: message.seen,
     }
 }
 
@@ -36,6 +46,17 @@ export function toIMessage(message: IGiftedMessage, roomId: string): IMessage {
         text: message.text,
         createdAt: message.createdAt.toString(),
         userId: message.user._id.toString(),
-        roomId: roomId
+        roomId: roomId,
+        seen: false,
+    }
+}
+
+export function toISentMessage(message: IGiftedMessage, roomId: string): ISentMessage {
+    return {
+        text: message.text,
+        createdAt: message.createdAt.toString(),
+        userId: message.user._id.toString(),
+        roomId: roomId,
+        seen: false,
     }
 }

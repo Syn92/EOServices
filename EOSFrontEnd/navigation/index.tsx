@@ -29,6 +29,8 @@ import ChatScreen from '../screens/ChatScreen';
 import ChatRoomsScreen from '../screens/ChatRoomsScreen';
 import { PublicProfile } from '../screens/PublicProfile';
 import PostDetailsScreen from '../screens/PostDetailsScreen';
+import { ChatContext, ChatSocketContext } from './ChatSocketProvider';
+import { IRoom } from '../interfaces/Chat';
 
 const auth = Firebase.auth();
 
@@ -65,6 +67,7 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
   const { user, setUser, isNewUser, setIsNewUser } =  React.useContext(AuthenticatedUserContext);
   //const { isNewUser, setIsNewUser } =  React.useContext(AuthenticatedUserContext);
   const [isLoading, setIsLoading] = React.useState(true);
+
 
   React.useEffect(() => {
     // onAuthStateChanged returns an unsubscriber
@@ -146,7 +149,7 @@ function TabThreeStackScreen() {
   return (
     <TabThreeStack.Navigator>
       <TabThreeStack.Screen name="ChatRooms" component={ChatRoomsScreen} options={{ headerShown: false }} />
-      <TabThreeStack.Screen name="Chat" component={ChatScreen} options={{ headerShown: false }} />
+      <TabThreeStack.Screen name="Chat" component={ChatScreen} options={({ route }) => ({ title: (route.params as IRoom).user.name + " - " + (route.params as IRoom).service.title })} />
     </TabThreeStack.Navigator>
   )
 }
@@ -169,7 +172,7 @@ function TabFourStackScreen() {
 const BottomTab = createBottomTabNavigator<RootTabParamList>();
 
 function BottomTabNavigator() {
-
+  const { notifsCount } =  React.useContext(ChatContext);
 
   return (
     <BottomTab.Navigator
@@ -200,6 +203,7 @@ function BottomTabNavigator() {
         options={{
           title: 'Message',
           tabBarIcon: ({ color }) => <TabBarIcon name="chat-bubble" color={color} />,
+          tabBarBadge: notifsCount
         }}
       />
       <BottomTab.Screen
