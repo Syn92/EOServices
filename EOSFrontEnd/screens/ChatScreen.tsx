@@ -38,8 +38,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
         }
       });
     } else { // not from me, add it as seen
-      message.seen = true
-      appendMessages([message])
+      appendMessages([{...message, seen: true}])
     }
     if(message.offerValue) {
       setLastOfferId(message._id);
