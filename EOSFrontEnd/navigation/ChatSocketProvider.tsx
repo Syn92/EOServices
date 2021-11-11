@@ -35,7 +35,7 @@ export function ChatSocketProvider({ children }:{ children: any }) {
   useEffect(() => {
     if(!user){
       setRooms([]);
-      setMessages(old => old.clear());
+      setMessages(old => { old.clear() });
       setNotifsCount(0);
       socket.close();
       return;

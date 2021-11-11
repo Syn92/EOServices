@@ -1,9 +1,9 @@
 import { useFocusEffect } from '@react-navigation/native';
 import * as React from 'react';
-import { useCallback, useEffect } from 'react';
-import { Alert, ImageBackground, StyleSheet, Text, View, Image, Button } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { ImageBackground, StyleSheet, Text, View, Image, Button, Modal, TouchableOpacity, TextInput, KeyboardAvoidingView } from 'react-native';
 import { Icon } from 'react-native-elements';
-import { Actions, Bubble, Composer, GiftedChat, Message, Send } from 'react-native-gifted-chat';
+import { Actions, Bubble, Composer, GiftedChat, Send } from 'react-native-gifted-chat';
 import { useImmer } from 'use-immer';
 import { getContractMessage, IGiftedMessage, IMessage, toGiftedMessage, toISentMessage } from '../interfaces/Chat';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
@@ -13,9 +13,11 @@ import uuid from 'react-native-uuid';
 
 export default function ChatScreen({ navigation, route }: RootStackScreenProps<'Chat'>) {
   const [giftedMessages, setGiftedMessages] = useImmer<IGiftedMessage[]>([]);
+  const [showContractDialog, setShowContractDialog] = useState<boolean>(false);
+  const [lastOfferId, setLastOfferId] = useState<string | null>(null);
 
   const { user } =  React.useContext(AuthenticatedUserContext);
-  const { messages, roomWatchedId, setRoomWatchedId }= React.useContext(ChatContext);
+  const { messages, setRoomWatchedId }= React.useContext(ChatContext);
   const { socket } =  React.useContext(ChatSocketContext);
 
   const messagesSeenListener = (userId: string, roomId: string) => {
@@ -38,6 +40,9 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
     } else { // not from me, add it as seen
       message.seen = true
       appendMessages([message])
+    }
+    if(message.offerValue) {
+      setLastOfferId(message._id);
     }
   }
 
@@ -62,6 +67,12 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
     }
   }, [route.params._id])
 
+  useEffect(() => {
+    setGiftedMessages(old => {
+      old.forEach(x => {x.lastOffer = x._id == lastOfferId})
+    })
+  }, [lastOfferId])
+
   function sendMessage(sentMessages: IGiftedMessage[]) {
     setGiftedMessages(previousMessages => GiftedChat.append(previousMessages, sentMessages))
     for(const message of sentMessages.map(x => toISentMessage(x, route.params._id))) {
@@ -78,6 +89,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
 
   function setMessages(newMessages: IMessage[]) {
     setGiftedMessages(newMessages.map(message => toGiftedMessage(message, message.userId == user?.uid ? user : route.params.user)).reverse())
+    setLastOfferId(newMessages.slice().reverse().find(x => x.offerValue)?._id)
   }
 
   function renderInputToolbar(props) {
@@ -90,13 +102,14 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
         {user.uid === route.params.service.owner && <Actions
           containerStyle={styles.sendContract}
           icon={() => <Icon name="description" color="grey"/>}
-          onPressActionButton={askSendContract}/>}
+          onPressActionButton={() => setShowContractDialog(true)}/>}
     </View>
     )
   }
 
   function renderCustomView(props: Bubble<IGiftedMessage>['props']) {
-    if(props.currentMessage.type === 'contract') {
+    if(props.currentMessage.offerValue) {
+      const isLast = props.currentMessage._id == lastOfferId
       const isSender = user.uid == route.params.service.owner
       const messageStyle = isSender ? styles.rightContractText : styles.leftContractText
       const thumbnail = route.params.service.thumbnail || 'https://cdn1.iconfinder.com/data/icons/business-company-1/500/image-512.png'
@@ -106,10 +119,12 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
           <View style={styles.contractContainer}>
             <Text style={[styles.contractText]}>{route.params.service.title}</Text>
             <Image style={styles.contractImage} source={{uri: thumbnail, width: 50, height: 50}}/>
-            <Text style={[styles.contractText]}>{route.params.service.priceEOS + " EOS"}</Text>
+            <Text style={[styles.contractText]}>{props.currentMessage.offerValue + " EOS"}</Text>
           </View>
-          {isSender ? <Text style={[messageStyle]}>Awaiting answer...</Text>
-            : <Button onPress={openOfferDetails} title="See Offer Details"></Button>
+          {isLast ?
+            (isSender ? <Text style={[messageStyle]}>Awaiting answer...</Text>
+            : <Button onPress={openOfferDetails} title="See Offer Details"></Button>)
+            : <Text style={[messageStyle]}>A newer offer has been made.</Text>
           }
         </View>
         )
@@ -122,24 +137,53 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
     console.log('OPEN OFFER DETAILS');
   }
 
-  function askSendContract() {
-    const cleanTitle = route.params.service.title.length > 15 ? route.params.service.title.substring(0, 15) : route.params.service.title
-    Alert.alert(
-      'Sending Contract',
-      'Are you sure you want to send the contract: "' + cleanTitle + '" for ' + route.params.service.priceEOS + " EOS ?",
-      [
-        { text: "Yes", onPress: sendContract },
-        { text: "No" },
-      ]
-    );
+  function sendContract(value: number) {
+    const contractMessage = getContractMessage(route.params, user, value)
+    const contractGiftedMessage = {...contractMessage, _id: uuid.v4().toString()}
+    setGiftedMessages(previousMessages => GiftedChat.append(previousMessages, [{...toGiftedMessage(contractGiftedMessage, user), sent: false}]))
+    socket.emit('newMessage', contractMessage)
+    setLastOfferId(contractGiftedMessage._id)
   }
 
-  function sendContract() {
-    console.log('SEND CONTRACT')
-    const contractMessage = getContractMessage(route.params, user)
-    const contractGiftedMessage = {...contractMessage, _id: uuid.v4().toString()}
-    setGiftedMessages(previousMessages => GiftedChat.append(previousMessages, [toGiftedMessage(contractGiftedMessage, user)]))
-    socket.emit('newMessage', contractMessage)
+  function sendContractDialog() {
+    const [contractValue, setContractValue] = useState<string>(route.params.service.priceEOS.toString());
+
+    const cleanTitle = route.params.service.title.length > 15 ? route.params.service.title.substring(0, 15) : route.params.service.title
+    return (
+      <Modal
+        statusBarTranslucent={true}
+        animationType='fade'
+        transparent={true}
+        visible={showContractDialog}
+        onRequestClose={() => setShowContractDialog(false)}>
+        <View style={styles.centeredView}>
+          <KeyboardAvoidingView behavior='padding' style={styles.modal}>
+            <Text style={styles.modalTitle}>Confirm Offer Request?</Text>
+            <Text style={styles.modalDesc}>You are about to offer '{cleanTitle}' for </Text>
+            <View style={styles.modalInputContainer}>
+              <TextInput
+                style={styles.modalInput}
+                value={contractValue.toString()}
+                keyboardType="numeric"
+                onChangeText={(text: string) => setContractValue(text.replace(/[^0-9]/g, ''))}/>
+              <Text style={styles.modalDesc}>EOS</Text>
+            </View>
+            {!(+contractValue > 0) && <Text style={[styles.modalDesc, styles.modalError]}>* The value should be a number higher than 0.</Text> }
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity style={styles.modalButton} onPress={() => setShowContractDialog(false)}>
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalButton} onPress={() => {
+                sendContract(+contractValue)
+                setShowContractDialog(false)
+                }}>
+                <Text style={styles.buttonText}>Confirm</Text>
+              </TouchableOpacity>
+            </View>
+          </KeyboardAvoidingView>
+        </View>
+      </Modal>
+    )
   }
 
   return (
@@ -152,6 +196,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
         renderInputToolbar={renderInputToolbar}
         renderCustomView={renderCustomView}/>
       </View>
+      {sendContractDialog()}
     </ImageBackground>
   );
 }
@@ -243,4 +288,67 @@ const styles = StyleSheet.create({
     height: 70,
     marginVertical: 5,
   },
+  centeredView: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    // marginTop: 22,
+    backgroundColor: 'rgba(0, 0, 0, 0.57)',
+  },
+  modal: {
+    alignItems: 'center',
+    backgroundColor: 'white',
+    maxHeight: '70%',
+    borderRadius: 10,
+    width: '80%',
+    flexDirection: 'column',
+    // padding: 15,
+  },
+  modalTitle: {
+    color: 'black',
+    fontWeight: 'bold',
+    fontSize: 20,
+    marginVertical: 15,
+  },
+  modalDesc: {
+    color: 'black',
+    fontSize: 12,
+  },
+  modalButtonContainer: {
+    marginVertical: 15,
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  modalButton: {
+    marginHorizontal: 5,
+    paddingVertical: 10,
+    alignItems: 'center',
+    width: '30%',
+    borderRadius: 10,
+    backgroundColor: '#04B388',
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    letterSpacing: 0.5
+  },
+  modalInputContainer: {
+    flexDirection: 'row',
+    width: '50%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  modalInput: {
+    marginRight: 10,
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 5,
+    borderColor: 'lightgrey',
+    width: '100%',
+  },
+  modalError: {
+    color: 'red'
+  }
 });

@@ -2,9 +2,7 @@ import { Service } from "./Service";
 import { User } from "./User";
 import { IMessage as ITempMessage } from 'react-native-gifted-chat';
 
-export type IGiftedMessage = ITempMessage & {type: MessageType | null}
-
-export type MessageType = "text" | "contract"
+export type IGiftedMessage = ITempMessage & {offerValue: number | null, lastOffer: boolean | null}
 
 export interface IRoom {
   _id: string;
@@ -22,7 +20,7 @@ export interface ISentMessage {
     text: string;
     createdAt: string;
     seen: boolean;
-    type: MessageType;
+    offerValue: number | null;
 }
 
 export function getCardTitle(room: IRoom) : string {
@@ -37,7 +35,8 @@ export function toGiftedMessage(message: IMessage, user: User): IGiftedMessage {
         user: {_id: user.uid, name: user.name},
         sent: true,
         received: message.seen,
-        type: message.type,
+        offerValue: message.offerValue,
+        lastOffer: false,
     }
 }
 
@@ -52,17 +51,17 @@ export function toISentMessage(message: IGiftedMessage, roomId: string): ISentMe
         userId: message.user._id.toString(),
         roomId: roomId,
         seen: false,
-        type: message.type ? message.type : 'text'
+        offerValue: message.offerValue
     }
 }
 
-export function getContractMessage(room: IRoom, user: User): ISentMessage {
+export function getContractMessage(room: IRoom, user: User, value: number): ISentMessage {
     return {
         text: '',
         createdAt: new Date().toISOString(),
         userId: user.uid,
         roomId: room._id,
         seen: false,
-        type: 'contract'
+        offerValue: value
     }
 }
