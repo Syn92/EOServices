@@ -35,12 +35,12 @@ export default function ChatRoomCard(props: IProp) {
     }
 
     useEffect(() => {
+        socket.on('messagesSeen', messagesSeenListener)
+        socket.on('newMessage', newMessageListener)
+
         if(messages.has(props.room._id) && messages.get(props.room._id).length > 0) {
             setLastMessage(messages.get(props.room._id)[messages.get(props.room._id).length - 1]);
         }
-
-        socket.on('messagesSeen', messagesSeenListener)
-        socket.on('newMessage', newMessageListener)
 
         return () => {
             socket.off('messagesSeen', messagesSeenListener)
