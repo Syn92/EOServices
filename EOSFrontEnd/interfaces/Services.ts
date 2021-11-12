@@ -17,6 +17,7 @@ export interface RequestInfo {
     serviceOwner? : string
 }
 
+//TODO: delete when contracts are inplemented
 export interface ServiceRequest {
     serviceID: string,
     reqDescription: string,
