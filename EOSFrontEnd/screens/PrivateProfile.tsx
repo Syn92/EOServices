@@ -419,7 +419,7 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
                             rating.map((e) => {return (e)})
                         }
                         </View>
-                        <Text style={{color: 'white'}}>{user?.rating.toFixed(2)}</Text>
+                        { user.rating ? <Text style={{color: 'white'}}>{user?.rating.toFixed(2)}</Text> : null}
                     </View>
                     {/* ---- Profile cards ---- */}
                     <ProfileCard icon='calendar-today' iconType='material' title='Joined Date' editable={false}>
