@@ -1,4 +1,4 @@
-import { Service } from "./Service";
+import { IService } from "./Service";
 
 export interface ServiceInfo {
     _id: string
@@ -38,7 +38,7 @@ export interface Request {
     serviceID: string,
     serviceOwner: string,
     requestUserUID: string,
-    serviceDetail: Service,
+    serviceDetail: IService,
     requestUserName: string
 }
 
