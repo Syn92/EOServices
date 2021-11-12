@@ -5,11 +5,12 @@ import { ImageBackground, StyleSheet, Text, View, Image, Button, Modal, Touchabl
 import { Icon } from 'react-native-elements';
 import { Actions, Bubble, Composer, GiftedChat, Send } from 'react-native-gifted-chat';
 import { useImmer } from 'use-immer';
-import { getContractMessage, IGiftedMessage, IMessage, toGiftedMessage, toISentMessage } from '../interfaces/Chat';
+import { getContractMessage, getImageMessage, IGiftedMessage, IMessage, toGiftedMessage, toISentMessage } from '../interfaces/Chat';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
 import { ChatContext, ChatSocketContext } from '../navigation/ChatSocketProvider';
 import { RootStackScreenProps } from '../types';
 import uuid from 'react-native-uuid';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function ChatScreen({ navigation, route }: RootStackScreenProps<'Chat'>) {
   const [giftedMessages, setGiftedMessages] = useImmer<IGiftedMessage[]>([]);
@@ -35,6 +36,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
         if(sentIndex >= 0) {
           old[sentIndex].sent = true
           old[sentIndex]._id = message._id
+          old[sentIndex].image = message.image
         }
       });
     } else { // not from me, add it as seen
@@ -99,9 +101,12 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
           <Icon name="send" color="#0084ff"/>
         </Send>
         {user.uid === route.params.service.owner && <Actions
-          containerStyle={styles.sendContract}
+          containerStyle={styles.actionButton}
           icon={() => <Icon name="description" color="grey"/>}
           onPressActionButton={() => setShowContractDialog(true)}/>}
+        <Actions containerStyle={styles.actionButton}
+          icon={() => <Icon name="image" color="grey"/>}
+          onPressActionButton={() => sendImageMessage()}/>
     </View>
     )
   }
@@ -142,6 +147,21 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
     setGiftedMessages(previousMessages => GiftedChat.append(previousMessages, [{...toGiftedMessage(contractGiftedMessage, user), sent: false}]))
     socket.emit('newMessage', contractMessage)
     setLastOfferId(contractGiftedMessage._id)
+  }
+
+  function sendImageMessage() {
+    ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      quality: 1,
+      base64: true,
+    }).then((res: any) => {
+      if (!res.cancelled) {
+        const message = getImageMessage(route.params, user, res.base64);
+        const contractGiftedMessage = {...message, _id: uuid.v4().toString()}
+        setGiftedMessages(previousMessages => GiftedChat.append(previousMessages, [{...toGiftedMessage(contractGiftedMessage, user), sent: false}]))
+        socket.emit('newMessage', message)
+      }
+    }).catch(err => console.log(err))
   }
 
   function sendContractDialog() {
@@ -249,7 +269,7 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     maxHeight: '100%',
   },
-  sendContract: {
+  actionButton: {
     marginBottom: 0,
     justifyContent: 'center'
   },

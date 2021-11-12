@@ -54,7 +54,11 @@ export default function ChatRoomCard(props: IProp) {
             return '(No Messages)';
 
         if(lastMessage.offerValue)
-            return '(Contract ' + (lastMessage.userId === user.uid ? 'Sent)' : 'Received)')
+            return '(Offer ' + (lastMessage.userId === user.uid ? 'Sent)' : 'Received)')
+
+
+        if(lastMessage.image)
+            return '(Image ' + (lastMessage.userId === user.uid ? 'Sent)' : 'Received)')
 
         return lastMessage.text
     }
