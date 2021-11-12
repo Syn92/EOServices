@@ -206,7 +206,7 @@ function BottomTabNavigator() {
         options={{
           title: 'Message',
           tabBarIcon: ({ color }) => <TabBarIcon name="chat-bubble" color={color} />,
-          tabBarBadge: notifsCount
+          tabBarBadge: notifsCount > 0 ? notifsCount : null
         }}
       />
       <BottomTab.Screen
