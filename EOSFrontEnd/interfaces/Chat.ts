@@ -1,13 +1,23 @@
-import { Service } from "./Service";
+import { IService } from "./Service";
 import { User } from "./User";
 import { IMessage as ITempMessage } from 'react-native-gifted-chat';
 
-export type IGiftedMessage = ITempMessage & {offerValue: number | null, lastOffer: boolean | null}
+export type IGiftedMessage = ITempMessage & {offerValue: number | null, contractId: string | null, lastOffer: boolean | null}
+
+export interface ISentRoom {
+    room: {
+        sellerId: string;
+        buyerId: string;
+        serviceId: string;
+    }
+    userId: string;
+    text: string;
+}
 
 export interface IRoom {
-  _id: string;
-  user: User;
-  service: Service;
+    _id: string;
+    user: User;
+    service: IService;
 }
 
 export interface IMessage extends ISentMessage {
@@ -21,6 +31,7 @@ export interface ISentMessage {
     createdAt: string;
     seen: boolean;
     offerValue: number | null;
+    contractId: string | null;
     image: string | null;
 }
 
@@ -37,6 +48,7 @@ export function toGiftedMessage(message: IMessage, user: User): IGiftedMessage {
         sent: true,
         received: message.seen,
         offerValue: message.offerValue,
+        contractId: message.contractId,
         lastOffer: false,
         image: message.image
     }
@@ -54,11 +66,12 @@ export function toISentMessage(message: IGiftedMessage, roomId: string): ISentMe
         roomId: roomId,
         seen: false,
         offerValue: message.offerValue,
+        contractId: message.contractId,
         image: message.image
     }
 }
 
-export function getContractMessage(room: IRoom, user: User, value: number): ISentMessage {
+export function getContractMessage(room: IRoom, user: User, value: number, contractId: string): ISentMessage {
     return {
         text: '',
         createdAt: new Date().toISOString(),
@@ -66,6 +79,7 @@ export function getContractMessage(room: IRoom, user: User, value: number): ISen
         roomId: room._id,
         seen: false,
         offerValue: value,
+        contractId: contractId,
         image: null
     }
 }
@@ -78,6 +92,7 @@ export function getImageMessage(room: IRoom, user: User, image: string): ISentMe
         roomId: room._id,
         seen: false,
         offerValue: null,
+        contractId: null,
         image: image
     }
 }

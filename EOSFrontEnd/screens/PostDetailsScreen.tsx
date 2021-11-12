@@ -11,13 +11,16 @@ import { getAddress } from '../utils/Cadastre';
 import { ServiceRequest } from '../interfaces/Services';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
 import SuccessModalView from '../components/SuccessModalView';
-
+import { ChatSocketContext } from '../navigation/ChatSocketProvider';
+import { ISentRoom } from '../interfaces/Chat';
+import { IService } from '../interfaces/Service';
 
 export default function PostDetailsScreen({route, navigation }: RootTabScreenProps<'PostDetails'>) {
     const id: any = route.params;
 
+    const { socket } =  React.useContext(ChatSocketContext);
     const { user } =  React.useContext(AuthenticatedUserContext);
-    const [service, setService] = React.useState<any>();
+    const [service, setService] = React.useState<IService>();
     const [loading, setLoading] = React.useState(true);
     const [activeIndex, setActiveIndex] = React.useState(0);
     const [modalVisible, setModalVisible] = React.useState(false);
@@ -28,7 +31,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
     const fetchData = async () => {
       try {
         axios.get(ServerConstants.local + 'post/?id='+id).then((response) => {
-            setService(response.data);
+            setService(response.data as IService);
             setLoading(false);
         })
       } catch (e) {
@@ -53,14 +56,18 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
           return;
         }
 
-        const param: ServiceRequest = {
-          reqDescription: offerDetails,
-          serviceID: service._id,
-          serviceOwner: service.owner,
-          requestUserUID: user.uid,
+        const param: ISentRoom = {
+          room: {
+            serviceId: service._id,
+            buyerId: service.serviceType == 'Offering' ? user.uid : service.owner,
+            sellerId: service.serviceType == 'Offering' ? service.owner : user.uid
+          },
+          userId: user.uid,
+          text: offerDetails,
         }
         setLoading(true)
-        await axios.post(ServerConstants.local + 'post/request', param)
+        socket.emit('newRoom', param)
+        // await axios.post(ServerConstants.local + 'post/request', param)
         setLoading(false)
         setOfferSent(true)
 

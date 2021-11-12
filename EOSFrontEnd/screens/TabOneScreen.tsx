@@ -8,15 +8,15 @@ import Firebase from '../config/firebase';
 import ServerConstants from '../constants/Server';
 import { RootTabScreenProps } from '../types';
 import { CustomFeature } from '../utils/Cadastre';
-import { Service } from '../interfaces/Service';
+import { IService } from '../interfaces/Service';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
 const auth = Firebase.auth()
 
 export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'>) {
-  
+
   const [selectedMarker, setSelectedMarker] = useState<string>();
-  const [selectedService, setSelectedService] = useState<Service>();
+  const [selectedService, setSelectedService] = useState<IService>();
   const [data, setData] = useState([]);
 
   const [loading, setLoading] = useState(true);
@@ -61,7 +61,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
       <View style={styles.mapContainer}>
         <Map pressable={true} services={data} onMarkerPressed={(id) =>{getService(id)}}/>
       </View>
-      {selectedMarker ? 
+      {selectedMarker ?
       <View style={styles.postContainer}>
         <TouchableOpacity onPress={() => {navigation.navigate('PostDetails',selectedService._id)}}>
            <Icon name="keyboard-arrow-up" size={40} color="#04B388"/>
