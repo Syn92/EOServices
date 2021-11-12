@@ -18,7 +18,7 @@ export interface ChatContextType {
   setRoomWatchedId: React.Dispatch<React.SetStateAction<string | null>>,
 }
 
-const socket = io(ServerConstants.prod + "chat");
+const socket = io(ServerConstants.local + "chat");
 export const ChatSocketContext = createContext<SocketContextType>({socket});
 
 export const ChatContext = createContext<ChatContextType | undefined>({rooms: [], messages: new Map<string, IMessage[]>(),
@@ -35,19 +35,17 @@ export function ChatSocketProvider({ children }:{ children: any }) {
   useEffect(() => {
     if(!user){
       setRooms([]);
-      setMessages(old => old.clear());
+      setMessages(old => { old.clear() });
       setNotifsCount(0);
       socket.close();
       return;
     }
 
-    axios.get(ServerConstants.prod + 'chatRooms', { params: {userId: user.uid } })
+    axios.get(ServerConstants.local + 'chatRooms', { params: {userId: user.uid } })
       .then(function (response) {
-        const newRooms = response.data as IRoom[];
-        if(newRooms && newRooms.length > 0) {
-          setUpMessages(newRooms)
-          setUpSockets(newRooms.map(x => x._id));
-        }
+        const newRooms = response.data as IRoom[] || [];
+        setUpMessages(newRooms)
+        setUpSockets(newRooms.map(x => x._id));
       }).catch(function (error) {
         console.log(error);
       });
@@ -62,10 +60,9 @@ export function ChatSocketProvider({ children }:{ children: any }) {
       console.log(err.message);
     });
     socket.connect();
-    socket.emit('watchRooms', user?.uid, roomIds);
+    socket.emit('watchRooms', user.uid, roomIds);
     socket.on('newRoom', (room: IRoom) => {
       setRooms(oldRooms => {oldRooms.push(room)})
-      socket.emit('joinRoom', user?.uid, room._id);
     });
     socket.on('messagesSeen', (userId: string, roomId: string) => {
       setMessages(old => {old.get(roomId)?.forEach(x => { if(!x.seen && x.userId != userId) x.seen = true })});
@@ -75,7 +72,7 @@ export function ChatSocketProvider({ children }:{ children: any }) {
   function setUpMessages(newRooms: IRoom[]): void {
     setRooms(newRooms);
     newRooms.forEach(newRoom => {
-      axios.get(ServerConstants.prod + 'chatMessages', { params: {roomId: newRoom._id } })
+      axios.get(ServerConstants.local + 'chatMessages', { params: {roomId: newRoom._id } })
       .then(function (response) {
         const newMessages = response.data as IMessage[] || []
         setMessages(oldMessages => {oldMessages.set(newRoom._id, newMessages)});
@@ -95,7 +92,12 @@ export function ChatSocketProvider({ children }:{ children: any }) {
         setNotifsCount(notifs => notifs + 1)
       }
     }
-    setMessages(oldMessages => {oldMessages.get(message.roomId).push(message)});
+    setMessages(oldMessages => {
+      if(oldMessages.has(message.roomId))
+        oldMessages.get(message.roomId).push(message);
+      else
+        oldMessages.set(message.roomId, [message])
+    })
   };
 
   useEffect(() => {

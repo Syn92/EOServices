@@ -15,7 +15,7 @@ import SuccessModalView from '../components/SuccessModalView';
 
 export default function PostDetailsScreen({route, navigation }: RootTabScreenProps<'PostDetails'>) {
     const id: any = route.params;
-    
+
     const { user } =  React.useContext(AuthenticatedUserContext);
     const [service, setService] = React.useState<any>();
     const [loading, setLoading] = React.useState(true);
@@ -58,7 +58,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
           serviceID: service._id,
           serviceOwner: service.owner,
           requestUserUID: user.uid,
-        } 
+        }
         setLoading(true)
         await axios.post(ServerConstants.local + 'post/request', param)
         setLoading(false)
@@ -71,7 +71,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
           setErrorMsg('Server Error')
           console.log(e)
         }
-        
+
         setLoading(false)
       }
     }
@@ -88,7 +88,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
               <Text style={styles.modalTitle}>Offer Request</Text>
               <Text style={styles.modalDesc}>Enter a description of your needs:</Text>
               {errorMsg.length !=0 ? <Text style={styles.modalError}>{errorMsg}</Text>: null}
-              <TextInput 
+              <TextInput
                 value={offerDetails}
                 style={styles.textBox}
                 numberOfLines={10}
@@ -117,7 +117,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
     React.useEffect(() => {
         fetchData();
     }, [])
-    
+
         return (
           service ?
           <ScrollView contentContainerStyle={{flexGrow: 1}}>
@@ -129,7 +129,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
               visible={modalVisible}
               onRequestClose={closeModal}>
                 <View style={styles.centeredView}>
-                    {!offerSent ? modalView() : 
+                    {!offerSent ? modalView() :
                       <SuccessModalView message='Offer request sent!'>
                         <TouchableOpacity style={styles.interestedButton} onPress={closeModal}>
                           <Text style={styles.buttonText}>Done</Text>
@@ -185,7 +185,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
                   sliderWidth={300}
                   itemWidth={250}
                   renderItem={_renderItem}
-                  onSnapToItem = { index => setActiveIndex(index) } 
+                  onSnapToItem = { index => setActiveIndex(index) }
                   layoutCardOffset={18}/>
                   <Pagination
                     dotsLength={service.images.length}
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
   modal: {
     alignItems: 'center',
     backgroundColor: 'white',
-    maxHeight: '70%', 
+    maxHeight: '70%',
     borderRadius: 10,
     width: '80%'
   },
