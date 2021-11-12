@@ -18,15 +18,15 @@ const linking: any = {
         screens: {
           Root: 'one',
           AddPost: 'addpost',
-          PostDetails: 'postdetails',
-          PublicProfile: 'publicprofile',
+          // PostDetails: 'postdetails',
+          // PublicProfile: 'publicprofile',
         }
       },
       TabTwo: {
         screens: {
           Root: 'two',
           NotFound: 'notfound',
-          PostDetails: 'postdetails',
+          // PostDetails: 'postdetails',
           Modal: 'modal',
         }
       },
@@ -40,8 +40,8 @@ const linking: any = {
         screens: {
           Root: 'four',
           BuyCrypto: 'buycrypto',
-          PublicProfile: 'publicprofile',
-          PostDetails: 'postdetails',          
+          // PublicProfile: 'publicprofile',
+          // PostDetails: 'postdetails',          
         }
       }
     }
