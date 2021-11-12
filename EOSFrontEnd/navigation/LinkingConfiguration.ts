@@ -10,39 +10,42 @@ import * as Linking from 'expo-linking';
 import { RootStackParamList } from '../types';
 import AddPostScreen from '../screens/AddPostScreen';
 
-const linking: LinkingOptions<RootStackParamList> = {
-  prefixes: [Linking.makeUrl('/')],
+const linking: any = {
+  prefixes:[Linking.makeUrl('/')] ,
   config: {
     screens: {
-      Root: {
+      TabOne: {
         screens: {
-          TabOne: {
-            screens: {
-              TabOneScreen: 'one',
-            },
-          },
-          TabTwo: {
-            screens: {
-              TabTwoScreen: 'two',
-              AddPostScreen: 'AddPost'
-            },
-          },
-          TabThree: {
-            screens: {
-              TabThreeScreen: 'three',
-            },
-          },
-          TabFour: {
-            screens: {
-              TabFourScreen: 'four',
-            },
-          },
-        },
+          Root: 'one',
+          AddPost: 'addpost',
+          PostDetails: 'postdetails',
+          PublicProfile: 'publicprofile',
+        }
       },
-      Modal: 'modal',
-      NotFound: '*',
-    },
-  },
+      TabTwo: {
+        screens: {
+          Root: 'two',
+          NotFound: 'notfound',
+          PostDetails: 'postdetails',
+          Modal: 'modal',
+        }
+      },
+      TabThree: {
+        screens: {
+          ChatRooms: 'three',
+          Chat: 'chat',
+        }
+      },
+      TabFour: {
+        screens: {
+          Root: 'four',
+          BuyCrypto: 'buycrypto',
+          PublicProfile: 'publicprofile',
+          PostDetails: 'postdetails',          
+        }
+      }
+    }
+  }
 };
 
 export default linking;
