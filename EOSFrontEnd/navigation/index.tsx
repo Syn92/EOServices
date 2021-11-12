@@ -9,6 +9,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import axios from 'axios';
 import * as React from 'react';
+import * as Linking from 'expo-linking'
 import { ActivityIndicator, ColorSchemeName, View } from 'react-native';
 
 import Firebase from '../config/firebase';
@@ -32,6 +33,7 @@ import PostDetailsScreen from '../screens/PostDetailsScreen';
 import BuyCrypto from '../screens/BuyCrypto';
 import { ChatContext, ChatSocketContext } from './ChatSocketProvider';
 import { IRoom } from '../interfaces/Chat';
+import linking from './LinkingConfiguration';
 
 const auth = Firebase.auth();
 
@@ -64,13 +66,26 @@ async function checkUser(user: any) {
   }
 }
 
-export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
-  const { user, setUser, isNewUser, setIsNewUser } =  React.useContext(AuthenticatedUserContext);
-  //const { isNewUser, setIsNewUser } =  React.useContext(AuthenticatedUserContext);
+export default function Navigation() {
+  const { user, setUser, isNewUser, setIsNewUser, urlData, setUrlData } =  React.useContext(AuthenticatedUserContext);
   const [isLoading, setIsLoading] = React.useState(true);
 
+  function handleDeeplink(event: any) {
+    setUrlData(Linking.parse(event.url))
+  }
 
   React.useEffect(() => {
+
+    async function getInitialURL() {
+      const initialURL = await Linking.getInitialURL()
+      if (initialURL) setUrlData(Linking.parse(initialURL))
+    }
+
+    Linking.addEventListener('url', handleDeeplink)
+    if (!urlData){
+      getInitialURL()
+    }
+    
     // onAuthStateChanged returns an unsubscriber
     const unsubscribeAuth = auth.onIdTokenChanged(async (authenticatedUser: any) => {
       try {
@@ -94,7 +109,10 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
     });
 
     // unsubscribe auth listener on unmount
-    return unsubscribeAuth;
+    return () => {
+      Linking.removeEventListener('url', handleDeeplink)
+      return unsubscribeAuth
+    };
   }, []);
 
   if (isLoading) {
@@ -113,11 +131,13 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
     )
   }
 
-  return (
-    <NavigationContainer>
-      {user ? <BottomTabNavigator /> : <AuthStack />}
-    </NavigationContainer>
-  );
+  return user ? 
+    (<NavigationContainer linking={linking}>
+      <BottomTabNavigator/>
+    </NavigationContainer>) : 
+    (<NavigationContainer>
+      <AuthStack/>
+    </NavigationContainer>)
 }
 
 const TabOneStack = createNativeStackNavigator();
@@ -206,7 +226,7 @@ function BottomTabNavigator() {
         options={{
           title: 'Message',
           tabBarIcon: ({ color }) => <TabBarIcon name="chat-bubble" color={color} />,
-          tabBarBadge: notifsCount
+          tabBarBadge: notifsCount > 0 ? notifsCount : null
         }}
       />
       <BottomTab.Screen
