@@ -9,10 +9,9 @@ import { User } from '../interfaces/User';
 import axios from 'axios';
 import ServerConstants from '../constants/Server';
 import { ProfileServiceList } from '../components/ProfileServiceList/ProfileServiceList';
-import Firebase from '../config/firebase';
+import { ServiceStatus } from '../interfaces/Services';
 
 const WIDTH = Dimensions.get('window').width;
-const auth = Firebase.auth()
 
 export function PublicProfile({route, navigation}: any) {
 
@@ -31,20 +30,11 @@ export function PublicProfile({route, navigation}: any) {
     async function fetchUserServices() {
         try {
             const res = await axios.get<any>(ServerConstants.local + 'post/list', { params: { owner: uid } });
-            setServices(res.data);
+            setServices(res.data.filter(i => i.status == ServiceStatus.OPEN));
         } catch (e) {
             console.error('Fetch User Services Public: ', e)
         }
     }
-
-    async function handleLogout() {
-        try {
-          await auth.signOut()
-        } catch (error: any) {
-          console.log('logout')
-          console.log(error)
-        }
-      }
 
     async function fetchPublicUser() {
         console.log(uid)
@@ -62,12 +52,6 @@ export function PublicProfile({route, navigation}: any) {
         return (
             <View>
                 <View style={styles.avatar}>
-                    <TouchableOpacity style={styles.logoutIcon} onPress={handleLogout}>
-                        <Icon name='logout' 
-                            type='material'
-                            color='#04b388'
-                            size={37} />
-                    </TouchableOpacity>
                     <Image resizeMode='cover' style={styles.photo} source={require('../assets/images/avatar.webp')} />
                     <Text style={styles.username}>{publicUser?.name}</Text>
                     <Text>⭐⭐⭐⭐⭐</Text>
@@ -81,12 +65,7 @@ export function PublicProfile({route, navigation}: any) {
                 {/* ---- Profile cards ---- */}
                 <ProfileCard icon='calendar-today' iconType='material' title='Joined Date' editable={ false }>
                     <Text style={{fontSize: 20,}}>{publicUser?.joinedDate}</Text>
-                </ProfileCard>
-
-                <TouchableOpacity style={styles.button}>
-                    <Text style={{fontSize: 18, color: 'white'}}>Send Message</Text>
-                </TouchableOpacity>
-                
+                </ProfileCard>                
                 
                 {/* Orders list */}
                 <View style={styles.listContainer}>

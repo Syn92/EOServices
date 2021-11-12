@@ -181,7 +181,6 @@ export function PrivateProfile({navigation}: {navigation: any}) {
                 uid: user?.uid,
                 avatar: image
             })
-            console.log(res.status)
             if (res.status == 200) {
                 await fetchUser()
             } else {

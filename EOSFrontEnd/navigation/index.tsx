@@ -126,6 +126,7 @@ function TabOneStackScreen() {
       <TabOneStack.Screen name="Root" component={TabTwoScreen} options={{ headerShown: false }} />
       <TabOneStack.Screen name="AddPost" component={AddPostScreen} />
       <TabOneStack.Screen name="PostDetails" component={PostDetailsScreen} options={{headerShown: false}}/>
+      <TabOneStack.Screen name="PublicProfile" component={PublicProfile} options={{headerShown: false}}/>
     </TabOneStack.Navigator>
   )
 }
