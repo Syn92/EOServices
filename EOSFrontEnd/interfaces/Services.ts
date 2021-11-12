@@ -1,6 +1,7 @@
 import { Service } from "./Service";
 
 export interface ServiceInfo {
+    _id: string
     category: string,
     title: string,
     owner: string,

@@ -7,4 +7,5 @@ export interface User {
     joinedDate: string,
     walletAccountName?: string,
     avatar?: string,
+    rating?: number
 }

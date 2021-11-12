@@ -145,10 +145,14 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
                   <Text style={styles.imageTitle}>{service.title}</Text>
                 </View>
 
-                <View style={styles.contentCard}>
+                <TouchableOpacity style={styles.contentCard} onPress={() => {
+                  navigation.navigate('PublicProfile', {uid: service.owner})
+                }}>
                     <Icon style={styles.iconCard} name="storefront" color="#04B388"></Icon>
-                    <Text>{service.serviceType == servTypeSell ? 'Offered by ' : 'Searched by '}{service.ownerName}</Text>
-                </View>
+                    <Text>{service.serviceType == servTypeSell ? 'Offered by ' : 'Searched by '}
+                      <Text style={styles.owner}>{service.ownerName}</Text>
+                    </Text>
+                </TouchableOpacity>
 
                 <View style={styles.contentCard}>
                     <Icon style={styles.iconCard} name="category" color="#04B388"></Icon>
@@ -353,5 +357,9 @@ const styles = StyleSheet.create({
     borderColor: 'lightgrey',
     width: '100%',
     maxHeight: 240,
+  },
+  owner: {
+    textDecorationLine: 'underline',
+    color: '#04B388'
   }
 });

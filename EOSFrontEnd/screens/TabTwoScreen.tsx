@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Button } from 'react-native-elements/dist/buttons/Button';
 import Map from '../components/Map';
 import { RootTabScreenProps } from '../types';
@@ -89,7 +89,7 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
                   setModalVisible(false);
                 }}
               >
-                <View style={styles.centeredView}>
+                <Pressable style={styles.centeredView} onPress={() => setModalVisible(false)}>
                   <View style={styles.modalView}>
                     <Text style={styles.modalText}>Filter by...</Text>
                     <ScrollView style={styles.modalButtonContainer}>
@@ -99,7 +99,7 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
                       })}
                     </ScrollView>
                   </View>
-                </View>
+                </Pressable>
               </Modal>
       </View>
       <View style={styles.listContainer}>

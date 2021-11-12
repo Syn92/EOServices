@@ -7,7 +7,7 @@ import { ProfileRequestCard } from './ProfileRequestCard'
 import { ProfileServiceCard } from './ProfileServiceCard'
 
 interface Props {
-    data: ServiceData | RequestData,
+    data: ServiceData | RequestData | Array<Object>,
     onUpdate?: () => Promise<void>
 }
 function instanceOfServiceData(object: any): object is ServiceData {
@@ -23,19 +23,19 @@ export function ProfileServiceList(props: Props) {
     function displayServiceCards(data: Array<Object>) {
         return data.map((elem: any) => {
             const serviceInfo: ServiceInfo = {
+                _id: elem._id,
                 category: elem.category,
                 title: elem.title,
                 owner: elem.ownerName,
                 price: elem.priceEOS,
                 position: getAddress(elem.cadastre)
             }
-            return (<ProfileServiceCard serviceInfo={serviceInfo} key={serviceInfo.title}/>)
+            return (<ProfileServiceCard serviceInfo={serviceInfo} key={serviceInfo.title} />)
         })
     }
 
-    // ...(index == RequestIndex.incoming && { requestUser: elem.requestUserName }),
-    // ...(index == RequestIndex.outgoing && { serviceOwner: elem.serviceDetail.ownerName })
 
+    // Private profile requests (incoming / ongoing)
     function displayRequestCards(data: Array<Request>) {
         return data.map((elem: Request) => {
             let res;
@@ -56,29 +56,40 @@ export function ProfileServiceList(props: Props) {
         })
     }
     
+    // Public profile services
     function serviceView() {
 
-        const data = props.data as ServiceData
+        // Private profile
+        if (instanceOfServiceData(props.data)) {
+            const data = props.data as ServiceData
+            return (
+                <View style={styles.container}>
+                    <ButtonGroup
+                        onPress={setIndex}
+                        selectedButtonStyle={{backgroundColor: '#04b388'}}
+                        selectedIndex={index}
+                        buttons={['Open', 'In Progress', 'Completed']}
+                        containerStyle={styles.buttonGroup}/>
+                    {
+                        index == 0 ? 
+                            displayServiceCards(data.open) : 
+                        ( index == 1 ? 
+                            displayServiceCards(data.inProgress) : 
+                            displayServiceCards(data.completed)
+                        )
+                    }
+                </View>
+            )
 
-
-        return (
-            <View style={styles.container}>
-                <ButtonGroup
-                    onPress={setIndex}
-                    selectedButtonStyle={{backgroundColor: '#04b388'}}
-                    selectedIndex={index}
-                    buttons={['Open', 'In Progress', 'Completed']}
-                    containerStyle={styles.buttonGroup}/>
-                {
-                    index == 0 ? 
-                        displayServiceCards(data.open) : 
-                    ( index == 1 ? 
-                        displayServiceCards(data.inProgress) : 
-                        displayServiceCards(data.completed)
-                    )
-                }
-            </View>
-        )
+        // Public profile
+        } else {
+            const data = props.data as Array<Object>
+            return (
+                <View style={styles.container}>                        
+                    { displayServiceCards(data) }
+                </View>
+            )
+        }
     }
 
     function requestView() {
@@ -100,7 +111,8 @@ export function ProfileServiceList(props: Props) {
         )
     }
 
-    return (instanceOfServiceData(props.data) ? serviceView() : requestView())
+    if (Array.isArray(props.data) || instanceOfServiceData(props.data)) return serviceView()
+    else return requestView()
 }
 
 const styles = StyleSheet.create({
