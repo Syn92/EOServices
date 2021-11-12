@@ -7,7 +7,7 @@ import Navigation from './navigation';
 import { AuthenticatedUserProvider } from './navigation/AuthenticatedUserProvider';
 import { ChatSocketProvider } from './navigation/ChatSocketProvider';
 
-export default function App() {
+export default function App({...extras}) {
   const isLoadingComplete = useCachedResources();
   enableMapSet();
 
