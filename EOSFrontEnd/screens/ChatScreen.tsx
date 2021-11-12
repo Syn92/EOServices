@@ -127,7 +127,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
           </View>
           {isLast ?
             (isSender ? <Text style={[messageStyle]}>Awaiting answer...</Text>
-            : <Button onPress={openOfferDetails} title="See Offer Details"></Button>)
+            : <Button onPress={() => openOfferDetails({'buyer':route.params.service.acceptedBy, 'owner':route.params.service.owner, 'title':route.params.service.title, 'price':route.params.service.priceEOS })} title="See Offer Details"></Button>)
             : <Text style={[messageStyle]}>A newer offer has been made.</Text>
           }
         </View>
@@ -137,8 +137,9 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
     return null
   }
 
-  function openOfferDetails() {
+  function openOfferDetails(params: any) {
     console.log('OPEN OFFER DETAILS');
+    navigation.navigate('Contract',params)
   }
 
   function sendContract(value: number) {
