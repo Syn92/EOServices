@@ -56,12 +56,26 @@ export function ProfileServiceList(props: Props) {
         })
     }
     
-    // Public profile services
+    // Profile services
     function serviceView() {
 
         // Private profile
         if (instanceOfServiceData(props.data)) {
-            const data = props.data as ServiceData
+            let data;
+            switch (index) {
+                default:
+                case 0:
+                    data = (props.data as ServiceData).open
+                    break;
+
+                case 1:
+                    data = (props.data as ServiceData).inProgress
+                    break;
+                
+                case 2:
+                    data = (props.data as ServiceData).completed
+                    break;
+            }
             return (
                 <View style={styles.container}>
                     <ButtonGroup
@@ -70,14 +84,7 @@ export function ProfileServiceList(props: Props) {
                         selectedIndex={index}
                         buttons={['Open', 'In Progress', 'Completed']}
                         containerStyle={styles.buttonGroup}/>
-                    {
-                        index == 0 ? 
-                            displayServiceCards(data.open) : 
-                        ( index == 1 ? 
-                            displayServiceCards(data.inProgress) : 
-                            displayServiceCards(data.completed)
-                        )
-                    }
+                    {displayServiceCards(data)}
                 </View>
             )
 

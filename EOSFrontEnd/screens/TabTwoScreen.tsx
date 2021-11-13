@@ -11,7 +11,7 @@ import { PostCard } from '../components/PostCard';
 import { TextInput } from 'react-native-gesture-handler';
 import { getAddress } from '../utils/Cadastre';
 import ActionButtonSecondary from '../components/ActionButtonSecondary';
-import { Service } from '../interfaces/Service';
+import { IService } from '../interfaces/Service';
 import { ServiceStatus } from '../interfaces/Services';
 import axios from 'axios';
 import { filterCat, servTypeSell, servTypeBuy } from '../constants/Utils';
@@ -55,7 +55,7 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
     }
   };
 
-  const onCardPress = (serv: Service) => {
+  const onCardPress = (serv: IService) => {
     // console.log(serv)
     navigation.navigate('PostDetails',serv._id);
   }
@@ -120,7 +120,7 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
       <ScrollView  onScrollBeginDrag={()=> {setSelectedCadastre('')}} ref={scrollViewRef} contentContainerStyle={styles.scrollContainer}>
 
        {
-         data.filter((e:Service) => (e.title.startsWith(searchString.toLowerCase()) && (filterCatSelected == filterNone ? true : e.category == filterCatSelected) && (selectedType == noneServType ? true : e.serviceType == selectedType))).map((e: Service) => {
+         data.filter((e:IService) => (e.title.startsWith(searchString.toLowerCase()) && (filterCatSelected == filterNone ? true : e.category == filterCatSelected) && (selectedType == noneServType ? true : e.serviceType == selectedType))).map((e: IService) => {
            return(
              <TouchableOpacity onLayout={(x) => {mapid_y[e.cadastreId] = x.nativeEvent.layout.y }} onPress={() => {onCardPress(e)}} key={e._id} style={selectedCadastre == e.cadastreId ? {borderWidth: 1, borderColor: '#04B388'} : null}>
                <PostCard title={e.title} price={e.priceEOS} position={getAddress(e.cadastre)} owner={e.ownerName} thumbnail={e.thumbnail ? e.thumbnail : 'https://cdn1.iconfinder.com/data/icons/business-company-1/500/image-512.png'}></PostCard>

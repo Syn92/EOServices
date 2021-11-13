@@ -11,6 +11,9 @@ import { ChatContext, ChatSocketContext } from '../navigation/ChatSocketProvider
 import { RootStackScreenProps } from '../types';
 import uuid from 'react-native-uuid';
 import * as ImagePicker from 'expo-image-picker';
+import axios from 'axios';
+import { ServiceRequest } from '../interfaces/Services';
+import ServerConstants from '../constants/Server';
 
 export default function ChatScreen({ navigation, route }: RootStackScreenProps<'Chat'>) {
   const [giftedMessages, setGiftedMessages] = useImmer<IGiftedMessage[]>([]);
@@ -94,13 +97,16 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
   }
 
   function renderInputToolbar(props) {
+    const isSeller = route.params.service.serviceType == 'Offering' ?
+      (user.uid == route.params.service.owner)
+      : (user.uid != route.params.service.owner)
     return (
       <View style={styles.inputToolbar}>
         <Composer {...props} textInputStyle={styles.textInput}/>
         <Send {...props} containerStyle={styles.send}>
           <Icon name="send" color="#0084ff"/>
         </Send>
-        {user.uid === route.params.service.owner && <Actions
+        {isSeller && <Actions
           containerStyle={styles.actionButton}
           icon={() => <Icon name="description" color="grey"/>}
           onPressActionButton={() => setShowContractDialog(true)}/>}
@@ -143,11 +149,20 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
   }
 
   function sendContract(value: number) {
-    const contractMessage = getContractMessage(route.params, user, value)
-    const contractGiftedMessage = {...contractMessage, _id: uuid.v4().toString()}
-    setGiftedMessages(previousMessages => GiftedChat.append(previousMessages, [{...toGiftedMessage(contractGiftedMessage, user), sent: false}]))
-    socket.emit('newMessage', contractMessage)
-    setLastOfferId(contractGiftedMessage._id)
+    const param: ServiceRequest = { //todo: replace with ContractRequest?
+      serviceID: route.params.service._id,
+      reqDescription: '',
+      requestUserUID: user.uid,
+      serviceOwner: route.params.user.uid
+    }
+    axios.post(ServerConstants.local + 'post/request', param).then((res) => {
+      const contractMessage = getContractMessage(route.params, user, value, res.data as string)
+      const contractGiftedMessage = {...contractMessage, _id: uuid.v4().toString()}
+      setGiftedMessages(previousMessages => GiftedChat.append(previousMessages, [{...toGiftedMessage(contractGiftedMessage, user), sent: false}]))
+      socket.emit('newMessage', contractMessage)
+      setLastOfferId(contractGiftedMessage._id)
+      setShowContractDialog(false)
+    }).catch(err => console.log(err))
   }
 
   function sendImageMessage() {
@@ -193,10 +208,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
               <TouchableOpacity style={styles.modalButton} onPress={() => setShowContractDialog(false)}>
                 <Text style={styles.buttonText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.modalButton} onPress={() => {
-                sendContract(+contractValue)
-                setShowContractDialog(false)
-                }}>
+              <TouchableOpacity style={styles.modalButton} onPress={() => { sendContract(+contractValue) }}>
                 <Text style={styles.buttonText}>Confirm</Text>
               </TouchableOpacity>
             </View>

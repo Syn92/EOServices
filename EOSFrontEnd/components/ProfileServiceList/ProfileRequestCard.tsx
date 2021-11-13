@@ -40,7 +40,7 @@ export function ProfileRequestCard(props: Prop) {
 
     async function accpetRequest() {
         try {
-            let res = await axios.patch(Server.local + 'post/accept', { 
+            await axios.patch(Server.local + 'post/accept', { 
                 serviceId: props.request.serviceID,
                 acceptedBy: props.request.requestUserUID
             })
