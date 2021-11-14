@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import React from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { Icon } from 'react-native-elements'
-import { ServiceInfo } from '../../interfaces/Services';
+import { ServiceInfo } from '../../../interfaces/Services';
 
 interface Prop {
     serviceInfo: ServiceInfo

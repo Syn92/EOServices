@@ -8,7 +8,6 @@ import ServerConstants from '../constants/Server';
 import Loading from '../components/Loading';
 import Carousel, { Pagination } from 'react-native-snap-carousel';
 import { getAddress } from '../utils/Cadastre';
-import { ServiceRequest } from '../interfaces/Services';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
 import SuccessModalView from '../components/SuccessModalView';
 import { ChatSocketContext } from '../navigation/ChatSocketProvider';
