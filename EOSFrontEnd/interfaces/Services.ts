@@ -1,3 +1,4 @@
+import { Contract } from "./Contracts";
 import { IService } from "./Service";
 
 export interface ServiceInfo {
@@ -17,36 +18,24 @@ export interface RequestInfo {
     serviceOwner? : string
 }
 
-//TODO: delete when contracts are inplemented
-export interface ServiceRequest {
-    serviceID: string,
-    reqDescription: string,
-    requestUserUID: string,
-    serviceOwner: string
-}
-
-
 export interface ServiceData {
     open: Array<Object>,
-    inProgress: Array<Object>,
-    completed: Array<Object>,
+    inProgress: Array<Contract>,
+    completed: Array<Contract>,
 }
 
 export interface Request {
     _id: string,
-    reqDescription: string,
     serviceID: string,
-    serviceOwner: string,
-    requestUserUID: string,
+    buyer: string,
+    seller: string,
     serviceDetail: IService,
-    requestUserName: string
 }
 
 export interface RequestData {
-    outgoing: Array<Request>,
-    incoming: Array<Request>,
+    buying: Array<Contract>,
+    selling: Array<Contract>,
 }
-
 
 export enum ServiceStatus {
     OPEN = 'open',
@@ -61,6 +50,6 @@ export enum ServiceIndex {
 }
 
 export enum RequestIndex {
-    incoming = 0,
-    outgoing = 1,
+    selling = 0,
+    buying = 1,
 }
