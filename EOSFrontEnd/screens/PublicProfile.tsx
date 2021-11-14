@@ -8,7 +8,7 @@ import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvide
 import { User } from '../interfaces/User';
 import axios from 'axios';
 import ServerConstants from '../constants/Server';
-import { ProfileServiceList } from '../components/ProfileServiceList/ProfileServiceList';
+import { ProfileServiceList } from '../components/ProfileList/Services/ProfileServiceList';
 import { ServiceStatus } from '../interfaces/Services';
 
 const WIDTH = Dimensions.get('window').width;
@@ -29,8 +29,8 @@ export function PublicProfile({route, navigation}: any) {
 
     async function fetchUserServices() {
         try {
-            const res = await axios.get<any>(ServerConstants.local + 'post/list', { params: { owner: uid } });
-            setServices(res.data.filter(i => i.status == ServiceStatus.OPEN));
+            const res = await axios.get<any>(ServerConstants.local + 'post/open', { params: { uid: uid } });
+            setServices(res.data);
         } catch (e) {
             console.error('Fetch User Services Public: ', e)
         }
