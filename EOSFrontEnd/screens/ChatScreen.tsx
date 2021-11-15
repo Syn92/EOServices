@@ -133,7 +133,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
           </View>
           {isLast ?
             (isSender ? <Text style={[messageStyle]}>Awaiting answer...</Text>
-            : <Button onPress={() => openOfferDetails({'buyer':route.params.service.acceptedBy, 'owner':route.params.service.owner, 'title':route.params.service.title, 'price':route.params.service.priceEOS })} title="See Offer Details"></Button>)
+            : <Button onPress={() => openOfferDetails({'id': route.params.service._id,})} title="See Offer Details"></Button>)
             : <Text style={[messageStyle]}>A newer offer has been made.</Text>
           }
         </View>
