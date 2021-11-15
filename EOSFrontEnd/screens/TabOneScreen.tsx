@@ -23,7 +23,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
 
   const fetchData = async () => {
     try{
-      const resp = await fetch(ServerConstants.local + 'post/list');
+      const resp = await fetch(ServerConstants.local + 'post/open');
       const data = await resp.json();
       setData(data);
       setLoading(false);

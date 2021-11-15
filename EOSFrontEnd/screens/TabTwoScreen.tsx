@@ -45,7 +45,7 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
   var mapid_y: any = {};
   const fetchData = async () => {
     try{
-      const resp = await axios.get<Array<Object>>(ServerConstants.local + 'post/list', { params: { status: ServiceStatus.OPEN } });
+      const resp = await axios.get<Array<Object>>(ServerConstants.local + 'post/open');
       const respData: Array<Object> = resp.data
       setData(respData);
       setLoading(false);

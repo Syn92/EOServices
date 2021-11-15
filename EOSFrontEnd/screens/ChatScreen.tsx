@@ -14,15 +14,24 @@ import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import { ServiceRequest } from '../interfaces/Services';
 import ServerConstants from '../constants/Server';
+import { ContractRequest } from '../interfaces/Contracts';
 
 export default function ChatScreen({ navigation, route }: RootStackScreenProps<'Chat'>) {
+  const [isSeller, setIsSeller] = React.useState<boolean>()
   const [giftedMessages, setGiftedMessages] = useImmer<IGiftedMessage[]>([]);
   const [showContractDialog, setShowContractDialog] = useState<boolean>(false);
   const [lastOfferId, setLastOfferId] = useState<string | null>(null);
+  const [contractValue, setContractValue] = useState<string>(route.params.service.priceEOS.toString());
 
   const { user } =  React.useContext(AuthenticatedUserContext);
   const { messages, setRoomWatchedId }= React.useContext(ChatContext);
   const { socket } =  React.useContext(ChatSocketContext);
+
+  React.useEffect(()=> {
+    setIsSeller(route.params.service.serviceType == 'Offering' ?
+    (user.uid == route.params.service.owner)
+    : (user.uid != route.params.service.owner))
+  }, [])
 
   const messagesSeenListener = (userId: string, roomId: string) => {
     if(roomId == route.params._id) {
@@ -97,9 +106,6 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
   }
 
   function renderInputToolbar(props) {
-    const isSeller = route.params.service.serviceType == 'Offering' ?
-      (user.uid == route.params.service.owner)
-      : (user.uid != route.params.service.owner)
     return (
       <View style={styles.inputToolbar}>
         <Composer {...props} textInputStyle={styles.textInput}/>
@@ -149,13 +155,20 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
   }
 
   function sendContract(value: number) {
+    const contract: ContractRequest = {
+      serviceId: route.params.service._id,
+      finalPriceEOS: contractValue,
+      buyer: isSeller ? route.params.user.uid : user.uid,
+      seller: isSeller ? user.uid : route.params.user.uid,
+      accepted: false
+    }
     const param: ServiceRequest = { //todo: replace with ContractRequest?
       serviceID: route.params.service._id,
       reqDescription: '',
       requestUserUID: user.uid,
       serviceOwner: route.params.user.uid
     }
-    axios.post(ServerConstants.local + 'post/request', param).then((res) => {
+    axios.post(ServerConstants.local + 'post/request', contract).then((res) => {
       const contractMessage = getContractMessage(route.params, user, value, res.data as string)
       const contractGiftedMessage = {...contractMessage, _id: uuid.v4().toString()}
       setGiftedMessages(previousMessages => GiftedChat.append(previousMessages, [{...toGiftedMessage(contractGiftedMessage, user), sent: false}]))
@@ -181,8 +194,6 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
   }
 
   function sendContractDialog() {
-    const [contractValue, setContractValue] = useState<string>(route.params.service.priceEOS.toString());
-
     const cleanTitle = route.params.service.title.length > 15 ? route.params.service.title.substring(0, 15) : route.params.service.title
     return (
       <Modal

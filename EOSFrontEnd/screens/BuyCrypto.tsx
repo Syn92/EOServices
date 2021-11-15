@@ -1,5 +1,5 @@
 // import OnramperWidget from "@onramper/widget";
-import React from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {WebView} from "react-native-webview"
 import Constants, { UserInterfaceIdiom } from 'expo-constants';
 import { AuthenticatedUserContext } from "../navigation/AuthenticatedUserProvider";
@@ -7,9 +7,12 @@ import { User } from "../interfaces/User";
 
 export default function BuyCrypto() {
 
-  const {user} =  React.useContext(AuthenticatedUserContext);
+  const {user} =  useContext(AuthenticatedUserContext);
+  const [uri, setUri] = useState('');
 
-  const uri = buildURI(user);
+  useEffect(() => {
+    setUri(buildURI(user))
+  }, [])
 
   return (
     <WebView 
@@ -24,6 +27,7 @@ function buildURI(user: User) {
   const onlyGateways = Constants.manifest?.extra?.onlyGateways;
   const onlyCryptos = Constants.manifest?.extra?.onlyCryptos;
   const onlyFiat = Constants.manifest?.extra?.onlyFiat;
+  console.log(Constants.manifest.extra)
 
   var uri: string = "https://widget.onramper.com?apiKey="+ apiKey;
   if (color) 
