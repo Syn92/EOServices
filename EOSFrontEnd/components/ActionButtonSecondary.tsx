@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
     buttonContainer: {
         backgroundColor: '#fff',
         elevation: 8,
-        borderRadius: 10,
+        borderRadius: 15,
         paddingVertical: 10,
         paddingHorizontal: 12,
     },
@@ -32,6 +32,5 @@ const styles = StyleSheet.create({
         color: "#04B388",
         fontWeight: "bold",
         alignSelf: "center",
-        textTransform: "uppercase"
     }
 })

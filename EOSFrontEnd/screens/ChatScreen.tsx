@@ -12,7 +12,6 @@ import { RootStackScreenProps } from '../types';
 import uuid from 'react-native-uuid';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
-import { ServiceRequest } from '../interfaces/Services';
 import ServerConstants from '../constants/Server';
 import { ContractRequest } from '../interfaces/Contracts';
 
@@ -138,8 +137,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
             <Text style={[styles.contractText]}>{props.currentMessage.offerValue + " EOS"}</Text>
           </View>
           {isLast ?
-            (isSender ? <Text style={[messageStyle]}>Awaiting answer...</Text>
-            : <Button onPress={() => openOfferDetails({'id': route.params.service._id,})} title="See Offer Details"></Button>)
+            <Button onPress={() => openOfferDetails({'id': '6192cd07a10c3432358a6981',})} title="See Offer Details"></Button>
             : <Text style={[messageStyle]}>A newer offer has been made.</Text>
           }
         </View>
@@ -160,14 +158,10 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
       finalPriceEOS: contractValue,
       buyer: isSeller ? route.params.user.uid : user.uid,
       seller: isSeller ? user.uid : route.params.user.uid,
-      accepted: false
+      accepted: false,
+      deposit: false,
     }
-    const param: ServiceRequest = { //todo: replace with ContractRequest?
-      serviceID: route.params.service._id,
-      reqDescription: '',
-      requestUserUID: user.uid,
-      serviceOwner: route.params.user.uid
-    }
+
     axios.post(ServerConstants.local + 'post/request', contract).then((res) => {
       const contractMessage = getContractMessage(route.params, user, value, res.data as string)
       const contractGiftedMessage = {...contractMessage, _id: uuid.v4().toString()}

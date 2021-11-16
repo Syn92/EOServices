@@ -6,7 +6,8 @@ export interface ContractRequest {
     buyer: string,
     seller: string,
     finalPriceEOS: string,
-    accepted: boolean
+    accepted: boolean,
+    deposit: boolean
 }
 
 export interface Contract {
@@ -16,5 +17,7 @@ export interface Contract {
     seller: User,
     finalPriceEOS: string,
     accepted: boolean,
-    serviceDetail: IService
+    serviceDetail: IService,
+    deposit?: boolean,
+    creationDate?: Date,
 }
