@@ -262,13 +262,13 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
   return (
     <ImageBackground style={styles.container} source={require('../assets/images/bg.png')}>
       {/* <Text style={styles.title} numberOfLines={1}>{room.user.name + " - " + room.service.title}</Text> */}
-      <View style={styles.chatContainer}>
+      <KeyboardAvoidingView  behavior='height' style={styles.chatContainer}>
         <GiftedChat messages={giftedMessages}
         shouldUpdateMessage={(props, nextProps) => props.currentMessage !== nextProps.currentMessage}
         user={{_id: user.uid, name: user.name}} onSend={sendMessage}
         renderInputToolbar={renderInputToolbar}
         renderCustomView={renderCustomView}/>
-      </View>
+      </KeyboardAvoidingView>
       {sendContractDialog()}
     </ImageBackground>
   );
