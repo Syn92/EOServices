@@ -12,6 +12,7 @@ import { SliderComponent } from "../components/Slider";
 import ActionButton from "../components/ActionButton";
 import CountDown from 'react-native-countdown-component'
 import ActionButtonSecondary from "../components/ActionButtonSecondary";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function ContractScreen({route, navigation }: RootTabScreenProps<'Contract'>) {
     let contractId: any = route.params;
@@ -28,7 +29,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
             axios.get(ServerConstants.local + 'post/contract?id='+ contractId.id).then((response: any) => {
                 setContract(response.data as Contract);
                 let creationTime: number = new Date(response.data.creationDate).getTime() + 259200*1000 //3days in mseconds
-                if(!time)setTime((creationTime - (new Date().getTime()))/1000)
+                setTime((creationTime - (new Date().getTime()))/1000)
             })
           } catch (e) {
             console.error('Fetch Contract Details: ', e)
@@ -43,7 +44,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
 
     React.useEffect(() => {
         fetchContract()
-    })
+    }, [])
 
     function acceptContract() {
         console.log('Accepted')
@@ -57,10 +58,8 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     }
 
     function renderBuyerSection(): any {
-        return(
-            
-                
-            !contract.accepted ?  
+        return(    
+            contract.accepted ?  
                 (contract.deposit ? 
                     <View style={styles.lowerSection}>
                         <ActionButton title="Deposit" onPress={deposit}></ActionButton>
@@ -71,8 +70,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
                 <View style={styles.contractButtonContainer}>
                     <ActionButtonSecondary styleContainer={{width: '45%', borderRadius: 20}} title="Refuse" onPress={refuseContract}></ActionButtonSecondary>
                     <ActionButton styleContainer={{width: '45%',borderRadius: 20}} title="Accept" onPress={acceptContract}></ActionButton>
-                </View>                        
-            
+                </View>                           
         )
     }
     
@@ -84,16 +82,9 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
         )
     }
 
-    function computeCountdown(): number {
-        let currentDate: Date = new Date();
-        let time: number = contract.creationDate.getTime() - currentDate.getTime();
-        return time/1000 // ms to second
-    }
-    
-
 
     return(
-            contract ? <ImageBackground style={{ flex: 1 }} source={require('../assets/images/bg.png')}>
+            contract && time ? <ImageBackground style={{ flex: 1 }} source={require('../assets/images/bg.png')}>
                 <TouchableOpacity style={styles.backButton} onPress={() => {navigation.goBack()}}>
                     <Icon name="keyboard-arrow-left" size={60} color="#04B388"/>
                   </TouchableOpacity>
