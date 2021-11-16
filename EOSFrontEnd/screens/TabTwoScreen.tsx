@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Button } from 'react-native-elements/dist/buttons/Button';
 import Map from '../components/Map';
 import { RootTabScreenProps } from '../types';
@@ -11,7 +11,7 @@ import { PostCard } from '../components/PostCard';
 import { TextInput } from 'react-native-gesture-handler';
 import { getAddress } from '../utils/Cadastre';
 import ActionButtonSecondary from '../components/ActionButtonSecondary';
-import { Service } from '../interfaces/Service';
+import { IService } from '../interfaces/Service';
 import { ServiceStatus } from '../interfaces/Services';
 import axios from 'axios';
 import { filterCat, servTypeSell, servTypeBuy } from '../constants/Utils';
@@ -45,7 +45,7 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
   var mapid_y: any = {};
   const fetchData = async () => {
     try{
-      const resp = await axios.get<Array<Object>>(ServerConstants.local + 'post/list', { params: { status: ServiceStatus.OPEN } });
+      const resp = await axios.get<Array<Object>>(ServerConstants.local + 'post/open');
       const respData: Array<Object> = resp.data
       setData(respData);
       setLoading(false);
@@ -55,7 +55,7 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
     }
   };
 
-  const onCardPress = (serv: Service) => {
+  const onCardPress = (serv: IService) => {
     // console.log(serv)
     navigation.navigate('PostDetails',serv._id);
   }
@@ -89,7 +89,7 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
                   setModalVisible(false);
                 }}
               >
-                <View style={styles.centeredView}>
+                <Pressable style={styles.centeredView} onPress={() => setModalVisible(false)}>
                   <View style={styles.modalView}>
                     <Text style={styles.modalText}>Filter by...</Text>
                     <ScrollView style={styles.modalButtonContainer}>
@@ -99,7 +99,7 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
                       })}
                     </ScrollView>
                   </View>
-                </View>
+                </Pressable>
               </Modal>
       </View>
       <View style={styles.listContainer}>
@@ -119,7 +119,7 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
       <ScrollView  onScrollBeginDrag={()=> {setSelectedCadastre('')}} ref={scrollViewRef} contentContainerStyle={styles.scrollContainer}>
 
        {
-         data.filter((e:Service) => (e.title.startsWith(searchString.toLowerCase()) && (filterCatSelected == filterNone ? true : e.category == filterCatSelected) && (selectedType == noneServType ? true : e.serviceType == selectedType))).map((e: Service) => {
+         data.filter((e:IService) => (e.title.startsWith(searchString.toLowerCase()) && (filterCatSelected == filterNone ? true : e.category == filterCatSelected) && (selectedType == noneServType ? true : e.serviceType == selectedType))).map((e: IService) => {
            return(
              <TouchableOpacity onLayout={(x) => {mapid_y[e.cadastreId] = x.nativeEvent.layout.y }} onPress={() => {onCardPress(e)}} key={e._id} style={selectedCadastre == e.cadastreId ? {borderWidth: 1, borderColor: '#04B388'} : null}>
                <PostCard title={e.title} price={e.priceEOS} position={getAddress(e.cadastre)} owner={e.ownerName} thumbnail={e.thumbnail ? e.thumbnail : 'https://cdn1.iconfinder.com/data/icons/business-company-1/500/image-512.png'}></PostCard>

@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
 import { getCardTitle, IMessage, IRoom } from '../../interfaces/Chat';
+import { AuthenticatedUserContext } from '../../navigation/AuthenticatedUserProvider';
 import { ChatContext, ChatSocketContext } from '../../navigation/ChatSocketProvider';
 
 interface IProp {
@@ -11,6 +12,7 @@ interface IProp {
 export default function ChatRoomCard(props: IProp) {
     const { messages } =  useContext(ChatContext);
     const { socket } =  useContext(ChatSocketContext);
+    const { user } =  React.useContext(AuthenticatedUserContext);
 
     const [lastMessage, setLastMessage] = useState<IMessage | undefined>(undefined);
 
@@ -33,18 +35,33 @@ export default function ChatRoomCard(props: IProp) {
     }
 
     useEffect(() => {
+        socket.on('messagesSeen', messagesSeenListener)
+        socket.on('newMessage', newMessageListener)
+
         if(messages.has(props.room._id) && messages.get(props.room._id).length > 0) {
             setLastMessage(messages.get(props.room._id)[messages.get(props.room._id).length - 1]);
         }
-
-        socket.on('messagesSeen', messagesSeenListener)
-        socket.on('newMessage', newMessageListener)
 
         return () => {
             socket.off('messagesSeen', messagesSeenListener)
             socket.off('newMessage', newMessageListener)
         }
     }, [props.room._id])
+
+
+    function getLastText() {
+        if(!lastMessage)
+            return '(No Messages)';
+
+        if(lastMessage.offerValue)
+            return '(Offer ' + (lastMessage.userId === user.uid ? 'Sent)' : 'Received)')
+
+
+        if(lastMessage.image)
+            return '(Image ' + (lastMessage.userId === user.uid ? 'Sent)' : 'Received)')
+
+        return lastMessage.text
+    }
 
   return (
     <TouchableOpacity style={styles.mainContainer} onPress={() => props.onPress(props.room)}>
@@ -57,7 +74,7 @@ export default function ChatRoomCard(props: IProp) {
                 <Text style={styles.text}>{lastMessage ? new Date(lastMessage.createdAt).toDateString() : ''}</Text>
             </View>
             <View style={styles.textContainer}>
-                <Text style={[styles.text, styles.message]} numberOfLines={1}>{lastMessage?.text || '(No Messages)'}</Text>
+                <Text style={[styles.text, styles.message]} numberOfLines={1}>{getLastText()}</Text>
                 {lastMessage && (<Text style={[styles.text, styles.tick]}>✓</Text>) }
                 {(lastMessage && lastMessage.seen) && (<Text style={[styles.text, styles.tick]}>✓</Text>)}
             </View>

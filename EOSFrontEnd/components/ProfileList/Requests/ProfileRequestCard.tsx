@@ -2,13 +2,14 @@ import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react'
 import { StyleSheet, Text, Image, Modal, View, TouchableOpacity } from 'react-native'
-import { RequestInfo, Request, RequestIndex } from '../../interfaces/Services';
-import Server from '../../constants/Server';
+import { RequestInfo, RequestIndex } from '../../../interfaces/Services';
+import Server from '../../../constants/Server';
 import { Icon } from 'react-native-elements';
+import { Contract } from '../../../interfaces/Contracts';
 
 interface Prop {
     requestInfo: RequestInfo,
-    request: Request,
+    request: Contract,
     onUpdate: () => Promise<void>
 }
 
@@ -22,7 +23,7 @@ export function ProfileRequestCard(props: Prop) {
     const [ cardType, setCardType ] = useState<RequestIndex>();
 
     useEffect(() => {
-        setCardType(props.requestInfo.requestUser ? RequestIndex.incoming : RequestIndex.outgoing)
+        setCardType(props.requestInfo.requestUser ? RequestIndex.selling : RequestIndex.buying)
     }, [])
 
     async function denyRequest() {
@@ -38,11 +39,11 @@ export function ProfileRequestCard(props: Prop) {
         }
     }
 
-    async function accpetRequest() {
+    async function acceptRequest() {
         try {
-            let res = await axios.patch(Server.local + 'post/accept', { 
-                serviceId: props.request.serviceID,
-                acceptedBy: props.request.requestUserUID
+            await axios.patch(Server.local + 'post/accept', { 
+                serviceId: props.request.serviceId,
+                contractId: props.request._id
             })
             props.onUpdate()
             setModalVisible(false)
@@ -54,7 +55,7 @@ export function ProfileRequestCard(props: Prop) {
 
     async function onAcceptRequest() {
         if (props.requestInfo.isUnique)
-            await accpetRequest()
+            await acceptRequest()
         else
             setConfirmationModalVisible(true)
     }
@@ -71,7 +72,7 @@ export function ProfileRequestCard(props: Prop) {
                     <TouchableOpacity style={{...modalStyles.button, backgroundColor: 'grey'}} onPress={() => setConfirmationModalVisible(false)}>
                         <Text style={modalStyles.buttonText}>Cancel</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={modalStyles.button} onPress={accpetRequest}>
+                    <TouchableOpacity style={modalStyles.button} onPress={acceptRequest}>
                         <Text style={modalStyles.buttonText}>Continue</Text>
                     </TouchableOpacity>
                 </View>
@@ -104,13 +105,14 @@ export function ProfileRequestCard(props: Prop) {
                             <Text style={modalStyles.user}>From: {props.requestInfo.requestUser}</Text>
                     </View> 
                 </View>
-                <View style={modalStyles.contentContainer}>
+                {/* idk si ca reste */}
+                {/* <View style={modalStyles.contentContainer}>
                     <Text style={modalStyles.contentTitle}>Request details: </Text>
                     <Text>{props.request.reqDescription}</Text>
-                </View>
+                </View> */}
 
                 <View style={modalStyles.buttonContainer}>
-                    <TouchableOpacity style={modalStyles.button} onPress={() => {setModalVisible(false); navigation.navigate('PostDetails', props.request.serviceID)}}>
+                    <TouchableOpacity style={modalStyles.button} onPress={() => {setModalVisible(false); navigation.navigate('PostDetails', props.request.serviceId)}}>
                         <Text style={modalStyles.buttonText}>Service</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={modalStyles.button} onPress={denyRequest}>
@@ -136,10 +138,11 @@ export function ProfileRequestCard(props: Prop) {
                             <Text style={modalStyles.user}>Offered by: {props.requestInfo.serviceOwner}</Text>
                     </View> 
                 </View>
-                <View style={modalStyles.contentContainer}>
+                {/* same */}
+                {/* <View style={modalStyles.contentContainer}>
                     <Text style={modalStyles.contentTitle}>Request details: </Text>
                     <Text>{props.request.reqDescription}</Text>
-                </View>
+                </View> */}
 
                 <View style={modalStyles.buttonContainer}>
                     <TouchableOpacity style={{...modalStyles.button, width: '90%'}} onPress={() => setModalVisible(false)}>
@@ -161,7 +164,7 @@ export function ProfileRequestCard(props: Prop) {
                     setModalVisible(false)
                 }}>
                 <View style={styles.centeredView}>
-                        {cardType == RequestIndex.incoming ? incomingModal() : outgoingModal()}
+                        {cardType == RequestIndex.selling ? incomingModal() : outgoingModal()}
                 </View>
             </Modal>
             <View style={styles.imageContainer}>
@@ -173,8 +176,8 @@ export function ProfileRequestCard(props: Prop) {
                     <Text style={styles.textContent}>{props.requestInfo.title}</Text>
                 </View>
                 <View style={styles.row}>
-                    <Text style={styles.textTitle}>{cardType == RequestIndex.incoming ? 'Requested by: ' : 'Requested to: ' }</Text>
-                    <Text style={styles.textContent}>{cardType == RequestIndex.incoming ? props.requestInfo.requestUser: props.requestInfo.serviceOwner}</Text>
+                    <Text style={styles.textTitle}>{cardType == RequestIndex.selling ? 'Requested by: ' : 'Requested to: ' }</Text>
+                    <Text style={styles.textContent}>{cardType == RequestIndex.selling ? props.requestInfo.requestUser: props.requestInfo.serviceOwner}</Text>
                 </View>
             </View> 
         </TouchableOpacity>

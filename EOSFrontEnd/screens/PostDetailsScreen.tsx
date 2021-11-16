@@ -8,16 +8,19 @@ import ServerConstants from '../constants/Server';
 import Loading from '../components/Loading';
 import Carousel, { Pagination } from 'react-native-snap-carousel';
 import { getAddress } from '../utils/Cadastre';
-import { ServiceRequest } from '../interfaces/Services';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
 import SuccessModalView from '../components/SuccessModalView';
 import { transact } from '../components/Anchor';
+import { ChatSocketContext } from '../navigation/ChatSocketProvider';
+import { ISentRoom } from '../interfaces/Chat';
+import { IService } from '../interfaces/Service';
 
 export default function PostDetailsScreen({route, navigation }: RootTabScreenProps<'PostDetails'>) {
     const id: any = route.params;
-    
+
+    const { socket } =  React.useContext(ChatSocketContext);
     const { user } =  React.useContext(AuthenticatedUserContext);
-    const [service, setService] = React.useState<any>();
+    const [service, setService] = React.useState<IService>();
     const [loading, setLoading] = React.useState(true);
     const [activeIndex, setActiveIndex] = React.useState(0);
     const [modalVisible, setModalVisible] = React.useState(false);
@@ -28,7 +31,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
     const fetchData = async () => {
       try {
         axios.get(ServerConstants.local + 'post/?id='+id).then((response) => {
-            setService(response.data);
+            setService(response.data as IService);
             setLoading(false);
         })
       } catch (e) {
@@ -53,14 +56,17 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
           return;
         }
 
-        const param: ServiceRequest = {
-          reqDescription: offerDetails,
-          serviceID: service._id,
-          serviceOwner: service.owner,
-          requestUserUID: user.uid,
-        } 
+        const param: ISentRoom = {
+          room: {
+            serviceId: service._id,
+            buyerId: service.serviceType == 'Offering' ? user.uid : service.owner,
+            sellerId: service.serviceType == 'Offering' ? service.owner : user.uid
+          },
+          userId: user.uid,
+          text: offerDetails,
+        }
         setLoading(true)
-        await transact();
+        socket.emit('newRoom', param)
         // await axios.post(ServerConstants.local + 'post/request', param)
         setLoading(false)
         setOfferSent(true)
@@ -72,7 +78,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
           setErrorMsg('Server Error')
           console.log(e)
         }
-        
+
         setLoading(false)
       }
     }
@@ -89,7 +95,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
               <Text style={styles.modalTitle}>Offer Request</Text>
               <Text style={styles.modalDesc}>Enter a description of your needs:</Text>
               {errorMsg.length !=0 ? <Text style={styles.modalError}>{errorMsg}</Text>: null}
-              <TextInput 
+              <TextInput
                 value={offerDetails}
                 style={styles.textBox}
                 numberOfLines={10}
@@ -118,7 +124,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
     React.useEffect(() => {
         fetchData();
     }, [])
-    
+
         return (
           service ?
           <ScrollView contentContainerStyle={{flexGrow: 1}}>
@@ -130,7 +136,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
               visible={modalVisible}
               onRequestClose={closeModal}>
                 <View style={styles.centeredView}>
-                    {!offerSent ? modalView() : 
+                    {!offerSent ? modalView() :
                       <SuccessModalView message='Offer request sent!'>
                         <TouchableOpacity style={styles.interestedButton} onPress={closeModal}>
                           <Text style={styles.buttonText}>Done</Text>
@@ -146,10 +152,14 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
                   <Text style={styles.imageTitle}>{service.title}</Text>
                 </View>
 
-                <View style={styles.contentCard}>
+                <TouchableOpacity style={styles.contentCard} onPress={() => {
+                  navigation.navigate('PublicProfile', {uid: service.owner})
+                }}>
                     <Icon style={styles.iconCard} name="storefront" color="#04B388"></Icon>
-                    <Text>{service.serviceType == servTypeSell ? 'Offered by ' : 'Searched by '}{service.ownerName}</Text>
-                </View>
+                    <Text>{service.serviceType == servTypeSell ? 'Offered by ' : 'Searched by '}
+                      <Text style={styles.owner}>{service.ownerName}</Text>
+                    </Text>
+                </TouchableOpacity>
 
                 <View style={styles.contentCard}>
                     <Icon style={styles.iconCard} name="category" color="#04B388"></Icon>
@@ -182,7 +192,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
                   sliderWidth={300}
                   itemWidth={250}
                   renderItem={_renderItem}
-                  onSnapToItem = { index => setActiveIndex(index) } 
+                  onSnapToItem = { index => setActiveIndex(index) }
                   layoutCardOffset={18}/>
                   <Pagination
                     dotsLength={service.images.length}
@@ -302,7 +312,7 @@ const styles = StyleSheet.create({
   modal: {
     alignItems: 'center',
     backgroundColor: 'white',
-    maxHeight: '70%', 
+    maxHeight: '70%',
     borderRadius: 10,
     width: '80%'
   },
@@ -354,5 +364,9 @@ const styles = StyleSheet.create({
     borderColor: 'lightgrey',
     width: '100%',
     maxHeight: 240,
+  },
+  owner: {
+    textDecorationLine: 'underline',
+    color: '#04B388'
   }
 });

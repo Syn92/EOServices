@@ -9,10 +9,10 @@ import { User } from '../interfaces/User';
 import axios from 'axios';
 import ServerConstants from '../constants/Server';
 import Loading from '../components/Loading';
-import { ProfileServiceList } from '../components/ProfileServiceList/ProfileServiceList';
+import { ProfileServiceList } from '../components/ProfileList/Services/ProfileServiceList';
+import { ProfileRequestList } from '../components/ProfileList/Requests/ProfileRequestList';
 import Firebase from '../config/firebase';
-import { color } from 'react-native-elements/dist/helpers';
-import { RequestData, ServiceStatus } from '../interfaces/Services';
+import { RequestData, ServiceData, ServiceStatus } from '../interfaces/Services';
 import * as ImagePicker from 'expo-image-picker';
 
 const WIDTH = Dimensions.get('window').width;
@@ -40,7 +40,7 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
     const [ isPageLoading, setisPageLoading ] = useState(false);
     const [ rating, setRating ] = useState([]);
 
-    const [ services, setServices ] = useState<{open: Array<Object>, inProgress: Array<Object>, completed: Array<Object>}>();
+    const [ services, setServices ] = useState<ServiceData>();
     const [ servicesDisplayed, setOrdersDisplayed ] = useState(true);
     const [ pendingRequests, setPendingRequests ] = useState<RequestData>();
     const [ pendingRequestsDisplayed, setPendingRequestsDisplayed ] = useState(true);
@@ -67,11 +67,12 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
 
     async function fetchUserServices() {
         try {
-            const res = await axios.get<any>(ServerConstants.local + 'post/list', { params: { owner: user?.uid } });
+            const open = await axios.get<any>(ServerConstants.local + 'post/open', { params: { uid: user?.uid } });
+            const contracts = await axios.get<any>(ServerConstants.local + 'post/contracts', { params: { uid: user?.uid } });
             setServices({
-                open: res.data.filter(i => i.status == ServiceStatus.OPEN),
-                inProgress: res.data.filter(i => i.status == ServiceStatus.IN_PROGRESS),
-                completed: res.data.filter(i => i.status == ServiceStatus.COMPLETED),
+                open: open.data,
+                inProgress: contracts.data,
+                completed: [],
             });
         } catch (e) {
             console.error('Fetch User Services Private: ', e)
@@ -205,7 +206,6 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
                 uid: user?.uid,
                 avatar: image
             })
-            console.log(res.status)
             if (res.status == 200) {
                 await fetchUser()
             } else {
@@ -420,7 +420,7 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
                             rating.map((e) => {return (e)})
                         }
                         </View>
-                        <Text style={{color: 'white'}}>{user?.rating}</Text>
+                        { user.rating ? <Text style={{color: 'white'}}>{user?.rating.toFixed(2)}</Text> : null}
                     </View>
                     {/* ---- Profile cards ---- */}
                     <ProfileCard icon='calendar-today' iconType='material' title='Joined Date' editable={false}>
@@ -477,7 +477,7 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
                                 <Icon name='remove' type='material' color='#04b388' />
                             </TouchableOpacity>
                         </View>
-                        {pendingRequestsDisplayed && pendingRequests? <ProfileServiceList data={pendingRequests} onUpdate={fetchRoutine}/> : null}
+                        {pendingRequestsDisplayed && pendingRequests? <ProfileRequestList data={pendingRequests} onUpdate={fetchRoutine}/> : null}
                     </View>
                 </ImageBackground>
             </View>

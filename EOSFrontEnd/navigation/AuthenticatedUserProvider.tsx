@@ -8,11 +8,14 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
 const defaultContext: { user: User | null, setUser: React.Dispatch<React.SetStateAction<User | null>> | null,
-   isNewUser: boolean, setIsNewUser: React.Dispatch<React.SetStateAction<boolean>> | null } = {
+   isNewUser: boolean, setIsNewUser: React.Dispatch<React.SetStateAction<boolean>> | null,
+  urlData: Object, setUrlData: React.Dispatch<React.SetStateAction<Object>> | null } = {
     user: null,
     setUser: null,
     isNewUser: false,
-    setIsNewUser: null
+    setIsNewUser: null,
+    urlData: null,
+    setUrlData: null
   }
 
 export const AuthenticatedUserContext = createContext(defaultContext);
@@ -20,6 +23,7 @@ export const AuthenticatedUserContext = createContext(defaultContext);
 export function AuthenticatedUserProvider({ children }:{ children: any }) {
   const [user, setUser] = useState<User | null>(null);
   const [isNewUser, setIsNewUser] = useState<boolean>(false);
+  const [urlData, setUrlData] = useState<Object>()
   const oldUser = useRef<User | null>(null);
 
 
@@ -65,7 +69,7 @@ export function AuthenticatedUserProvider({ children }:{ children: any }) {
   }, [user])
 
   return (
-    <AuthenticatedUserContext.Provider value={{ user, setUser, isNewUser, setIsNewUser }}>
+    <AuthenticatedUserContext.Provider value={{ user, setUser, isNewUser, setIsNewUser, urlData, setUrlData }}>
       {children}
     </AuthenticatedUserContext.Provider>
   )

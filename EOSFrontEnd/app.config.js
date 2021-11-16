@@ -43,7 +43,12 @@ export default {
       appId: process.env.APP_ID,
       iosClient: process.env.IOS_CLIENT,
       andClient: process.env.AND_CLIENT,
-      fbAppId: process.env.FB_APP_ID
+      fbAppId: process.env.FB_APP_ID,
+      apiKeyMoonpayTest: process.env.API_KEY_MOONPAY_TEST,
+      color: process.env.COLORFONT,
+      onlyGateways: process.env.ONLYGATEWAYS,
+      onlyCryptos: process.env.ONLYCRYPTOS,
+      onlyFiat: process.env.ONLYFIAT
     }
   }
 }

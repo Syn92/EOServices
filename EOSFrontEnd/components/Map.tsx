@@ -5,7 +5,7 @@ import Geocoder from 'react-native-geocoding';
 import axios, { CancelTokenSource } from 'axios';
 import { CustomFeature, CustomFeatureColl, getCenter } from '../utils/Cadastre';
 import ServerConstants from '../constants/Server';
-import { Service } from '../interfaces/Service';
+import { IService } from '../interfaces/Service';
 
 interface IMarker {
     key: string;
@@ -20,7 +20,7 @@ interface IProps {
     onPressed?: ((cadastre: CustomFeature) => any);
     onMarkerPressed?: ((id: string) => any)
     selectedCadastre?: CustomFeature;
-    services?: Service[];
+    services?: IService[];
 }
 
 Geocoder.init("AIzaSyCcPFzHoC-XT8h-3MZt8CfIz5J-w9BeMHA");

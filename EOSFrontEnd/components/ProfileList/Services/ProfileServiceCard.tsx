@@ -1,8 +1,8 @@
+import { useNavigation } from '@react-navigation/native';
 import React from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { Icon } from 'react-native-elements'
-import { ServiceInfo } from '../../interfaces/Services';
-import { AuthenticatedUserContext } from '../../navigation/AuthenticatedUserProvider';
+import { ServiceInfo } from '../../../interfaces/Services';
 
 interface Prop {
     serviceInfo: ServiceInfo
@@ -16,8 +16,10 @@ function getIcon(category: string) {
 
 export function ProfileServiceCard(props: Prop) {
 
+    const navigation = useNavigation()
+
     return (
-        <View style={styles.card}>
+        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('PostDetails', props.serviceInfo._id)}>
             <View style={styles.iconContainer}>
                 <Icon name={getIcon(props.serviceInfo.category)} 
                     type='material'
@@ -39,7 +41,7 @@ export function ProfileServiceCard(props: Prop) {
                     <Text style={styles.text}>{props.serviceInfo.position}</Text>
                 </View>
             </View>
-        </View>
+        </TouchableOpacity>
     )
 }
 
