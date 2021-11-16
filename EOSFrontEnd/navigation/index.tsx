@@ -40,7 +40,7 @@ const auth = Firebase.auth();
 async function checkUser(user: any) {
 
   try {
-    const res = await axios.get<any>(ServerConstants.prod + 'auth', { params: { uid: user.uid } });
+    const res = await axios.get<any>(ServerConstants.local + 'auth', { params: { uid: user.uid } });
     // if user exists, return user
 
     if (res.data){
@@ -57,7 +57,7 @@ async function checkUser(user: any) {
       name: user.displayName,
       joinedDate: GetFormatedDate(new Date())
     };
-    await axios.post(ServerConstants.prod + 'auth', newUsr);
+    await axios.post(ServerConstants.local + 'auth', newUsr);
 
     return [newUsr, true];
   } catch (err) {
@@ -85,7 +85,7 @@ export default function Navigation() {
     if (!urlData){
       getInitialURL()
     }
-    
+
     // onAuthStateChanged returns an unsubscriber
     const unsubscribeAuth = auth.onIdTokenChanged(async (authenticatedUser: any) => {
       try {
@@ -131,10 +131,10 @@ export default function Navigation() {
     )
   }
 
-  return user ? 
+  return user ?
     (<NavigationContainer linking={linking}>
       <BottomTabNavigator/>
-    </NavigationContainer>) : 
+    </NavigationContainer>) :
     (<NavigationContainer>
       <AuthStack/>
     </NavigationContainer>)

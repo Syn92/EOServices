@@ -2,6 +2,8 @@ import { IService } from "./Service";
 import { User } from "./User";
 
 export interface ContractRequest {
+    _id: string | null,
+    roomId: string,
     serviceId: string,
     buyer: string,
     seller: string,
@@ -17,4 +19,10 @@ export interface Contract {
     finalPriceEOS: string,
     accepted: boolean,
     serviceDetail: IService
+}
+
+export interface RequestStatus {
+    contract: string;
+    roomId: string;
+    accepted: boolean;
 }
