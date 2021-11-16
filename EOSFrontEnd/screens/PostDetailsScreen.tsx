@@ -11,7 +11,7 @@ import { getAddress } from '../utils/Cadastre';
 import { ServiceRequest } from '../interfaces/Services';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
 import SuccessModalView from '../components/SuccessModalView';
-
+import { transact } from '../components/Anchor';
 
 export default function PostDetailsScreen({route, navigation }: RootTabScreenProps<'PostDetails'>) {
     const id: any = route.params;
@@ -60,7 +60,8 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
           requestUserUID: user.uid,
         } 
         setLoading(true)
-        await axios.post(ServerConstants.local + 'post/request', param)
+        await transact();
+        // await axios.post(ServerConstants.local + 'post/request', param)
         setLoading(false)
         setOfferSent(true)
 
