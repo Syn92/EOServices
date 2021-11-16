@@ -20,6 +20,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     const [loading, setLoading] = React.useState(true)
     const { user, setUser } =  React.useContext(AuthenticatedUserContext);
     const [time, setTime] = React.useState<number>()
+    const [isConfirm, setConfirmed] = React.useState(false)
     
 
     const fetchContract = async () => {
@@ -36,6 +37,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
 
     const myMethod = () => {
         console.log('slided')
+        setConfirmed(true);
     }
     
 
@@ -58,13 +60,13 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
         return(
             
                 
-            contract.accepted ?  
+            !contract.accepted ?  
                 (contract.deposit ? 
                     <View style={styles.lowerSection}>
                         <ActionButton title="Deposit" onPress={deposit}></ActionButton>
                     </View> :
                 <View style={styles.lowerSection}>
-                    <SliderComponent callback={myMethod} ></SliderComponent>
+                    <SliderComponent isConfirm={isConfirm} callback={myMethod} ></SliderComponent>
                 </View>) :
                 <View style={styles.contractButtonContainer}>
                     <ActionButtonSecondary styleContainer={{width: '45%', borderRadius: 20}} title="Refuse" onPress={refuseContract}></ActionButtonSecondary>
@@ -77,7 +79,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     function renderSellerSection(): any {
         return(
             <View style={styles.lowerSection}>
-                {contract.accepted ? (contract.deposit ? <SliderComponent callback={myMethod} ></SliderComponent> :  <Text>Awaiting buyer's deposit... </Text>) :  <Text>Awaiting buyer's acceptance... </Text> }
+                {contract.accepted ? (contract.deposit ? <SliderComponent  isConfirm={isConfirm} callback={myMethod} ></SliderComponent> :  <Text>Awaiting buyer's deposit... </Text>) :  <Text>Awaiting buyer's acceptance... </Text> }
             </View>
         )
     }
