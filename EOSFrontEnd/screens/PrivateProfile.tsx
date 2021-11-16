@@ -14,6 +14,8 @@ import { ProfileRequestList } from '../components/ProfileList/Requests/ProfileRe
 import Firebase from '../config/firebase';
 import { RequestData, ServiceData, ServiceStatus } from '../interfaces/Services';
 import * as ImagePicker from 'expo-image-picker';
+import ActionButton from '../components/ActionButton';
+import ActionButtonSecondary from '../components/ActionButtonSecondary';
 
 const WIDTH = Dimensions.get('window').width;
 const auth = Firebase.auth()
@@ -224,20 +226,30 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
                 {isPageLoading ? Loading({}): null}
 
                 <Text style={styles.modalText}>Edit Avatar</Text>
-                <Button title="Upload avatar" onPress={pickImage}></Button>
-                {image ? <Image source={{uri: 'data:image/png;base64,' + image, width: WIDTH/2.5, height: WIDTH/2.5}}/> : null}
-                <TouchableHighlight
-                        style={styles.openButton}
+                {image ? <Image style={styles.photo} source={{uri: 'data:image/png;base64,' + image}}/> : <Image style={styles.photo} source={user?.avatar ? {uri: user?.avatar} : require('../assets/images/avatar.webp')}/> }
+                <ActionButton styleContainer={{marginTop: '5%'}} title="Upload avatar" onPress={pickImage}></ActionButton>
+                <View style={styles.modalAvatarButtonContainer}>
+                    <ActionButtonSecondary
+                        styleContainer={{width: "40%"}}
+                            onPress={async () => {
+                                    setModalVisible(!modalVisible);
+                                    setImage('')
+                                }
+                            }
+                        title="Cancel"
+                    ></ActionButtonSecondary>
+                    <ActionButton
+                        styleContainer={{width: "40%"}}
                         onPress={async () => {
                             setisPageLoading(true)
                             await uploadAvatar(image)
                             setisPageLoading(false)
                             setModalVisible(!modalVisible);
+                            }
                         }
-                    }>
-                        <Text style={styles.textStyle}>Confirm</Text>
-                    </TouchableHighlight>
-
+                        title="Confirm"
+                    ></ActionButton>
+                </View>
             </View>
         )
     }
@@ -610,6 +622,12 @@ const styles = StyleSheet.create({
     modalButtonContainer: {
         marginTop: 15,
         flexDirection: 'row'
+    },
+    modalAvatarButtonContainer: {
+        marginTop: 25,
+        flexDirection: 'row',
+        justifyContent: 'space-evenly',
+        width: '100%'
     },
     errorText: {
         color: 'red',

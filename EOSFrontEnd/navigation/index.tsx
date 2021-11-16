@@ -33,6 +33,7 @@ import PostDetailsScreen from '../screens/PostDetailsScreen';
 import BuyCrypto from '../screens/BuyCrypto';
 import { ChatContext, ChatSocketContext } from './ChatSocketProvider';
 import { IRoom } from '../interfaces/Chat';
+import ContractScreen from '../screens/ContractScreen';
 import linking from './LinkingConfiguration';
 
 const auth = Firebase.auth();
@@ -40,7 +41,7 @@ const auth = Firebase.auth();
 async function checkUser(user: any) {
 
   try {
-    const res = await axios.get<any>(ServerConstants.prod + 'auth', { params: { uid: user.uid } });
+    const res = await axios.get<any>(ServerConstants.local + 'auth', { params: { uid: user.uid } });
     // if user exists, return user
 
     if (res.data){
@@ -57,7 +58,7 @@ async function checkUser(user: any) {
       name: user.displayName,
       joinedDate: GetFormatedDate(new Date())
     };
-    await axios.post(ServerConstants.prod + 'auth', newUsr);
+    await axios.post(ServerConstants.local + 'auth', newUsr);
 
     return [newUsr, true];
   } catch (err) {
@@ -172,6 +173,7 @@ function TabThreeStackScreen() {
     <TabThreeStack.Navigator>
       <TabThreeStack.Screen name="ChatRooms" component={ChatRoomsScreen} options={{ headerShown: false }} />
       <TabThreeStack.Screen name="Chat" component={ChatScreen} options={({ route }) => ({ title: (route.params as IRoom).user.name + " - " + (route.params as IRoom).service.title })} />
+      <TabThreeStack.Screen name="Contract" component={ContractScreen} options={{ headerShown: false }}/>
     </TabThreeStack.Navigator>
   )
 }
@@ -209,7 +211,7 @@ function BottomTabNavigator() {
         options={({ navigation }: RootTabScreenProps<'TabOne'>) => ({
           title: 'Home',
           tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
-
+          tabBarActiveTintColor: '#04B388',
         })}
       />
       <BottomTab.Screen
@@ -218,6 +220,7 @@ function BottomTabNavigator() {
         options={{
           title: 'Explore',
           tabBarIcon: ({ color }) => <TabBarIcon name="explore" color={color} />,
+          tabBarActiveTintColor: '#04B388',
         }}
       />
       <BottomTab.Screen
@@ -226,6 +229,7 @@ function BottomTabNavigator() {
         options={{
           title: 'Message',
           tabBarIcon: ({ color }) => <TabBarIcon name="chat-bubble" color={color} />,
+          tabBarActiveTintColor: '#04B388',
           tabBarBadge: notifsCount > 0 ? notifsCount : null
         }}
       />
@@ -235,6 +239,7 @@ function BottomTabNavigator() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ color }) => <TabBarIcon name="person" color={color} />,
+          tabBarActiveTintColor: '#04B388',
         }}
       />
     </BottomTab.Navigator>

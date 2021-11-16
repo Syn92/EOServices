@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ImageBackground, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Button } from 'react-native-elements/dist/buttons/Button';
 import Map from '../components/Map';
 import { RootTabScreenProps } from '../types';
@@ -65,6 +65,7 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
   }, []);
 
   return (
+    <ImageBackground style={{ flex: 1 }} source={require('../assets/images/bg.png')}>
     <View style={styles.container}>
       <View style={styles.appHeader}>
         <Text style={styles.title}>EOS MARKETPLACE</Text>
@@ -129,6 +130,7 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
         </ScrollView>
       </View>
     </View>
+    </ImageBackground>
   );
 }
 
@@ -147,7 +149,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: 'black',
+    color: 'white',
     textAlign: 'left',
     marginBottom: 15,
   },
