@@ -40,7 +40,7 @@ export function AuthenticatedUserProvider({ children }:{ children: any }) {
         return;
       }
       const token = (await Notifications.getExpoPushTokenAsync()).data;
-      axios.patch(ServerConstants.prod + 'token', {userId: user.uid, token: token}).catch(err => console.log(err))
+      axios.patch(ServerConstants.local + 'token', {userId: user.uid, token: token}).catch(err => console.log(err))
     } else {
       // console.log('Must use physical device for Push Notifications');
     }
@@ -59,7 +59,7 @@ export function AuthenticatedUserProvider({ children }:{ children: any }) {
     if(oldUser.current?.uid == user?.uid) return; // same user
 
     if(oldUser.current) { // delete token of user logged out
-      axios.delete(ServerConstants.prod + 'token', {data: {userId: oldUser.current.uid}}).catch(err => console.log(err));
+      axios.delete(ServerConstants.local + 'token', {data: {userId: oldUser.current.uid}}).catch(err => console.log(err));
     }
     if(user) { // set token of user logged in
       registerForPushNotificationsAsync().catch(err => console.log(err))

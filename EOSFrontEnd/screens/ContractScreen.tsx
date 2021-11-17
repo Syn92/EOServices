@@ -23,12 +23,21 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     let contractAPI:ContractAPI = ContractAPI.getInstance()
     const [contract, setContract] = React.useState<Contract>();
     const [loading, setLoading] = React.useState(true)
-    const { user, setUser } =  React.useContext(AuthenticatedUserContext);
+    const { user, urlData,setUrlData } =  React.useContext(AuthenticatedUserContext);
     const [time, setTime] = React.useState<number>()
     const [isConfirm, setConfirmed] = React.useState(false)
     const [activeIndex, setActiveIndex] = React.useState(0);
     
+    React.useEffect(() => {
+        if(!urlData){
+            return;
+        }
+            axios.patch(ServerConstants.local + 'post/accept', {serviceId: contract.serviceId, contractId: contract._id}).then(async (res:any) => {
+                await fetchContract();
+        }).catch(err => console.log(err))
+    }, [urlData])
 
+    
     const fetchContract = async () => {
         try {
             axios.get(ServerConstants.local + 'post/contract?id='+ contractId.id).then((response: any) => {
@@ -55,9 +64,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     function acceptContract() {
         contractAPI.acceptDeal(contract.dealId, user?.walletAccountName, contract.finalPriceEOS).then((res: any) => {
             console.log(res)
-            axios.patch(ServerConstants.local + 'post/accept', {serviceId: contract.serviceId, contractId: contract._id}).then(async (res:any) => {
-                await fetchContract();
-        }).catch(err => console.log(err))
+            
         })
     }
     function refuseContract() {
@@ -129,8 +136,8 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
 
     return(
             contract && time?
-            <ImageBackground style={{ flex: 1 }} source={require('../assets/images/bg.png')}>
-            <ScrollView style={{display: 'flex'}}>
+            <ImageBackground style={{ flex: 1, height: '100%' }} source={require('../assets/images/bg.png')}>
+            <ScrollView style={{display: 'flex', flex: 1}}>
                 <TouchableOpacity style={styles.backButton} onPress={() => {navigation.goBack()}}>
                     <Icon name="keyboard-arrow-left" size={60} color="#04B388"/>
                   </TouchableOpacity>

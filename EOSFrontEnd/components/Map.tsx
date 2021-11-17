@@ -130,7 +130,7 @@ export default function Map(props: IProps) {
         }
         cancelTokenSource?.cancel();
         cancelTokenSource = axios.CancelToken.source();
-        axios.get(ServerConstants.prod + 'cadastre', { params, cancelToken: cancelTokenSource.token })
+        axios.get(ServerConstants.local + 'cadastre', { params, cancelToken: cancelTokenSource.token })
             .then(function (response) {
                 // handle success
                 const features = response.data as CustomFeature[];
