@@ -19,5 +19,8 @@ export interface Contract {
     accepted: boolean,
     serviceDetail: IService,
     deposit?: boolean,
+    confirmedSeller?: boolean,
+    confirmedBuyer?: boolean,
+    images?: string[],
     creationDate?: Date,
 }

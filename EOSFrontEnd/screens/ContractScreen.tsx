@@ -1,5 +1,5 @@
 import { RootTabScreenProps } from "../types";
-import { View, Text, StyleSheet, ImageBackground, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, Image, ScrollView } from "react-native";
 import * as React from 'react';
 import { Icon } from "react-native-elements";
 import { ContractRequest, Contract } from '../interfaces/Contracts';
@@ -12,7 +12,9 @@ import { SliderComponent } from "../components/Slider";
 import ActionButton from "../components/ActionButton";
 import CountDown from 'react-native-countdown-component'
 import ActionButtonSecondary from "../components/ActionButtonSecondary";
-import { useFocusEffect } from "@react-navigation/native";
+import * as ImagePicker from 'expo-image-picker';
+import { ExpandImagePickerResult } from "expo-image-picker/build/ImagePicker.types";
+import Carousel, { Pagination } from "react-native-snap-carousel";
 
 export default function ContractScreen({route, navigation }: RootTabScreenProps<'Contract'>) {
     let contractId: any = route.params;
@@ -22,6 +24,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     const { user, setUser } =  React.useContext(AuthenticatedUserContext);
     const [time, setTime] = React.useState<number>()
     const [isConfirm, setConfirmed] = React.useState(false)
+    const [activeIndex, setActiveIndex] = React.useState(0);
     
 
     const fetchContract = async () => {
@@ -44,6 +47,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
 
     React.useEffect(() => {
         fetchContract()
+        
     }, [])
 
     function acceptContract() {
@@ -55,6 +59,20 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
 
     function deposit() {
         console.log(deposit);
+    }
+
+    const addPhoto = async () => {
+        let result: any = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.All,
+          quality: 1,
+          base64: true,
+        });
+        if(!result.cancelled){
+            axios.post(ServerConstants.local + 'post/contract/image', {contractId: contract._id, image:result.base64}).then(() => {
+                fetchContract();
+            })
+        }
+
     }
 
     function renderBuyerSection(): any {
@@ -77,14 +95,31 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     function renderSellerSection(): any {
         return(
             <View style={styles.lowerSection}>
-                {contract.accepted ? (contract.deposit ? <SliderComponent  isConfirm={isConfirm} callback={myMethod} ></SliderComponent> :  <Text>Awaiting buyer's deposit... </Text>) :  <Text>Awaiting buyer's acceptance... </Text> }
+                {contract.accepted ? 
+                (!contract.deposit ? 
+                <View>
+                    <SliderComponent  isConfirm={isConfirm} callback={myMethod} ></SliderComponent>
+                    {isConfirm ? null : <ActionButton title="Add photo" onPress={addPhoto}></ActionButton>}
+
+                </View>
+                :  <Text style={{textAlign: 'center'}}>Awaiting buyer's deposit... </Text>) :  <Text style={{textAlign: 'center'}}>Awaiting buyer's acceptance... </Text> }
             </View>
         )
     }
 
+    const _renderItem = ({item, index}) => {
+        return (
+            <View>
+                <Image key={index} source={{uri: item, width: 250, height: 250}}/>
+            </View>
+        );
+    }
+
 
     return(
-            contract && time ? <ImageBackground style={{ flex: 1 }} source={require('../assets/images/bg.png')}>
+            contract && time ?
+            <ScrollView>
+            <ImageBackground style={{ flex: 1 }} source={require('../assets/images/bg.png')}>
                 <TouchableOpacity style={styles.backButton} onPress={() => {navigation.goBack()}}>
                     <Icon name="keyboard-arrow-left" size={60} color="#04B388"/>
                   </TouchableOpacity>
@@ -121,12 +156,45 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
                         <Text style={{fontSize: 16}}>{contract.serviceDetail.description}</Text>
                     </View>
                 </View>
-                { user?.uid == contract.buyer.uid ? renderBuyerSection() : renderSellerSection() }
+                { user?.uid != contract.buyer.uid ? renderBuyerSection() : renderSellerSection() }
             </View>
-            <Text style={{color: 'white', textAlign: 'center', marginTop: '5%'}}>Contract expires in: {}</Text>
-            {time == 0 ? null : <CountDown until={time} timeLabelStyle={{color: 'white'}} digitStyle={{backgroundColor: 'white'}} size={18}/>}
+            { (contract.accepted && !contract.deposit) ? 
+            <View style={{display: 'flex', flexBasis: '100%', alignContent:'center'}}>
+                <Carousel
+                  layout={"default"}
+                  data={contract.images}
+                  sliderWidth={300}
+                  itemWidth={250}
+                  renderItem={_renderItem}
+                  onSnapToItem = { index => setActiveIndex(index) }
+                  layoutCardOffset={18}/>
+                  <Pagination
+                    dotsLength={contract.images.length}
+                    activeDotIndex={activeIndex}
+                    containerStyle={{}}
+                    dotStyle={{
+                        marginBottom: 15,
+                        width: 10,
+                        height: 10,
+                        borderRadius: 5,
+                        elevation: 10,
+                        marginHorizontal: 8,
+                        backgroundColor: 'white'
+                    }}
+                    inactiveDotStyle={{
+                        // Define styles for inactive dots here
+                    }}
+                    inactiveDotOpacity={0.4}
+                    inactiveDotScale={0.6}
+                  />
+            </View> : 
+            <View>
+                <Text style={{color: 'white', textAlign: 'center', marginTop: '5%'}}>Contract expires in: {}</Text>
+                {time == 0 ? null : <CountDown until={time} timeLabelStyle={{color: 'white'}} digitStyle={{backgroundColor: 'white'}} size={18}/>}
+            </View>}
         </View>
             </ImageBackground> 
+            </ScrollView>
             
             
             : <Loading/>

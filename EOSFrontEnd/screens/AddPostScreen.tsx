@@ -167,9 +167,9 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
               </View>
           <Text style={styles.inputLabel}>Categorie</Text>
               <Picker mode="dropdown" style={styles.buttonStyle} selectedValue={selectedCat} onValueChange={(itemValue: any, itemIndex: any) => {if(itemValue != "0")setSelectedCat(itemValue.toString())}}>
-                <Picker.Item label="Select a Cat..." value="0"/>
                 {filterCat.map((cat: string, i: number) => {
-                  if(i != 0)
+                  if(i == 0)
+                    return (<Picker.Item key={i} label="Select a category..." value="0"/>)
                   return (<Picker.Item key={i} label={cat} value={cat}/>)
                 })}
               </Picker>
@@ -191,7 +191,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
             <Text style={styles.subTitle}>Details</Text>
             </View>
             <View style={styles.buttonContainer}>
-              <ActionButtonSecondary title="Add photos" onPress={pickImage}></ActionButtonSecondary>
+              <ActionButtonSecondary title="Add photo" onPress={pickImage}></ActionButtonSecondary>
               <View style={styles.inputView}>
                 <Text style={styles.inputLabel}>Price</Text>
                 <TextInput
@@ -258,12 +258,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
                 <View style={styles.centeredView}>
                   <View style={styles.modalView}>
                     <Text style={styles.modalText}>Post succesfully submited</Text>
-                    <TouchableOpacity
-                      style={[styles.button, styles.buttonClose]}
-                      onPress={() => {setModalVisible(!modalVisible); navigation.goBack()}}
-                    >
-                      <Text style={styles.textStyle}>Ok</Text>
-                    </TouchableOpacity>
+                      <ActionButton title="Ok" onPress={() => {setModalVisible(!modalVisible); navigation.goBack()}}></ActionButton>
                   </View>
                 </View>
               </Modal>

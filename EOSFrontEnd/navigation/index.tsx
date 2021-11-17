@@ -212,6 +212,7 @@ function BottomTabNavigator() {
           title: 'Home',
           tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
           tabBarActiveTintColor: '#04B388',
+          tabBarInactiveTintColor: '#182851',
         })}
       />
       <BottomTab.Screen
@@ -221,6 +222,7 @@ function BottomTabNavigator() {
           title: 'Explore',
           tabBarIcon: ({ color }) => <TabBarIcon name="explore" color={color} />,
           tabBarActiveTintColor: '#04B388',
+          tabBarInactiveTintColor: '#182851',
         }}
       />
       <BottomTab.Screen
@@ -230,6 +232,7 @@ function BottomTabNavigator() {
           title: 'Message',
           tabBarIcon: ({ color }) => <TabBarIcon name="chat-bubble" color={color} />,
           tabBarActiveTintColor: '#04B388',
+          tabBarInactiveTintColor: '#182851',
           tabBarBadge: notifsCount > 0 ? notifsCount : null
         }}
       />
@@ -240,6 +243,7 @@ function BottomTabNavigator() {
           title: 'Profile',
           tabBarIcon: ({ color }) => <TabBarIcon name="person" color={color} />,
           tabBarActiveTintColor: '#04B388',
+          tabBarInactiveTintColor: '#182851',
         }}
       />
     </BottomTab.Navigator>

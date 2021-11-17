@@ -85,6 +85,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
     function closeModal() {
       setErrorMsg('')
       setModalVisible(false);
+      navigation.navigate('TabThree')
     }
 
     function modalView() {

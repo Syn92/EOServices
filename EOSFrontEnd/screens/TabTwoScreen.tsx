@@ -26,8 +26,8 @@ async function handleLogout() {
   }
 }
 
-const filterNone: string = 'none';
-const noneServType: string = 'none';
+const filterNone: string = 'None';
+const noneServType: string = 'None';
 
 
 
@@ -78,7 +78,7 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
         <TextInput
             style={styles.input}
             placeholder="Search in marketplace..."
-            placeholderTextColor="#04B388"
+            placeholderTextColor="#182851"
             onChangeText={(searchString) => {setSearchString(searchString)}}
             underlineColorAndroid="transparent"
         />
@@ -110,7 +110,6 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
             <Button icon={<Icon name="refresh" size={30} color="#04B388"/>} onPress={() => {fetchData()}} />
             <Button icon={<Icon name="add" size={30} color="#04B388"/>} onPress={() => {navigation.navigate('AddPost')}} />
             <Button icon={<Icon name="filter-alt" size={30} color="#04B388"/>} onPress={() => {setModalVisible(true)}} />
-            <Button icon={<Icon name="sort" size={30} color="#04B388"/>} onPress={() => {navigation.navigate('AddPost')}} />
           </View>
         </View>
           <View style={styles.buttonTypeContainer}>
@@ -164,12 +163,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   headerText: {
-    color: "#04B388",
+    color: "#182851",
     fontSize: 25,
     textAlign: 'left',
-    marginLeft: 10,
+    marginLeft: 20,
     marginTop: 5,
-    flexBasis: 150,
+    flexBasis: '55%',
 
   },
   buttonContainer: {

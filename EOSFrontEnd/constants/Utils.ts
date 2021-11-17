@@ -1,5 +1,5 @@
 export const filterCat: string[] = [
-    'none',
+    'None',
     'Education',
     'House work',
     'Health care',
