@@ -39,9 +39,9 @@ export class ContractAPI{
       return this.contractAPI
     }
 
-    private async signingRequest(actions:any){
+    private async signingRequest(actions:any,value:string){
         SigningRequest.create({ actions,chainId:"2a02a0053e5a8cf73a56ba0fda11e4d92e0238a4a2aa74fccf46d5a910746840" }, this.opts ).then((res)=>{
-          res.setCallback("exp://10.200.22.9:19000/--/one",false)
+          res.setCallback("exp://10.200.22.9:19000/--/one?value="+value+"",false)
           Linking.openURL(res.encode())
         })
 
@@ -55,7 +55,7 @@ export class ContractAPI{
     async createDeal(deal:ContractRequest){
         return axios.post(ServerConstants.local+"contract",deal)
     }
-    async acceptDeal(dealId:string,walletAccountName:string){
+    async acceptDeal(dealId:string,walletAccountName:string,value:string){
       console.log(dealId)
         const actions = [{
              account: 'eosmarktplce',
@@ -69,7 +69,7 @@ export class ContractAPI{
                  deal_id:dealId
              },
            }]
-        this.signingRequest(actions).catch((err)=>{
+        this.signingRequest(actions,value).catch((err)=>{
           console.log(err)
         })
     }

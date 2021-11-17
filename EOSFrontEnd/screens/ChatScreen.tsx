@@ -25,7 +25,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
   const [contractValue, setContractValue] = useState<string>(route.params.service.priceEOS.toString());
   const [room, setRoom] = useImmer<IRoom>(route.params);
 
-  const { user } =  React.useContext(AuthenticatedUserContext);
+  const { user, urlData } =  React.useContext(AuthenticatedUserContext);
   const { messages, setRoomWatchedId }= React.useContext(ChatContext);
   const { socket } =  React.useContext(ChatSocketContext);
   const contractAPI = ContractAPI.getInstance()
@@ -34,6 +34,18 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
     (user.uid == room.service.owner)
     : (user.uid != room.service.owner))
   }, [])
+
+  useEffect(() => {
+    let value = urlData.queryParams.value
+    console.log(value)
+    if(value){
+      const contractMessage = getContractMessage(route.params, user, value)
+      const contractGiftedMessage = {...contractMessage, _id: uuid.v4().toString()}
+      setGiftedMessages(previousMessages => GiftedChat.append(previousMessages, [{...toGiftedMessage(contractGiftedMessage, user), sent: false}]))
+      socket.emit('newMessage', contractMessage)
+      setLastOfferId(contractGiftedMessage._id)  }
+    }
+    , [urlData])
 
   const messagesSeenListener = (userId: string, roomId: string) => {
     if(roomId == room._id) {
@@ -190,7 +202,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
 
   function openOfferDetails(params: any) {
     console.log('OPEN OFFER DETAILS');
-    navigation.navigate('Contract',params)
+    navigation.navigate('Contract',{'id': room.contract._id})
   }
 
   function sendContract(value: number) {
@@ -206,13 +218,8 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
     }
 
     axios.post(ServerConstants.local + 'post/request', contract).then(async (res:any) => {
-      await contractAPI.acceptDeal(res.data.dealId,"nicoltesteos")
+      await contractAPI.acceptDeal(res.data.dealId,"nicoltesteos",value.toString())
 
-      const contractMessage = getContractMessage(route.params, user, value)
-      const contractGiftedMessage = {...contractMessage, _id: uuid.v4().toString()}
-      setGiftedMessages(previousMessages => GiftedChat.append(previousMessages, [{...toGiftedMessage(contractGiftedMessage, user), sent: false}]))
-      socket.emit('newMessage', contractMessage)
-      setLastOfferId(contractGiftedMessage._id)
       setShowContractDialog(false)
     }).catch(err => console.log(err))
   }
