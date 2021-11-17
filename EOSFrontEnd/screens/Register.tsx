@@ -91,9 +91,6 @@ export function Register({ navigation }: { navigation: any }) {
           <TouchableOpacity style={styles.button} onPress={handleSignup}>
             <Text style={styles.buttonText}>Create Account</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={transact}>
-            <Text style={styles.buttonText}>Anchor action</Text>
-          </TouchableOpacity>
         </ImageBackground>
       </View>
     </ScrollView>

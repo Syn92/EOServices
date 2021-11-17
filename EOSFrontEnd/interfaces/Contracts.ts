@@ -7,7 +7,9 @@ export interface ContractRequest {
     seller: string,
     finalPriceEOS: string,
     accepted: boolean,
-    deposit: boolean
+    deposit: boolean,
+    buyerWalletAccount?: string,
+    sellerWalletAccount?:string,
 }
 
 export interface Contract {

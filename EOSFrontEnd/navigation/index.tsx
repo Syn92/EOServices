@@ -72,6 +72,7 @@ export default function Navigation() {
   const [isLoading, setIsLoading] = React.useState(true);
 
   function handleDeeplink(event: any) {
+    console.log(event)
     setUrlData(Linking.parse(event.url))
   }
 
@@ -79,7 +80,7 @@ export default function Navigation() {
 
     async function getInitialURL() {
       const initialURL = await Linking.getInitialURL()
-      if (initialURL) setUrlData(Linking.parse(initialURL))
+      if (initialURL){ console.log(initialURL); setUrlData(Linking.parse(initialURL))}
     }
 
     Linking.addEventListener('url', handleDeeplink)

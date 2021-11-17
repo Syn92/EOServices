@@ -13,10 +13,10 @@ import ActionButton from "../components/ActionButton";
 import CountDown from 'react-native-countdown-component'
 import ActionButtonSecondary from "../components/ActionButtonSecondary";
 import { useFocusEffect } from "@react-navigation/native";
-
+import {ContractAPI} from "../services/Contract"
 export default function ContractScreen({route, navigation }: RootTabScreenProps<'Contract'>) {
     let contractId: any = route.params;
-
+    let contractAPI:ContractAPI = ContractAPI.getInstance()
     const [contract, setContract] = React.useState<Contract>();
     const [loading, setLoading] = React.useState(true)
     const { user, setUser } =  React.useContext(AuthenticatedUserContext);

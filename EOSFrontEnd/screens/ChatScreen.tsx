@@ -14,7 +14,7 @@ import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import ServerConstants from '../constants/Server';
 import { ContractRequest } from '../interfaces/Contracts';
-
+import { ContractAPI } from '../services/Contract';
 export default function ChatScreen({ navigation, route }: RootStackScreenProps<'Chat'>) {
   const [isSeller, setIsSeller] = React.useState<boolean>()
   const [giftedMessages, setGiftedMessages] = useImmer<IGiftedMessage[]>([]);
@@ -25,7 +25,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
   const { user } =  React.useContext(AuthenticatedUserContext);
   const { messages, setRoomWatchedId }= React.useContext(ChatContext);
   const { socket } =  React.useContext(ChatSocketContext);
-
+  const contractAPI = ContractAPI.getInstance()
   React.useEffect(()=> {
     setIsSeller(route.params.service.serviceType == 'Offering' ?
     (user.uid == route.params.service.owner)
@@ -162,8 +162,10 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
       deposit: false,
     }
 
-    axios.post(ServerConstants.local + 'post/request', contract).then((res) => {
-      const contractMessage = getContractMessage(route.params, user, value, res.data as string)
+    axios.post(ServerConstants.local + 'post/request', contract).then(async (res:any) => {
+      await contractAPI.acceptDeal(res.data.dealId,"nicoltesteos")
+
+      const contractMessage = getContractMessage(route.params, user, value, res.data.contractId as string)
       const contractGiftedMessage = {...contractMessage, _id: uuid.v4().toString()}
       setGiftedMessages(previousMessages => GiftedChat.append(previousMessages, [{...toGiftedMessage(contractGiftedMessage, user), sent: false}]))
       socket.emit('newMessage', contractMessage)
