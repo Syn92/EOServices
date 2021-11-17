@@ -1,8 +1,9 @@
 import { IService } from "./Service";
 import { User } from "./User";
 import { IMessage as ITempMessage } from 'react-native-gifted-chat';
+import { Contract, ContractRequest } from "./Contracts";
 
-export type IGiftedMessage = ITempMessage & {offerValue: number | null, contractId: string | null, lastOffer: boolean | null}
+export type IGiftedMessage = ITempMessage & {offerValue: number | null, lastOffer: boolean | null, denied: boolean | null, accepted: boolean | null}
 
 export interface ISentRoom {
     room: {
@@ -18,6 +19,7 @@ export interface IRoom {
     _id: string;
     user: User;
     service: IService;
+    contract: ContractRequest | null;
 }
 
 export interface IMessage extends ISentMessage {
@@ -31,7 +33,6 @@ export interface ISentMessage {
     createdAt: string;
     seen: boolean;
     offerValue: number | null;
-    contractId: string | null;
     image: string | null;
 }
 
@@ -39,7 +40,7 @@ export function getCardTitle(room: IRoom) : string {
     return room.user.name + ' - ' + room.service.title;
 }
 
-export function toGiftedMessage(message: IMessage, user: User): IGiftedMessage {
+export function toGiftedMessage(message: IMessage, user: User, room?: IRoom | null): IGiftedMessage {
     return {
         _id: message._id,
         text: message.text,
@@ -48,30 +49,30 @@ export function toGiftedMessage(message: IMessage, user: User): IGiftedMessage {
         sent: true,
         received: message.seen,
         offerValue: message.offerValue,
-        contractId: message.contractId,
+        image: message.image,
+        accepted: room?.contract && room.contract.accepted,
+        denied: room && !room.contract,
         lastOffer: false,
-        image: message.image
     }
 }
 
-export function toIMessage(message: IGiftedMessage, roomId: string): IMessage {
-    return {...toISentMessage(message, roomId), _id: message._id.toString()}
+export function toIMessage(message: IGiftedMessage, room: IRoom): IMessage {
+    return {...toISentMessage(message, room), _id: message._id.toString()}
 }
 
-export function toISentMessage(message: IGiftedMessage, roomId: string): ISentMessage {
+export function toISentMessage(message: IGiftedMessage, room: IRoom): ISentMessage {
     return {
         text: message.text,
         createdAt: message.createdAt.toString(),
         userId: message.user._id.toString(),
-        roomId: roomId,
+        roomId: room._id,
         seen: false,
         offerValue: message.offerValue,
-        contractId: message.contractId,
-        image: message.image
+        image: message.image,
     }
 }
 
-export function getContractMessage(room: IRoom, user: User, value: number, contractId: string): ISentMessage {
+export function getContractMessage(room: IRoom, user: User, value: number): ISentMessage {
     return {
         text: '',
         createdAt: new Date().toISOString(),
@@ -79,7 +80,6 @@ export function getContractMessage(room: IRoom, user: User, value: number, contr
         roomId: room._id,
         seen: false,
         offerValue: value,
-        contractId: contractId,
         image: null
     }
 }
@@ -92,7 +92,6 @@ export function getImageMessage(room: IRoom, user: User, image: string): ISentMe
         roomId: room._id,
         seen: false,
         offerValue: null,
-        contractId: null,
         image: image
     }
 }

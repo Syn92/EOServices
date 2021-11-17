@@ -10,13 +10,15 @@ import Carousel, { Pagination } from 'react-native-snap-carousel';
 import { getAddress } from '../utils/Cadastre';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
 import SuccessModalView from '../components/SuccessModalView';
-import { ChatSocketContext } from '../navigation/ChatSocketProvider';
+import { transact } from '../components/Anchor';
+import { ChatContext, ChatSocketContext } from '../navigation/ChatSocketProvider';
 import { ISentRoom } from '../interfaces/Chat';
 import { IService } from '../interfaces/Service';
 
 export default function PostDetailsScreen({route, navigation }: RootTabScreenProps<'PostDetails'>) {
     const id: any = route.params;
 
+    const { rooms } =  React.useContext(ChatContext);
     const { socket } =  React.useContext(ChatSocketContext);
     const { user } =  React.useContext(AuthenticatedUserContext);
     const [service, setService] = React.useState<IService>();
@@ -31,6 +33,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
       try {
         axios.get(ServerConstants.local + 'post/?id='+id).then((response) => {
             setService(response.data as IService);
+            setOfferSent(rooms.some(x => x.service._id == (response.data as IService)._id))
             setLoading(false);
         })
       } catch (e) {
@@ -92,7 +95,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
       return (
         <KeyboardAvoidingView behavior='padding' style={styles.modal}>
           <View style={styles.modalContentContainer}>
-              <Text style={styles.modalTitle}>Offer Request</Text>
+              <Text style={styles.modalTitle}>Send a Message</Text>
               <Text style={styles.modalDesc}>Enter a description of your needs:</Text>
               {errorMsg.length !=0 ? <Text style={styles.modalError}>{errorMsg}</Text>: null}
               <TextInput
@@ -103,7 +106,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
                 onChangeText={(text: string) => {
                   setOfferDetails(text)
                 }}/>
-              <Text style={styles.modalInfo}> You will be notified to know weather your request has been accepted or not </Text>
+              <Text style={styles.modalInfo}> The advertiser will send you an offer if your request has been accepted </Text>
 
           </View>
 
@@ -137,7 +140,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
               onRequestClose={closeModal}>
                 <View style={styles.centeredView}>
                     {!offerSent ? modalView() :
-                      <SuccessModalView message='Offer request sent!'>
+                      <SuccessModalView message='Message sent!'>
                         <TouchableOpacity style={styles.interestedButton} onPress={closeModal}>
                           <Text style={styles.buttonText}>Done</Text>
                         </TouchableOpacity>

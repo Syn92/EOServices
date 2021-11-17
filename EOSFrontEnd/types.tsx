@@ -21,7 +21,7 @@ export type RootStackParamList = {
   NotFound: undefined;
   AddPost: undefined;
   ChatRooms: undefined;
-  Contract: undefined;
+  Contract: any;
   Chat: IRoom;
   PostDetails: any;
 };

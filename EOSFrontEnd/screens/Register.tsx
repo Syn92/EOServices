@@ -6,7 +6,7 @@ import { Icon } from 'react-native-elements/dist/icons/Icon';
 import { ScrollView } from 'react-native-gesture-handler';
 import Loading from '../components/Loading';
 import Firebase from '../config/firebase';
-
+import { transact } from '../components/Anchor';
 const auth = Firebase.auth();
 
 export function Register({ navigation }: { navigation: any }) {

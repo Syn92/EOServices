@@ -5,7 +5,7 @@ import { ImageBackground, StyleSheet, Text, View, Image, Button, Modal, Touchabl
 import { Icon } from 'react-native-elements';
 import { Actions, Bubble, Composer, GiftedChat, Send } from 'react-native-gifted-chat';
 import { useImmer } from 'use-immer';
-import { getContractMessage, getImageMessage, IGiftedMessage, IMessage, toGiftedMessage, toISentMessage } from '../interfaces/Chat';
+import { getContractMessage, getImageMessage, IGiftedMessage, IMessage, IRoom, toGiftedMessage, toISentMessage } from '../interfaces/Chat';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
 import { ChatContext, ChatSocketContext } from '../navigation/ChatSocketProvider';
 import { RootStackScreenProps } from '../types';
@@ -13,42 +13,58 @@ import uuid from 'react-native-uuid';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import ServerConstants from '../constants/Server';
-import { ContractRequest } from '../interfaces/Contracts';
+import { ContractAPI } from '../services/Contract';
+import { ContractRequest, RequestStatus } from '../interfaces/Contracts';
 
 export default function ChatScreen({ navigation, route }: RootStackScreenProps<'Chat'>) {
   const [isSeller, setIsSeller] = React.useState<boolean>()
-  const [giftedMessages, setGiftedMessages] = useImmer<IGiftedMessage[]>([]);
+  const [contractAccepted, setContractAccepted] = React.useState<boolean>(route.params.contract && route.params.contract.accepted)
+  const [giftedMessages, setGiftedMessages] = useImmer<IGiftedMessage[]>([]); //[new, ..., old]
   const [showContractDialog, setShowContractDialog] = useState<boolean>(false);
   const [lastOfferId, setLastOfferId] = useState<string | null>(null);
   const [contractValue, setContractValue] = useState<string>(route.params.service.priceEOS.toString());
+  const [room, setRoom] = useImmer<IRoom>(route.params);
 
-  const { user } =  React.useContext(AuthenticatedUserContext);
+  const { user, urlData } =  React.useContext(AuthenticatedUserContext);
   const { messages, setRoomWatchedId }= React.useContext(ChatContext);
   const { socket } =  React.useContext(ChatSocketContext);
-
+  const contractAPI = ContractAPI.getInstance()
   React.useEffect(()=> {
-    setIsSeller(route.params.service.serviceType == 'Offering' ?
-    (user.uid == route.params.service.owner)
-    : (user.uid != route.params.service.owner))
+    setIsSeller(room.service.serviceType == 'Offering' ?
+    (user.uid == room.service.owner)
+    : (user.uid != room.service.owner))
   }, [])
 
+  useEffect(() => {
+    if(!urlData)
+      return;
+    let value = urlData.queryParams.value
+    console.log(value)
+    if(value){
+      const contractMessage = getContractMessage(route.params, user, value)
+      const contractGiftedMessage = {...contractMessage, _id: uuid.v4().toString()}
+      setGiftedMessages(previousMessages => GiftedChat.append(previousMessages, [{...toGiftedMessage(contractGiftedMessage, user), sent: false}]))
+      socket.emit('newMessage', contractMessage)
+      setLastOfferId(contractGiftedMessage._id)  }
+    }
+    , [urlData])
+
   const messagesSeenListener = (userId: string, roomId: string) => {
-    if(roomId == route.params._id) {
+    if(roomId == room._id) {
       setGiftedMessages(old => {old.forEach(x => { if(!x.received && x.user._id != userId) x.received = true})});
     }
   }
 
   const newMessageListener = (message: IMessage) => {
-    if(message.roomId != route.params._id) return;
+    if(message.roomId != room._id) return;
 
     if (message.userId == user.uid) { // from me, update it
       setGiftedMessages(old => {
-        const sentIndex = old.findIndex(x => !x.sent)
-        if(sentIndex >= 0) {
-          old[sentIndex].sent = true
-          old[sentIndex]._id = message._id
-          old[sentIndex].image = message.image
-        }
+        const sentIndex = old.findIndex(x => x.sent)
+        const notSentIndex = sentIndex >= 1 ? sentIndex - 1 : 0
+        old[notSentIndex].sent = true
+        old[notSentIndex]._id = message._id
+        old[notSentIndex].image = message.image
       });
     } else { // not from me, add it as seen
       appendMessages([{...message, seen: true}])
@@ -58,36 +74,57 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
     }
   }
 
+  const newRequestStatusListener = (status: RequestStatus) => {
+    if(status.roomId != room._id) return;
+    if(status.accepted) {
+      setRoom(old => { old.contract.accepted = true })
+      setGiftedMessages(old => { old.find(x => x.lastOffer).accepted = true; })
+      setContractAccepted(true)
+    } else {
+      setRoom(old => { old.contract = null })
+      setGiftedMessages(old => { old.find(x => x.lastOffer).denied = true; })
+      setContractAccepted(false)
+    }
+  }
+
+  const newContractRequestListener = (request: ContractRequest) => {
+    setRoom(old => {if(request.roomId == old._id) old.contract = request})
+  }
+
   useFocusEffect(
     useCallback(() => {
-      setRoomWatchedId(route.params._id);
+      setRoomWatchedId(room._id);
       return () => {
         setRoomWatchedId(null)
       }
-    }, [route.params._id])
+    }, [room._id])
   )
 
   useEffect(() => {
-    setMessages(messages.get(route.params._id))
+    setMessages(messages.get(room._id))
     socket.on('messagesSeen', messagesSeenListener)
-    socket.on('newMessage', newMessageListener);
+    socket.on('newMessage', newMessageListener)
+    socket.on('newRequestStatus', newRequestStatusListener)
+    socket.on('newContractRequest', newContractRequestListener)
 
     return function cleanup() {
       socket.off('messagesSeen', messagesSeenListener)
       socket.off('newMessage', newMessageListener)
+      socket.off('newRequestStatus', newRequestStatusListener)
+      socket.off('newContractRequest', newContractRequestListener)
       setGiftedMessages([])
     }
-  }, [route.params._id])
+  }, [room._id])
 
   useEffect(() => {
     setGiftedMessages(old => {
-      old.forEach(x => {x.lastOffer = x._id == lastOfferId})
+      old.forEach(x => {if(x.offerValue != null) x.lastOffer = x._id == lastOfferId})
     })
   }, [lastOfferId])
 
   function sendMessage(sentMessages: IGiftedMessage[]) {
     setGiftedMessages(previousMessages => GiftedChat.append(previousMessages, sentMessages))
-    for(const message of sentMessages.map(x => toISentMessage(x, route.params._id))) {
+    for(const message of sentMessages.map(x => toISentMessage(x, room))) {
       socket.emit('newMessage', message)
     }
   }
@@ -95,12 +132,12 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
   function appendMessages(newMessages: IMessage[]) {
     setGiftedMessages(previousMessages =>
       GiftedChat.append(previousMessages,
-        newMessages.map(message => toGiftedMessage(message, message.userId == user?.uid ? user : route.params.user)).reverse())
+        newMessages.map(message => toGiftedMessage(message, message.userId == user?.uid ? user : room.user, room)).reverse())
     )
   }
 
   function setMessages(newMessages: IMessage[]) {
-    setGiftedMessages(newMessages.map(message => toGiftedMessage(message, message.userId == user?.uid ? user : route.params.user)).reverse())
+    setGiftedMessages(newMessages.map(message => toGiftedMessage(message, message.userId == user?.uid ? user : room.user, room)).reverse())
     setLastOfferId(newMessages.slice().reverse().find(x => x.offerValue)?._id)
   }
 
@@ -111,7 +148,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
         <Send {...props} containerStyle={styles.send}>
           <Icon name="send" color="#0084ff"/>
         </Send>
-        {isSeller && <Actions
+        {isSeller && !contractAccepted && <Actions
           containerStyle={styles.actionButton}
           icon={() => <Icon name="description" color="grey"/>}
           onPressActionButton={() => setShowContractDialog(true)}/>}
@@ -122,24 +159,42 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
     )
   }
 
+  function getContractStatus(message: IGiftedMessage, isSender: boolean, messageStyle: any) {
+    if(message._id != lastOfferId) {
+      return (<Text style={[messageStyle]}>A newer offer has been made.</Text>)
+    }
+    const threeDays = 3 * 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
+    if(new Date(message.createdAt).getTime() + threeDays <= new Date().getTime()) {
+      return (<Text style={[messageStyle]}>The offer has expired.</Text>)
+    }
+    if(message.denied) {
+      return (<Text style={[messageStyle]}>The offer has been denied.</Text>)
+    }
+    if(message.accepted) {
+      return (<Text style={[messageStyle]}>The offer has been accepted!</Text>)
+    }
+    if(isSender) {
+      return (<Text style={[messageStyle]}>Awaiting answer...</Text>)
+    } else {
+      return (<Button onPress={openOfferDetails} title="See Offer Details"></Button>)
+    }
+  }
+
   function renderCustomView(props: Bubble<IGiftedMessage>['props']) {
     if(props.currentMessage.offerValue) {
-      const isLast = props.currentMessage._id == lastOfferId
-      const isSender = user.uid == route.params.service.owner
+      const isSender = user.uid == room.service.owner
       const messageStyle = isSender ? styles.rightContractText : styles.leftContractText
-      const thumbnail = route.params.service.thumbnail || 'https://cdn1.iconfinder.com/data/icons/business-company-1/500/image-512.png'
+      const thumbnail = room.service.thumbnail || 'https://cdn1.iconfinder.com/data/icons/business-company-1/500/image-512.png'
+
       return (
         <View style={[(isSender ? props.containerStyle.right : props.containerStyle.left) , styles.contractMessage]}>
           <Text style={[messageStyle, styles.titleContract]}>Offer {isSender ? 'Sent' : 'Received'}</Text>
           <View style={styles.contractContainer}>
-            <Text style={[styles.contractText]}>{route.params.service.title}</Text>
+            <Text style={[styles.contractText]}>{room.service.title}</Text>
             <Image style={styles.contractImage} source={{uri: thumbnail, width: 50, height: 50}}/>
             <Text style={[styles.contractText]}>{props.currentMessage.offerValue + " EOS"}</Text>
           </View>
-          {isLast ?
-            <Button onPress={() => openOfferDetails({'id': '6192cd07a10c3432358a6981',})} title="See Offer Details"></Button>
-            : <Text style={[messageStyle]}>A newer offer has been made.</Text>
-          }
+          {getContractStatus(props.currentMessage, isSender, messageStyle )}
         </View>
         )
     }
@@ -149,12 +204,14 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
 
   function openOfferDetails(params: any) {
     console.log('OPEN OFFER DETAILS');
-    navigation.navigate('Contract',params)
+    navigation.navigate('Contract',{'id': room.contract._id})
   }
 
   function sendContract(value: number) {
     const contract: ContractRequest = {
-      serviceId: route.params.service._id,
+      _id: room.contract?._id,
+      roomId: room._id,
+      serviceId: room.service._id,
       finalPriceEOS: contractValue,
       buyer: isSeller ? route.params.user.uid : user.uid,
       seller: isSeller ? user.uid : route.params.user.uid,
@@ -162,12 +219,9 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
       deposit: false,
     }
 
-    axios.post(ServerConstants.local + 'post/request', contract).then((res) => {
-      const contractMessage = getContractMessage(route.params, user, value, res.data as string)
-      const contractGiftedMessage = {...contractMessage, _id: uuid.v4().toString()}
-      setGiftedMessages(previousMessages => GiftedChat.append(previousMessages, [{...toGiftedMessage(contractGiftedMessage, user), sent: false}]))
-      socket.emit('newMessage', contractMessage)
-      setLastOfferId(contractGiftedMessage._id)
+    axios.post(ServerConstants.local + 'post/request', contract).then(async (res:any) => {
+      await contractAPI.acceptDeal(res.data.dealId,"nicoltesteos",value.toString())
+
       setShowContractDialog(false)
     }).catch(err => console.log(err))
   }
@@ -179,16 +233,16 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
       base64: true,
     }).then((res: any) => {
       if (!res.cancelled) {
-        const message = getImageMessage(route.params, user, res.base64);
+        const message = getImageMessage(room, user, res.base64);
         const contractGiftedMessage = {...message, _id: uuid.v4().toString()}
-        setGiftedMessages(previousMessages => GiftedChat.append(previousMessages, [{...toGiftedMessage(contractGiftedMessage, user), sent: false}]))
+        setGiftedMessages(previousMessages => GiftedChat.append(previousMessages, [{...toGiftedMessage(contractGiftedMessage, user, room), sent: false}]))
         socket.emit('newMessage', message)
       }
     }).catch(err => console.log(err))
   }
 
   function sendContractDialog() {
-    const cleanTitle = route.params.service.title.length > 15 ? route.params.service.title.substring(0, 15) : route.params.service.title
+    const cleanTitle = room.service.title.length > 15 ? room.service.title.substring(0, 15) : room.service.title
     return (
       <Modal
         statusBarTranslucent={true}
@@ -225,14 +279,14 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
 
   return (
     <ImageBackground style={styles.container} source={require('../assets/images/bg.png')}>
-      {/* <Text style={styles.title} numberOfLines={1}>{route.params.user.name + " - " + route.params.service.title}</Text> */}
-      <View style={styles.chatContainer}>
+      {/* <Text style={styles.title} numberOfLines={1}>{room.user.name + " - " + room.service.title}</Text> */}
+      <KeyboardAvoidingView  behavior='height' style={styles.chatContainer}>
         <GiftedChat messages={giftedMessages}
         shouldUpdateMessage={(props, nextProps) => props.currentMessage !== nextProps.currentMessage}
         user={{_id: user.uid, name: user.name}} onSend={sendMessage}
         renderInputToolbar={renderInputToolbar}
         renderCustomView={renderCustomView}/>
-      </View>
+      </KeyboardAvoidingView>
       {sendContractDialog()}
     </ImageBackground>
   );

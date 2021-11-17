@@ -45,13 +45,11 @@ async function checkUser(user: any) {
     // if user exists, return user
 
     if (res.data){
-      console.log("user exists", res.data);
       delete res.data._id;
       return [res.data, false];
     }
 
     // add user to mongodb
-    console.log("user does not exists", res.data);
     const newUsr: User = {
       uid: user.uid,
       email: user.email,
@@ -62,8 +60,7 @@ async function checkUser(user: any) {
 
     return [newUsr, true];
   } catch (err) {
-    console.log('checkuser')
-    console.log(err);
+    console.log('checkuser', err);
   }
 }
 
@@ -72,6 +69,7 @@ export default function Navigation() {
   const [isLoading, setIsLoading] = React.useState(true);
 
   function handleDeeplink(event: any) {
+    console.log(event)
     setUrlData(Linking.parse(event.url))
   }
 
@@ -79,14 +77,14 @@ export default function Navigation() {
 
     async function getInitialURL() {
       const initialURL = await Linking.getInitialURL()
-      if (initialURL) setUrlData(Linking.parse(initialURL))
+      if (initialURL){ console.log(initialURL); setUrlData(Linking.parse(initialURL))}
     }
 
     Linking.addEventListener('url', handleDeeplink)
     if (!urlData){
       getInitialURL()
     }
-    
+
     // onAuthStateChanged returns an unsubscriber
     const unsubscribeAuth = auth.onIdTokenChanged(async (authenticatedUser: any) => {
       try {
@@ -94,8 +92,6 @@ export default function Navigation() {
           var response = await checkUser(authenticatedUser);
           authenticatedUser = response[0];
           if (setIsNewUser) await setIsNewUser(response[1]);
-          console.log('HEY');
-          console.log(response[1]);
         }
 
         // setUser to either null or return value of checkUser
@@ -104,8 +100,7 @@ export default function Navigation() {
 
         setIsLoading(false);
       } catch (error) {
-        console.log('onAuthChanged')
-        console.log(error);
+        console.log('onAuthChanged', error);
       }
     });
 
@@ -132,10 +127,10 @@ export default function Navigation() {
     )
   }
 
-  return user ? 
+  return user ?
     (<NavigationContainer linking={linking}>
       <BottomTabNavigator/>
-    </NavigationContainer>) : 
+    </NavigationContainer>) :
     (<NavigationContainer>
       <AuthStack/>
     </NavigationContainer>)

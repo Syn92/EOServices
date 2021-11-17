@@ -32,6 +32,16 @@ export interface Request {
     serviceDetail: IService,
 }
 
+export interface newDeal{
+    buyer:string,
+    seller:string,
+    amount:number,
+    description:string,
+}
+export interface Deal extends newDeal{
+    dealId:string,
+}
+
 export interface RequestData {
     buying: Array<Contract>,
     selling: Array<Contract>,

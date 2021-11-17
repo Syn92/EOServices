@@ -15,10 +15,12 @@ import ActionButtonSecondary from "../components/ActionButtonSecondary";
 import * as ImagePicker from 'expo-image-picker';
 import { ExpandImagePickerResult } from "expo-image-picker/build/ImagePicker.types";
 import Carousel, { Pagination } from "react-native-snap-carousel";
+import {ContractAPI} from "../services/Contract"
+
 
 export default function ContractScreen({route, navigation }: RootTabScreenProps<'Contract'>) {
     let contractId: any = route.params;
-
+    let contractAPI:ContractAPI = ContractAPI.getInstance()
     const [contract, setContract] = React.useState<Contract>();
     const [loading, setLoading] = React.useState(true)
     const { user, setUser } =  React.useContext(AuthenticatedUserContext);
