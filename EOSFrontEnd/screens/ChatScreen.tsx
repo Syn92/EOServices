@@ -17,7 +17,7 @@ import { ContractRequest, RequestStatus } from '../interfaces/Contracts';
 
 export default function ChatScreen({ navigation, route }: RootStackScreenProps<'Chat'>) {
   const [isSeller, setIsSeller] = React.useState<boolean>()
-  const [contractAccepted, setContractAccepted] = React.useState<boolean>(route.params.contract.accepted)
+  const [contractAccepted, setContractAccepted] = React.useState<boolean>(route.params.contract && route.params.contract.accepted)
   const [giftedMessages, setGiftedMessages] = useImmer<IGiftedMessage[]>([]); //[new, ..., old]
   const [showContractDialog, setShowContractDialog] = useState<boolean>(false);
   const [lastOfferId, setLastOfferId] = useState<string | null>(null);
