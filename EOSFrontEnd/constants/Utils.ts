@@ -1,4 +1,4 @@
-export const filterCat: string[] = [
+export const filterCat = [
     'none',
     'Education',
     'House work',
@@ -11,7 +11,9 @@ export const filterCat: string[] = [
     'Rentals',
     'Event Services',
     'Other'
-  ]
+  ] as const
+
+export type FilterCat = typeof filterCat[number]
 
 export const servTypeSell = "Offering"
 export const servTypeBuy = "Looking For"
