@@ -27,6 +27,7 @@ export interface Contract {
     confirmedBuyer?: boolean,
     images?: string[],
     creationDate?: Date,
+    dealId: string,
 }
 
 export interface RequestStatus {

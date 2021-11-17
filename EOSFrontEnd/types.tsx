@@ -38,7 +38,7 @@ export type RootTabParamList = {
   TabTwo: undefined;
   TabThree: undefined;
   TabFour: undefined;
-  Contract: undefined;
+  Contract: any;
   ChatRooms: undefined;
 };
 

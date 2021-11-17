@@ -53,14 +53,23 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     }, [])
 
     function acceptContract() {
-        console.log('Accepted')
+        contractAPI.acceptDeal(contract.dealId, user?.walletAccountName, contract.finalPriceEOS).then((res: any) => {
+            console.log(res)
+            axios.patch(ServerConstants.local + 'post/accept', {serviceId: contract.serviceId, contractId: contract._id}).then(async (res:any) => {
+                await fetchContract();
+        }).catch(err => console.log(err))
+        })
     }
     function refuseContract() {
         console.log('Refused')
     }
 
     function deposit() {
-        console.log(deposit);
+        contractAPI.deposit(contract).then(() => {
+            axios.patch(ServerConstants.local + 'post/deposit', {contractId: contract._id}).then(async (res:any) => {
+                await fetchContract();
+        }).catch(err => console.log(err))
+        })
     }
 
     const addPhoto = async () => {
@@ -80,7 +89,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     function renderBuyerSection(): any {
         return(    
             contract.accepted ?  
-                (contract.deposit ? 
+                (!contract.deposit ? 
                     <View style={styles.lowerSection}>
                         <ActionButton title="Deposit" onPress={deposit}></ActionButton>
                     </View> :
@@ -119,9 +128,9 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
 
 
     return(
-            contract && time ?
-            <ScrollView>
+            contract && time?
             <ImageBackground style={{ flex: 1 }} source={require('../assets/images/bg.png')}>
+            <ScrollView style={{display: 'flex'}}>
                 <TouchableOpacity style={styles.backButton} onPress={() => {navigation.goBack()}}>
                     <Icon name="keyboard-arrow-left" size={60} color="#04B388"/>
                   </TouchableOpacity>
@@ -132,7 +141,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
                 </View>
                 <View style={styles.contentCard}>
                     <Icon style={styles.iconCard} size={35} name="tag" type="FontAwesome" color="#04B388"></Icon>
-                    <View style={{display:'flex', flexDirection: 'column'}}>
+                    <View style={{display:'flex', flexDirection: 'column', width: '80%'}}>
                         <Text style={{fontWeight: 'bold', fontSize: 18}}>Title</Text>
                         <Text style={{fontSize: 16}}>{contract.serviceDetail.title}</Text>
                     </View>
@@ -153,14 +162,14 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
                 </View>
                 <View style={styles.contentCard}>
                     <Icon style={styles.iconCard} size={35} name="person" color="#04B388"></Icon>
-                    <View style={{display:'flex', flexDirection: 'column'}}>
+                    <View style={{display:'flex', flexDirection: 'column', width: '80%'}}>
                         <Text style={{fontWeight: 'bold', fontSize: 18}}>Description</Text>
                         <Text style={{fontSize: 16}}>{contract.serviceDetail.description}</Text>
                     </View>
                 </View>
-                { user?.uid != contract.buyer.uid ? renderBuyerSection() : renderSellerSection() }
+                { user?.uid == contract.buyer.uid ? renderBuyerSection() : renderSellerSection() }
             </View>
-            { (contract.accepted && !contract.deposit) ? 
+            { (contract.accepted && contract.deposit && contract.images) ? 
             <View style={{display: 'flex', flexBasis: '100%', alignContent:'center'}}>
                 <Carousel
                   layout={"default"}
@@ -195,8 +204,8 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
                 {time == 0 ? null : <CountDown until={time} timeLabelStyle={{color: 'white'}} digitStyle={{backgroundColor: 'white'}} size={18}/>}
             </View>}
         </View>
-            </ImageBackground> 
             </ScrollView>
+            </ImageBackground> 
             
             
             : <Loading/>

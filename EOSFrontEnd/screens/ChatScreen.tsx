@@ -189,11 +189,11 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
       return (
         <View style={[(isSender ? props.containerStyle.right : props.containerStyle.left) , styles.contractMessage]}>
           <Text style={[messageStyle, styles.titleContract]}>Offer {isSender ? 'Sent' : 'Received'}</Text>
-          <View style={styles.contractContainer}>
+          <TouchableOpacity onPress={openOfferDetails}  style={styles.contractContainer}>
             <Text style={[styles.contractText]}>{room.service.title}</Text>
             <Image style={styles.contractImage} source={{uri: thumbnail, width: 50, height: 50}}/>
             <Text style={[styles.contractText]}>{props.currentMessage.offerValue + " EOS"}</Text>
-          </View>
+          </TouchableOpacity>
           {getContractStatus(props.currentMessage, isSender, messageStyle )}
         </View>
         )
@@ -202,8 +202,8 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
     return null
   }
 
-  function openOfferDetails(params: any) {
-    console.log('OPEN OFFER DETAILS');
+  function openOfferDetails() {
+    console.log(room.contract._id);
     navigation.navigate('Contract',{'id': room.contract._id})
   }
 
