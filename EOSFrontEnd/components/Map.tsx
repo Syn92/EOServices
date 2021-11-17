@@ -1,15 +1,17 @@
 import React, { LegacyRef, useEffect, useState } from 'react';
-import { View, StyleSheet, Platform } from 'react-native';
+import { View, StyleSheet, Platform, Image } from 'react-native';
 import MapView, { Camera, Geojson, LatLng, Marker, Region, UrlTile } from 'react-native-maps';
 import Geocoder from 'react-native-geocoding';
 import axios, { CancelTokenSource } from 'axios';
 import { CustomFeature, CustomFeatureColl, getCenter } from '../utils/Cadastre';
 import ServerConstants from '../constants/Server';
 import { IService } from '../interfaces/Service';
+import { FilterCat, filterCat } from '../constants/Utils';
 
 interface IMarker {
     key: string;
     coordinate: LatLng;
+    category: FilterCat | 'default';
     // title: string;
     // description: string;
     // type: EMarkerType // todo: change marker icon depending on type
@@ -53,6 +55,21 @@ export default function Map(props: IProps) {
 
     let cancelTokenSource: CancelTokenSource | null;
 
+    const markerIcons = {
+        'none': require('../assets/images/markers/none.png'),
+        'Education': require('../assets/images/markers/Education.png'),
+        'House work': require('../assets/images/markers/House.png'),
+        'Health care': require('../assets/images/markers/Health.png'),
+        'Wellness & personnal grooming': require('../assets/images/markers/Wellness.png'),
+        'Sport and fitness': require('../assets/images/markers/Sport.png'),
+        'Hospitality': require('../assets/images/markers/Hospitality.png'),
+        'Transport': require('../assets/images/markers/Transport.png'),
+        'Utilities': require('../assets/images/markers/Utilities.png'),
+        'Rentals': require('../assets/images/markers/Rentals.png'),
+        'Event Services': require('../assets/images/markers/Event.png'),
+        'Other': require('../assets/images/markers/Other.png')
+    }
+
     useEffect( () => {
         if(props.selectedCadastre) {
             if(selectedGeoJson.features.length > 0 && selectedGeoJson.features[0].properties.ID_UEV == props.selectedCadastre.properties.ID_UEV) {
@@ -62,6 +79,7 @@ export default function Map(props: IProps) {
             const marker: IMarker = {
                 key: 'pressedMarker',
                 coordinate: getCenter(props.selectedCadastre),
+                category: 'default'
             }
             setSelectedMarker(marker)
             const cam: Partial<Camera> = {
@@ -79,8 +97,9 @@ export default function Map(props: IProps) {
         if(props.services) {
             setMarkers(props.services.map((x) => { return {
                 key: x.cadastre.properties.ID_UEV,
-                coordinate: x.markerPos
-            } as IMarker}))
+                coordinate: x.markerPos,
+                category: x.category || 'default'
+            }}))
         } else {
             setMarkers([])
         }
@@ -106,6 +125,7 @@ export default function Map(props: IProps) {
             const marker: IMarker = {
                 key: 'pressedMarker',
                 coordinate: getCenter(event.feature),
+                category: 'default'
             }
             setSelectedMarker(marker);
             if(props.onPressed) props.onPressed(event.feature);
@@ -177,16 +197,17 @@ export default function Map(props: IProps) {
                 tappable={true} onPress={mapPressed}/>
                 <UrlTile urlTemplate='https://api.maptiler.com/maps/streets/{z}/{x}/{y}@2x.png?key=eif7poHbo0Lyr1ArRDWL'
                 zIndex={1}/>
-                <Marker key="example" coordinate={testMarkerCoord} title="Test Poly" description="Marker test description"
-                    icon={require('../assets/images/markers/test.png')} tracksViewChanges={false}/>
                 {markers.length > 0 ? renderMarkers(markers) : null}
             </MapView>
         </View>
     );
     function renderMarkers(markers: IMarker[]): JSX.Element[] {
-        return markers.map((marker) => {
+        return markers.map((marker, key) => {
             return (
-                <Marker key={marker.key} onPress={(element) => {if(props.onMarkerPressed)props.onMarkerPressed(marker.key)} } coordinate={marker.coordinate} tracksViewChanges={false} zIndex={5}/>
+                <Marker key={key} tracksViewChanges={false} zIndex={5}
+                coordinate={marker.coordinate}
+                image={marker.category == 'default' ? null : markerIcons[marker.category]}
+                onPress={(element) => {if(props.onMarkerPressed) props.onMarkerPressed(marker.key)} } />
             )
         });
     }
