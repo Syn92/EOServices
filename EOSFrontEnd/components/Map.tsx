@@ -96,7 +96,8 @@ export default function Map(props: IProps) {
     useEffect( () => {
         if(props.services) {
             setMarkers(props.services.map((x) => { return {
-                key: x.cadastre.properties.ID_UEV,
+                key: x._id,
+                // key: x.cadastre.properties.ID_UEV,
                 coordinate: x.markerPos,
                 category: x.category || 'default'
             }}))
