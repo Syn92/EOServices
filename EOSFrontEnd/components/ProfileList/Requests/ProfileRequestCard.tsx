@@ -41,7 +41,7 @@ export function ProfileRequestCard(props: Prop) {
 
     async function acceptRequest() {
         try {
-            await axios.patch(Server.local + 'post/accept', { 
+            await axios.patch(Server.local + 'post/accept', {
                 serviceId: props.request.serviceId,
                 contractId: props.request._id
             })
@@ -81,7 +81,7 @@ export function ProfileRequestCard(props: Prop) {
     }
 
     function incomingModal() {
-        
+
         return (
             <View style={modalStyles.modalView}>
                 <Modal
@@ -103,7 +103,7 @@ export function ProfileRequestCard(props: Prop) {
                     <View style={modalStyles.titleContentContainer}>
                             <Text style={modalStyles.title}>{props.requestInfo.title}</Text>
                             <Text style={modalStyles.user}>From: {props.requestInfo.requestUser}</Text>
-                    </View> 
+                    </View>
                 </View>
                 {/* idk si ca reste */}
                 {/* <View style={modalStyles.contentContainer}>
@@ -136,7 +136,7 @@ export function ProfileRequestCard(props: Prop) {
                     <View style={modalStyles.titleContentContainer}>
                             <Text style={modalStyles.title}>{props.requestInfo.title}</Text>
                             <Text style={modalStyles.user}>Offered by: {props.requestInfo.serviceOwner}</Text>
-                    </View> 
+                    </View>
                 </View>
                 {/* same */}
                 {/* <View style={modalStyles.contentContainer}>
@@ -164,7 +164,7 @@ export function ProfileRequestCard(props: Prop) {
                     setModalVisible(false)
                 }}>
                 <View style={styles.centeredView}>
-                        {cardType == RequestIndex.selling ? incomingModal() : outgoingModal()}
+                        {cardType == RequestIndex.selling ? outgoingModal() : incomingModal()}
                 </View>
             </Modal>
             <View style={styles.imageContainer}>
@@ -179,7 +179,7 @@ export function ProfileRequestCard(props: Prop) {
                     <Text style={styles.textTitle}>{cardType == RequestIndex.selling ? 'Requested by: ' : 'Requested to: ' }</Text>
                     <Text style={styles.textContent}>{cardType == RequestIndex.selling ? props.requestInfo.requestUser: props.requestInfo.serviceOwner}</Text>
                 </View>
-            </View> 
+            </View>
         </TouchableOpacity>
     )
 }
@@ -187,7 +187,7 @@ export function ProfileRequestCard(props: Prop) {
 const styles = StyleSheet.create({
     card: {
         flexDirection: 'row',
-        marginVertical: 10, 
+        marginVertical: 10,
         width: '88%',
         padding: 5,
         alignContent: 'center',

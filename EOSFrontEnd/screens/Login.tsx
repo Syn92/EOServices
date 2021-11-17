@@ -50,7 +50,7 @@ export function Login({navigation}: {navigation: any}) {
     try {
       setLoadingStatus(true);
       await Facebook.initializeAsync({appId: Constants.manifest?.extra?.fbAppId})
-      const result = await Facebook.logInWithReadPermissionsAsync({permissions: ['public_profile']})
+      const result = await Facebook.logInWithReadPermissionsAsync({permissions: ['public_profile', 'email']})
 
       if (result.type == 'success') {
         setLoadingStatus(true);
@@ -63,8 +63,7 @@ export function Login({navigation}: {navigation: any}) {
       }
 
     } catch(e) {
-      console.log('sign in fb')
-      console.log(e);
+      console.error('Signin with FB: ', e);
       setLoadingStatus(false);
       return { error: true };
     }

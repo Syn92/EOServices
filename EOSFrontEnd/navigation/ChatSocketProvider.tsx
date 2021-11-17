@@ -4,6 +4,7 @@ import { io, Socket } from 'socket.io-client';
 import { useImmer } from 'use-immer';
 import ServerConstants from '../constants/Server';
 import { IMessage, IRoom } from '../interfaces/Chat';
+import { ContractRequest, RequestStatus } from '../interfaces/Contracts';
 import { AuthenticatedUserContext } from './AuthenticatedUserProvider';
 
 export interface SocketContextType {
@@ -67,6 +68,8 @@ export function ChatSocketProvider({ children }:{ children: any }) {
     socket.on('messagesSeen', (userId: string, roomId: string) => {
       setMessages(old => {old.get(roomId)?.forEach(x => { if(!x.seen && x.userId != userId) x.seen = true })});
     })
+    socket.on('newRequestStatus', newRequestStatusListener)
+    socket.on('newContractRequest', newContractRequestListener)
   }
 
   function setUpMessages(newRooms: IRoom[]): void {
@@ -99,6 +102,19 @@ export function ChatSocketProvider({ children }:{ children: any }) {
         oldMessages.set(message.roomId, [message])
     })
   };
+
+  const newRequestStatusListener = (status: RequestStatus) => {
+    setRooms(old => {
+      if(status.accepted)
+        old.find(x => x._id == status.roomId).contract.accepted = true;
+      else
+        old.find(x => x._id == status.roomId).contract = null;
+    })
+  }
+
+  const newContractRequestListener = (request: ContractRequest) => {
+    setRooms(old =>{ old.find(x => x._id == request.roomId).contract = request })
+  }
 
   useEffect(() => {
     socket.on('newMessage', newMessageListener)
