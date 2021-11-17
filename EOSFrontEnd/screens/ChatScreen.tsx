@@ -25,7 +25,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
   const [contractValue, setContractValue] = useState<string>(route.params.service.priceEOS.toString());
   const [room, setRoom] = useImmer<IRoom>(route.params);
 
-  const { user, urlData } =  React.useContext(AuthenticatedUserContext);
+  const { user, urlData,setUrlData } =  React.useContext(AuthenticatedUserContext);
   const { messages, setRoomWatchedId }= React.useContext(ChatContext);
   const { socket } =  React.useContext(ChatSocketContext);
   const contractAPI = ContractAPI.getInstance()
@@ -38,14 +38,17 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
   useEffect(() => {
     if(!urlData)
       return;
+    console.log(urlData.queryParams.value)
     let value = urlData.queryParams.value
-    console.log(value)
     if(value){
+      console.log(value)
       const contractMessage = getContractMessage(route.params, user, value)
       const contractGiftedMessage = {...contractMessage, _id: uuid.v4().toString()}
       setGiftedMessages(previousMessages => GiftedChat.append(previousMessages, [{...toGiftedMessage(contractGiftedMessage, user), sent: false}]))
       socket.emit('newMessage', contractMessage)
-      setLastOfferId(contractGiftedMessage._id)  }
+      setLastOfferId(contractGiftedMessage._id)
+      setUrlData(null)
+    }
     }
     , [urlData])
 
@@ -217,11 +220,12 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
       seller: isSeller ? user.uid : route.params.user.uid,
       accepted: false,
       deposit: false,
+      sellerWalletAccount: user.walletAccountName,
+      buyerWalletAccount:room.user.walletAccountName
     }
 
     axios.post(ServerConstants.local + 'post/request', contract).then(async (res:any) => {
-      await contractAPI.acceptDeal(res.data.dealId,"nicoltesteos",value.toString())
-
+      await contractAPI.acceptDeal(res.data.dealId,user.walletAccountName,value.toString())
       setShowContractDialog(false)
     }).catch(err => console.log(err))
   }
