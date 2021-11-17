@@ -17,6 +17,7 @@ import { ContractRequest, RequestStatus } from '../interfaces/Contracts';
 
 export default function ChatScreen({ navigation, route }: RootStackScreenProps<'Chat'>) {
   const [isSeller, setIsSeller] = React.useState<boolean>()
+  const [contractAccepted, setContractAccepted] = React.useState<boolean>(route.params.contract.accepted)
   const [giftedMessages, setGiftedMessages] = useImmer<IGiftedMessage[]>([]); //[new, ..., old]
   const [showContractDialog, setShowContractDialog] = useState<boolean>(false);
   const [lastOfferId, setLastOfferId] = useState<string | null>(null);
@@ -63,9 +64,11 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
     if(status.accepted) {
       setRoom(old => { old.contract.accepted = true })
       setGiftedMessages(old => { old.find(x => x.lastOffer).accepted = true; })
+      setContractAccepted(true)
     } else {
       setRoom(old => { old.contract = null })
       setGiftedMessages(old => { old.find(x => x.lastOffer).denied = true; })
+      setContractAccepted(false)
     }
   }
 
@@ -130,7 +133,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
         <Send {...props} containerStyle={styles.send}>
           <Icon name="send" color="#0084ff"/>
         </Send>
-        {isSeller && <Actions
+        {isSeller && !contractAccepted && <Actions
           containerStyle={styles.actionButton}
           icon={() => <Icon name="description" color="grey"/>}
           onPressActionButton={() => setShowContractDialog(true)}/>}
