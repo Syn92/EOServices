@@ -41,16 +41,30 @@ export class ContractAPI{
 
     private async signingRequest(actions:any,value:string){
         SigningRequest.create({ actions,chainId:"2a02a0053e5a8cf73a56ba0fda11e4d92e0238a4a2aa74fccf46d5a910746840" }, this.opts ).then((res)=>{
-          res.setCallback("exp://10.0.0.221:19000/--/one?value="+value+"",false)
+          res.setCallback("exp://10.0.0.221:19000/--/three?value="+value+"",false)
           Linking.openURL(res.encode())
         })
 
     }
-    // async getDealId(){
-    //   rpc.history_get_transaction("28ef17bf37881f84df3d281b1d0cf269f7df8f83ee0ef4d6981f6c34207d071e").then((res)=>{
-    //     console.log(res.traces[res.traces.length-1].act.data.deal_id)
-    //   })
-    // }
+     async completeDeal(dealId:string,walletAccountName:string,value:string,action:string){
+      const actions = [{
+        account: 'eosmarktplce',
+        name: action,
+        authorization: [{
+          actor:walletAccountName,
+          permission: 'active',
+        }],
+        data: action == 'delivered' ? {
+            party: walletAccountName,
+            memo: dealId,
+            deal_id:dealId
+        } : {
+          party: walletAccountName,
+          deal_id:dealId
+      },
+      }]
+      this.signingRequest(actions, value).catch((err) => {console.log(err)})
+     }
 
     async createDeal(deal:ContractRequest){
         return axios.post(ServerConstants.local+"contract",deal)

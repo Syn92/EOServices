@@ -25,16 +25,33 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     const [loading, setLoading] = React.useState(true)
     const { user, urlData,setUrlData } =  React.useContext(AuthenticatedUserContext);
     const [time, setTime] = React.useState<number>()
-    const [isConfirm, setConfirmed] = React.useState(false)
     const [activeIndex, setActiveIndex] = React.useState(0);
     
     React.useEffect(() => {
         if(!urlData)
             return
         let value = urlData.queryParams.value
-        if(value){
-            console.log("got through")
+        if(value == 'accepted'){
+            console.log('acceptedValue: ' +value);
             axios.patch(ServerConstants.local + 'post/accept', {serviceId: contract.serviceId, contractId: contract._id}).then(async (res:any) => {
+                await fetchContract();
+            }).catch(err => console.log(err))
+            setUrlData(null)
+        } else if(value == 'deposited'){
+            console.log('depositedValue: '+ value)
+            axios.patch(ServerConstants.local + 'post/deposit', {contractId: contract._id}).then(async (res:any) => {
+                await fetchContract();
+            }).catch(err => console.log(err))
+            setUrlData(null)
+        } else if (value == 'received'){
+            console.log('receivedValue: '+ value)
+            axios.patch(ServerConstants.local + 'post/received', {contractId: contract._id}).then(async (res:any) => {
+                await fetchContract();
+            }).catch(err => console.log(err))
+            setUrlData(null)
+        } else if (value == 'delivered'){
+            console.log('given: '+ value)
+            axios.patch(ServerConstants.local + 'post/delivered', {contractId: contract._id}).then(async (res:any) => {
                 await fetchContract();
             }).catch(err => console.log(err))
             setUrlData(null)
@@ -55,10 +72,6 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
           }
     }
 
-    const myMethod = () => {
-        console.log('slided')
-        setConfirmed(true);
-    }
     
 
     React.useEffect(() => {
@@ -67,7 +80,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     }, [])
 
     function acceptContract() {
-        contractAPI.acceptDeal(contract.dealId, user?.walletAccountName, contract._id).then((res: any) => {
+        contractAPI.acceptDeal(contract.dealId, user?.walletAccountName, 'accepted').then((res: any) => {
             console.log(res)
             
         })
@@ -78,10 +91,16 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
 
     function deposit() {
         contractAPI.deposit(contract.dealId, user?.walletAccountName, Number(contract.finalPriceEOS)).then(() => {
-            axios.patch(ServerConstants.local + 'post/deposit', {contractId: contract._id}).then(async (res:any) => {
-                await fetchContract();
-        }).catch(err => console.log(err))
+           
         })
+    }
+
+    function serviceReceived() {
+        contractAPI.completeDeal(contract.dealId, user?.walletAccountName, 'received', 'goodsrcvd').catch((err) => {console.log(err)})
+    }
+
+    function serviceDelivered() {
+        contractAPI.completeDeal(contract.dealId, user?.walletAccountName, 'delivered', 'delivered').catch((err) => {console.log(err)})
     }
 
     const addPhoto = async () => {
@@ -106,7 +125,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
                         <ActionButton title="Deposit" onPress={deposit}></ActionButton>
                     </View> :
                 <View style={styles.lowerSection}>
-                    <SliderComponent isConfirm={isConfirm} callback={myMethod} ></SliderComponent>
+                    <SliderComponent isConfirm={contract.serviceReceived} callback={serviceReceived} ></SliderComponent>
                 </View>) :
                 <View style={styles.contractButtonContainer}>
                     <ActionButtonSecondary styleContainer={{width: '45%', borderRadius: 20}} title="Refuse" onPress={refuseContract}></ActionButtonSecondary>
@@ -121,8 +140,8 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
                 {contract.accepted ? 
                 (contract.deposit ? 
                 <View>
-                    <SliderComponent  isConfirm={isConfirm} callback={myMethod} ></SliderComponent>
-                    {isConfirm ? null : <ActionButton title="Add photo" onPress={addPhoto}></ActionButton>}
+                    <SliderComponent  isConfirm={contract.serviceDelivered} callback={serviceDelivered} ></SliderComponent>
+                    {contract.serviceDelivered ? null : <ActionButton title="Add photo" onPress={addPhoto}></ActionButton>}
 
                 </View>
                 :  <Text style={{textAlign: 'center'}}>Awaiting buyer's deposit... </Text>) :  <Text style={{textAlign: 'center'}}>Awaiting buyer's acceptance... </Text> }
@@ -181,8 +200,8 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
                 </View>
                 { user?.uid == contract.buyer.uid ? renderBuyerSection() : renderSellerSection() }
             </View>
-            { (contract.accepted && contract.deposit && contract.images) ? 
-            <View style={{display: 'flex', flexBasis: '100%', alignContent:'center'}}>
+            { (contract.accepted && contract.deposit) ? 
+             contract.images ? <View style={{display: 'flex', flexBasis: '100%', alignContent:'center'}}>
                 <Carousel
                   layout={"default"}
                   data={contract.images}
@@ -210,7 +229,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
                     inactiveDotOpacity={0.4}
                     inactiveDotScale={0.6}
                   />
-            </View> : 
+            </View> : null : 
             <View>
                 <Text style={{color: 'white', textAlign: 'center', marginTop: '5%'}}>Contract expires in: {}</Text>
                 {time == 0 ? null : <CountDown until={time} timeLabelStyle={{color: 'white'}} digitStyle={{backgroundColor: 'white'}} size={18}/>}

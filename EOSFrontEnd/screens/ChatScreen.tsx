@@ -90,6 +90,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
   }
 
   const newContractRequestListener = (request: ContractRequest) => {
+    console.log("called contract request")
     setRoom(old => {if(request.roomId == old._id) old.contract = request})
   }
 
