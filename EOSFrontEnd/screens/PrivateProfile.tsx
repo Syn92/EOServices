@@ -5,7 +5,7 @@ import { Button, Dimensions, Image, ImageBackground, Modal, ScrollView, StyleShe
 import { ProfileCard } from '../components/ProfileCard'
 import { Icon } from 'react-native-elements';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
-import { User } from '../interfaces/User';
+import { createRating, User } from '../interfaces/User';
 import axios from 'axios';
 import ServerConstants from '../constants/Server';
 import Loading from '../components/Loading';
@@ -58,7 +58,7 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
 
     React.useEffect(() => {
         fetchRoutine()
-        displayRating(user?.rating)
+        setRating(createRating(user?.rating));
     }, []);
 
     async function fetchRoutine(): Promise<void> {
@@ -127,24 +127,6 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
             throw new Error('Error retrieving user after modifying description')
         }
     }
-    
-    function displayRating(rating: number){
-        let ratingDisplayable: number = Math.round(rating*2)/2
-        let fullStars: number = Math.floor(ratingDisplayable);
-        let halfStars: number = (ratingDisplayable - fullStars) == 0.5 ? 1 : 0;
-        let emptyStars: number = 5 - fullStars - halfStars;
-        let stars = [];
-        for (let i = 0; i < fullStars; i++) {
-            stars.push(<Icon name='star' type='material' color='#04b388' size={37}  key={'fullStars' + i}></Icon>)
-        }
-        for (let i = 0; i < halfStars; i++) {
-            stars.push(<Icon name='star-half' type='material' color='#04b388' size={37}  key={'halfStars' + i}  ></Icon>)
-        }
-        for (let i = 0; i < emptyStars; i++) {
-            stars.push(<Icon name='star-outline' type='material' color='#04b388' size={37} key={'emptyStars' + i} ></Icon>)
-        }
-        setRating(stars);
-    }
 
     async function editDescription() {
         try {
@@ -189,7 +171,7 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
           quality: 1,
           base64: true,
         });
-    
+
         if (!result.cancelled) {
           await setImage(result.base64);
         }
@@ -202,7 +184,7 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
 
     async function uploadAvatar(image: string){
         try {
-            let res = await axios.post(ServerConstants.local + 'auth/avatar', { 
+            let res = await axios.post(ServerConstants.local + 'auth/avatar', {
                 uid: user?.uid,
                 avatar: image
             })
@@ -373,7 +355,7 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
 
             case ModalType.avatar:
                 return avatarModal();
-        
+
             default:
                 return descriptionModal();
         }
@@ -398,16 +380,25 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
                     <StatusBar style='light' />
                     {/* ---- Avatar + ratings ---- */}
                     <View style={styles.avatar}>
-                        <TouchableOpacity style={styles.logoutIcon} onPress={handleLogout}>
+                        <View style={styles.headerIcons}>
+                        <TouchableOpacity style={styles.headerIcon} onPress={() => navigation.navigate('SearchUser')}>
+                            <Icon name='search'
+                                type='material'
+                                color='#04b388'
+                                size={37} />
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.headerIcon} onPress={handleLogout}>
                             <Icon name='logout'
                                 type='material'
                                 color='#04b388'
                                 size={37} />
                         </TouchableOpacity>
+                        </View>
+
                         <Image resizeMode='cover' style={styles.photo} source={user?.avatar ? {uri: user?.avatar} : require('../assets/images/avatar.webp')} />
                         {/* <TouchableOpacity onPress={() => navigation.navigate('PublicProfile', {uid: 'HSkPJjeaFca96K98Xpqw76DGo303'})}> */}
                         <TouchableOpacity onPress={() => {openModal(ModalType.avatar)}}>
-                            <Icon name='edit' 
+                            <Icon name='edit'
                                 type='material'
                                 color='#04b388'
                                 backgroundColor="white"
@@ -455,8 +446,8 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
                             {servicesDisplayed && services ?
                                 <TouchableOpacity style={{paddingLeft: '5%', marginRight: '2%' }} activeOpacity={0.2} onPress={fetchUserServices}>
                                     <Icon name='refresh' type='material' color='#04b388'/>
-                                </TouchableOpacity> : 
-                                <Text style={{marginLeft: '5%', fontWeight: 'bold'}}>Orders</Text> 
+                                </TouchableOpacity> :
+                                <Text style={{marginLeft: '5%', fontWeight: 'bold'}}>Orders</Text>
                             }
                             <TouchableOpacity style={{ paddingRight: '5%', marginLeft: '2%' }} activeOpacity={0.2} onPress={toggleServices}>
                                 <Icon name='remove' type='material' color='#04b388' />
@@ -470,8 +461,8 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
                             {pendingRequestsDisplayed && pendingRequests ?
                                 <TouchableOpacity style={{paddingLeft: '5%', marginRight: '2%' }} activeOpacity={0.2} onPress={fetchPendingRequests}>
                                     <Icon name='refresh' type='material' color='#04b388'/>
-                                </TouchableOpacity> : 
-                                <Text style={{marginLeft: '5%', fontWeight: 'bold'}}>Pending requests</Text> 
+                                </TouchableOpacity> :
+                                <Text style={{marginLeft: '5%', fontWeight: 'bold'}}>Pending requests</Text>
                             }
                             <TouchableOpacity style={{ paddingRight: '5%', marginLeft: '2%' }} activeOpacity={0.2} onPress={togglePendingRequests}>
                                 <Icon name='remove' type='material' color='#04b388' />
@@ -616,10 +607,12 @@ const styles = StyleSheet.create({
         fontStyle: 'italic',
         fontSize: 10
     },
-    logoutIcon: {
+    headerIcons: {
         flexDirection: 'row',
-        justifyContent: 'flex-end',
+        justifyContent: 'space-between',
         width: '90%',
+    },
+    headerIcon: {
     },
     button: {
         backgroundColor: '#04b388',

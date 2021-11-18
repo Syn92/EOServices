@@ -303,7 +303,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: 'white',
     alignItems: 'center',
     flexDirection: 'column'
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 10,
     display: 'flex',
-    flexDirection: 'column'
+    flexDirection: 'column',
   },
   buttonStyle: {
     backgroundColor: '#fff',
