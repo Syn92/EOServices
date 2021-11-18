@@ -41,7 +41,7 @@ export class ContractAPI{
 
     private async signingRequest(actions:any,value:string){
         SigningRequest.create({ actions,chainId:"2a02a0053e5a8cf73a56ba0fda11e4d92e0238a4a2aa74fccf46d5a910746840" }, this.opts ).then((res)=>{
-          res.setCallback("exp://10.200.22.9:19000/--/one?value="+value+"",false)
+          res.setCallback("exp://192.168.86.249:19000/--/one?value="+value+"",false)
           Linking.openURL(res.encode())
         })
 
@@ -73,22 +73,22 @@ export class ContractAPI{
           console.log(err)
         })
     }
-    async deposit(contract:Contract){
+    async deposit(dealId:string,walletAccountName:string,price:string){
       const actions = [{
         account: 'eosio.token',
         name: 'transfer',
         authorization: [{
-          actor: contract.buyer,
+          actor: walletAccountName,
           permission: 'active',
         }],
         data: {
-          from: contract.buyer,
+          from: walletAccountName,
           to: "eosmarktplce",
-          quantity: contract.finalPriceEOS+" EOS",
-          memo: contract.contractId
+          quantity: price+" EOS",
+          memo: dealId
         },
       }]
-      this.signingRequest(actions)
+      this.signingRequest(actions,price)
 
     }
 

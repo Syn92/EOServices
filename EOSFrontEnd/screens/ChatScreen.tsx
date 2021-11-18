@@ -38,7 +38,6 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
   useEffect(() => {
     if(!urlData)
       return;
-    console.log(urlData.queryParams.value)
     let value = urlData.queryParams.value
     if(value){
       console.log(value)
@@ -206,7 +205,6 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
   }
 
   function openOfferDetails() {
-    console.log(room.contract._id);
     navigation.navigate('Contract',{'id': room.contract._id})
   }
 

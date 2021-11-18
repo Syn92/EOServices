@@ -29,12 +29,17 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     const [activeIndex, setActiveIndex] = React.useState(0);
     
     React.useEffect(() => {
-        if(!urlData){
-            return;
-        }
+        if(!urlData)
+            return
+        let value = urlData.queryParams.value
+        if(value){
+            console.log("got through")
             axios.patch(ServerConstants.local + 'post/accept', {serviceId: contract.serviceId, contractId: contract._id}).then(async (res:any) => {
                 await fetchContract();
-        }).catch(err => console.log(err))
+            }).catch(err => console.log(err))
+            setUrlData(null)
+        }
+
     }, [urlData])
 
     
@@ -62,7 +67,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     }, [])
 
     function acceptContract() {
-        contractAPI.acceptDeal(contract.dealId, user?.walletAccountName, contract.finalPriceEOS).then((res: any) => {
+        contractAPI.acceptDeal(contract.dealId, user?.walletAccountName, contract._id).then((res: any) => {
             console.log(res)
             
         })
@@ -72,7 +77,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     }
 
     function deposit() {
-        contractAPI.deposit(contract).then(() => {
+        contractAPI.deposit(contract.dealId, user?.walletAccountName, contract.finalPriceEOS).then(() => {
             axios.patch(ServerConstants.local + 'post/deposit', {contractId: contract._id}).then(async (res:any) => {
                 await fetchContract();
         }).catch(err => console.log(err))
@@ -114,7 +119,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
         return(
             <View style={styles.lowerSection}>
                 {contract.accepted ? 
-                (!contract.deposit ? 
+                (contract.deposit ? 
                 <View>
                     <SliderComponent  isConfirm={isConfirm} callback={myMethod} ></SliderComponent>
                     {isConfirm ? null : <ActionButton title="Add photo" onPress={addPhoto}></ActionButton>}
