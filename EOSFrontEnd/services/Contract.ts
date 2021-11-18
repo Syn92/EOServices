@@ -73,7 +73,8 @@ export class ContractAPI{
           console.log(err)
         })
     }
-    async deposit(dealId:string,walletAccountName:string,price:string){
+    async deposit(dealId:string,walletAccountName:string,price:number){
+      console.log(price.toFixed(4).toString())
       const actions = [{
         account: 'eosio.token',
         name: 'transfer',
@@ -84,11 +85,11 @@ export class ContractAPI{
         data: {
           from: walletAccountName,
           to: "eosmarktplce",
-          quantity: price+" EOS",
+          quantity: price.toFixed(4).toString()+" EOS",
           memo: dealId
         },
       }]
-      this.signingRequest(actions,price)
+      this.signingRequest(actions,price.toString())
 
     }
 

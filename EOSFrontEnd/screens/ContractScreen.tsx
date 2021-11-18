@@ -77,7 +77,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     }
 
     function deposit() {
-        contractAPI.deposit(contract.dealId, user?.walletAccountName, contract.finalPriceEOS).then(() => {
+        contractAPI.deposit(contract.dealId, user?.walletAccountName, Number(contract.finalPriceEOS)).then(() => {
             axios.patch(ServerConstants.local + 'post/deposit', {contractId: contract._id}).then(async (res:any) => {
                 await fetchContract();
         }).catch(err => console.log(err))
