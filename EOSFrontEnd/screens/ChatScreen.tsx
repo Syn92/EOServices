@@ -223,7 +223,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
       await contractAPI.acceptDeal(res.data.dealId,"nicoltesteos",value.toString())
 
       setShowContractDialog(false)
-    }).catch(err => console.log(err))
+    }).catch(err => console.log('send contracts', err))
   }
 
   function sendImageMessage() {

@@ -72,6 +72,8 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
         if(!result.cancelled){
             axios.post(ServerConstants.local + 'post/contract/image', {contractId: contract._id, image:result.base64}).then(() => {
                 fetchContract();
+            }).catch((e) => {
+                console.log('add photo: ', e)
             })
         }
 

@@ -139,7 +139,7 @@ export default function Map(props: IProps) {
                 // handle error
                 setGeoJson({type: geoJson.type, features: []});
                 if(!axios.isCancel(error)) {
-                    console.log(error);
+                    console.log('cadastre: ', error);
                 }
             }).then(function () {
                 // always executed

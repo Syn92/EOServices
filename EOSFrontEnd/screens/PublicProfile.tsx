@@ -37,14 +37,17 @@ export function PublicProfile({route, navigation}: any) {
     }
 
     async function fetchPublicUser() {
-        console.log(uid)
-        const res = await axios.get<any>(ServerConstants.local + 'auth', { params: { uid: uid } });
-        if (res.data){
-            const data: any = res.data
-            delete data._id
-            setPublicUser(data)
-        } else {
-            throw new Error('Error retrieving user')
+        try {
+            const res = await axios.get<any>(ServerConstants.local + 'auth', { params: { uid: uid } });
+            if (res.data){
+                const data: any = res.data
+                delete data._id
+                setPublicUser(data)
+            } else {
+                throw new Error('Error retrieving user')
+            }
+        } catch (e) {
+            console.log('fetch public user', e)
         }
     }
 

@@ -117,16 +117,20 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
     }
 
     async function fetchUser() {
-        const res = await axios.get<any>(ServerConstants.local + 'auth', { params: { uid: user?.uid } });
-        if (res.data) {
-            const data: any = res.data
-            delete data._id
-            console.log('heereee')
-            if (setUser) {
-                setUser(data as User)
+        try {
+            const res = await axios.get<any>(ServerConstants.local + 'auth', { params: { uid: user?.uid } });
+            if (res.data) {
+                const data: any = res.data
+                delete data._id
+                console.log('heereee')
+                if (setUser) {
+                    setUser(data as User)
+                }
+            } else {
+                throw new Error('Error retrieving user after modifying description')
             }
-        } else {
-            throw new Error('Error retrieving user after modifying description')
+        } catch (e) {
+            console.log('fetch user: ', e)
         }
     }
     
@@ -154,7 +158,6 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
                 uid: user?.uid,
                 patch: { description: description }
             })
-            console.log(res)
             if (res.status == 200) {
                 await fetchUser()
             } else {
