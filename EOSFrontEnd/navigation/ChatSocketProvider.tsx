@@ -34,26 +34,26 @@ export function ChatSocketProvider({ children }:{ children: any }) {
   const { user } =  React.useContext(AuthenticatedUserContext);
 
   useEffect(() => {
-    if(!user){
-      setRooms([]);
-      setMessages(old => { old.clear() });
-      setNotifsCount(0);
-      socket.close();
-      return;
-    }
+    setRooms([]);
+    setMessages(old => { old.clear() });
+    setNotifsCount(0);
+    setRoomWatchedId(null);
+
+    if(!user) return;
 
     axios.get(ServerConstants.local + 'chatRooms', { params: {userId: user.uid } })
-      .then(function (response) {
-        const newRooms = response.data as IRoom[] || [];
-        setUpMessages(newRooms)
-        setUpSockets(newRooms.map(x => x._id));
-      }).catch(function (error) {
-        console.log(error);
-      });
+    .then(function (response) {
+      const newRooms = response.data as IRoom[] || [];
+      setUpMessages(newRooms)
+      setUpSockets(newRooms.map(x => x._id));
+    }).catch(function (error) {
+      console.log(error);
+    });
 
-      return function cleanup() {
-        socket.close();
-      };
+    return function cleanup() {
+      socket.off()
+      socket.close();
+    };
   }, [user])
 
   function setUpSockets(roomIds: string[]): void {
