@@ -104,8 +104,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
   )
 
   useEffect(() => {
-    console.log("connecting sockets")
-    setMessages(messages.get(room._id))
+    setMessages(messages.get(room._id) || [])
     socket.on('messagesSeen', messagesSeenListener)
     socket.on('newMessage', newMessageListener)
     socket.on('newRequestStatus', newRequestStatusListener)
