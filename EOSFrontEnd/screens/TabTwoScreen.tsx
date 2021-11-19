@@ -160,6 +160,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     display: 'flex',
     flexDirection: 'row',
+    alignContent: 'space-between'
   },
   headerText: {
     color: "#04B388",
@@ -167,13 +168,12 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     marginLeft: 10,
     marginTop: 5,
-    flexBasis: 150,
+    flexGrow: 1,
 
   },
   buttonContainer: {
     display: 'flex',
     flexDirection: 'row',
-    flexBasis: 100,
   },
   mapContainer: {
     justifyContent: 'flex-start',
