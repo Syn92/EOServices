@@ -9,7 +9,7 @@ import { Platform } from 'react-native';
 
 const defaultContext: { user: User | null, setUser: React.Dispatch<React.SetStateAction<User | null>> | null,
    isNewUser: boolean, setIsNewUser: React.Dispatch<React.SetStateAction<boolean>> | null,
-  urlData: Object, setUrlData: React.Dispatch<React.SetStateAction<Object>> | null } = {
+  urlData: any, setUrlData: React.Dispatch<React.SetStateAction<Object>> | null } = {
     user: null,
     setUser: null,
     isNewUser: false,
@@ -23,7 +23,7 @@ export const AuthenticatedUserContext = createContext(defaultContext);
 export function AuthenticatedUserProvider({ children }:{ children: any }) {
   const [user, setUser] = useState<User | null>(null);
   const [isNewUser, setIsNewUser] = useState<boolean>(false);
-  const [urlData, setUrlData] = useState<Object>()
+  const [urlData, setUrlData] = useState<any>()
   const oldUser = useRef<User | null>(null);
 
 

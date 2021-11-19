@@ -23,10 +23,11 @@ export interface Contract {
     accepted: boolean,
     serviceDetail: IService,
     deposit?: boolean,
-    confirmedSeller?: boolean,
-    confirmedBuyer?: boolean,
+    serviceReceived?: false,
+    serviceDelivered?: false,
     images?: string[],
     creationDate?: Date,
+    dealId: string,
 }
 
 export interface RequestStatus {

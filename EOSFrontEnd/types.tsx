@@ -40,6 +40,7 @@ export type RootTabParamList = {
   TabFour: undefined;
   Contract: any;
   ChatRooms: undefined;
+  SearchUser: undefined;
 };
 
 export type RootTabScreenProps<Screen extends keyof RootTabParamList> = CompositeScreenProps<

@@ -35,6 +35,7 @@ import { ChatContext, ChatSocketContext } from './ChatSocketProvider';
 import { IRoom } from '../interfaces/Chat';
 import ContractScreen from '../screens/ContractScreen';
 import linking from './LinkingConfiguration';
+import SearchUserScreen from '../screens/SearchUserScreen';
 
 const auth = Firebase.auth();
 
@@ -181,6 +182,7 @@ function TabFourStackScreen() {
       <TabFourStack.Screen name="BuyCrypto" component={BuyCrypto} options={{ headerShown: false }} />
       <TabFourStack.Screen name="PublicProfile" component={PublicProfile} options={{ headerShown: false }} />
       <TabOneStack.Screen name="PostDetails" component={PostDetailsScreen} />
+      <TabOneStack.Screen name="SearchUser" component={SearchUserScreen} />
     </TabFourStack.Navigator>
   )
 }

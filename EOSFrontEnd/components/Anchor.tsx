@@ -23,7 +23,7 @@ export async function transact() {
 console.log("got hre")
 
     SigningRequest.create({ actions,chainId:"2a02a0053e5a8cf73a56ba0fda11e4d92e0238a4a2aa74fccf46d5a910746840" }, opts ).then((request)=>{
-      request.setCallback("exp://192.168.86.250:19000",false)
+      request.setCallback("exp://10.0.0.221:19000",false)
       console.log(request.getChainId())
       Linking.openURL(request.encode())
 

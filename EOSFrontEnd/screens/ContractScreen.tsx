@@ -23,12 +23,43 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     let contractAPI:ContractAPI = ContractAPI.getInstance()
     const [contract, setContract] = React.useState<Contract>();
     const [loading, setLoading] = React.useState(true)
-    const { user, setUser } =  React.useContext(AuthenticatedUserContext);
+    const { user, urlData,setUrlData } =  React.useContext(AuthenticatedUserContext);
     const [time, setTime] = React.useState<number>()
-    const [isConfirm, setConfirmed] = React.useState(false)
     const [activeIndex, setActiveIndex] = React.useState(0);
     
+    React.useEffect(() => {
+        if(!urlData)
+            return
+        let value = urlData.queryParams.value
+        if(value == 'accepted'){
+            console.log('acceptedValue: ' +value);
+            axios.patch(ServerConstants.local + 'post/accept', {serviceId: contract.serviceId, contractId: contract._id}).then(async (res:any) => {
+                await fetchContract();
+            }).catch(err => console.log(err))
+            setUrlData(null)
+        } else if(value == 'deposited'){
+            console.log('depositedValue: '+ value)
+            axios.patch(ServerConstants.local + 'post/deposit', {contractId: contract._id}).then(async (res:any) => {
+                await fetchContract();
+            }).catch(err => console.log(err))
+            setUrlData(null)
+        } else if (value == 'received'){
+            console.log('receivedValue: '+ value)
+            axios.patch(ServerConstants.local + 'post/received', {contractId: contract._id}).then(async (res:any) => {
+                await fetchContract();
+            }).catch(err => console.log(err))
+            setUrlData(null)
+        } else if (value == 'delivered'){
+            console.log('given: '+ value)
+            axios.patch(ServerConstants.local + 'post/delivered', {contractId: contract._id}).then(async (res:any) => {
+                await fetchContract();
+            }).catch(err => console.log(err))
+            setUrlData(null)
+        }
 
+    }, [urlData])
+
+    
     const fetchContract = async () => {
         try {
             axios.get(ServerConstants.local + 'post/contract?id='+ contractId.id).then((response: any) => {
@@ -41,10 +72,6 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
           }
     }
 
-    const myMethod = () => {
-        console.log('slided')
-        setConfirmed(true);
-    }
     
 
     React.useEffect(() => {
@@ -53,14 +80,27 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     }, [])
 
     function acceptContract() {
-        console.log('Accepted')
+        contractAPI.acceptDeal(contract.dealId, user?.walletAccountName, 'accepted').then((res: any) => {
+            console.log(res)
+            
+        })
     }
     function refuseContract() {
         console.log('Refused')
     }
 
     function deposit() {
-        console.log(deposit);
+        contractAPI.deposit(contract.dealId, user?.walletAccountName, Number(contract.finalPriceEOS)).then(() => {
+           
+        })
+    }
+
+    function serviceReceived() {
+        contractAPI.completeDeal(contract.dealId, user?.walletAccountName, 'received', 'goodsrcvd').catch((err) => {console.log(err)})
+    }
+
+    function serviceDelivered() {
+        contractAPI.completeDeal(contract.dealId, user?.walletAccountName, 'delivered', 'delivered').catch((err) => {console.log(err)})
     }
 
     const addPhoto = async () => {
@@ -82,12 +122,12 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     function renderBuyerSection(): any {
         return(    
             contract.accepted ?  
-                (contract.deposit ? 
+                (!contract.deposit ? 
                     <View style={styles.lowerSection}>
                         <ActionButton title="Deposit" onPress={deposit}></ActionButton>
                     </View> :
                 <View style={styles.lowerSection}>
-                    <SliderComponent isConfirm={isConfirm} callback={myMethod} ></SliderComponent>
+                    <SliderComponent isConfirm={contract.serviceReceived} callback={serviceReceived} ></SliderComponent>
                 </View>) :
                 <View style={styles.contractButtonContainer}>
                     <ActionButtonSecondary styleContainer={{width: '45%', borderRadius: 20}} title="Refuse" onPress={refuseContract}></ActionButtonSecondary>
@@ -100,10 +140,10 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
         return(
             <View style={styles.lowerSection}>
                 {contract.accepted ? 
-                (!contract.deposit ? 
+                (contract.deposit ? 
                 <View>
-                    <SliderComponent  isConfirm={isConfirm} callback={myMethod} ></SliderComponent>
-                    {isConfirm ? null : <ActionButton title="Add photo" onPress={addPhoto}></ActionButton>}
+                    <SliderComponent  isConfirm={contract.serviceDelivered} callback={serviceDelivered} ></SliderComponent>
+                    {contract.serviceDelivered ? null : <ActionButton title="Add photo" onPress={addPhoto}></ActionButton>}
 
                 </View>
                 :  <Text style={{textAlign: 'center'}}>Awaiting buyer's deposit... </Text>) :  <Text style={{textAlign: 'center'}}>Awaiting buyer's acceptance... </Text> }
@@ -121,9 +161,9 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
 
 
     return(
-            contract && time ?
-            <ScrollView>
-            <ImageBackground style={{ flex: 1 }} source={require('../assets/images/bg.png')}>
+            contract && time?
+            <ImageBackground style={{ flex: 1, height: '100%' }} source={require('../assets/images/bg.png')}>
+            <ScrollView style={{display: 'flex', flex: 1}}>
                 <TouchableOpacity style={styles.backButton} onPress={() => {navigation.goBack()}}>
                     <Icon name="keyboard-arrow-left" size={60} color="#04B388"/>
                   </TouchableOpacity>
@@ -134,7 +174,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
                 </View>
                 <View style={styles.contentCard}>
                     <Icon style={styles.iconCard} size={35} name="tag" type="FontAwesome" color="#04B388"></Icon>
-                    <View style={{display:'flex', flexDirection: 'column'}}>
+                    <View style={{display:'flex', flexDirection: 'column', width: '80%'}}>
                         <Text style={{fontWeight: 'bold', fontSize: 18}}>Title</Text>
                         <Text style={{fontSize: 16}}>{contract.serviceDetail.title}</Text>
                     </View>
@@ -155,15 +195,15 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
                 </View>
                 <View style={styles.contentCard}>
                     <Icon style={styles.iconCard} size={35} name="person" color="#04B388"></Icon>
-                    <View style={{display:'flex', flexDirection: 'column'}}>
+                    <View style={{display:'flex', flexDirection: 'column', width: '80%'}}>
                         <Text style={{fontWeight: 'bold', fontSize: 18}}>Description</Text>
                         <Text style={{fontSize: 16}}>{contract.serviceDetail.description}</Text>
                     </View>
                 </View>
-                { user?.uid != contract.buyer.uid ? renderBuyerSection() : renderSellerSection() }
+                { user?.uid == contract.buyer.uid ? renderBuyerSection() : renderSellerSection() }
             </View>
-            { (contract.accepted && !contract.deposit) ? 
-            <View style={{display: 'flex', flexBasis: '100%', alignContent:'center'}}>
+            { (contract.accepted && contract.deposit) ? 
+             contract.images ? <View style={{display: 'flex', flexBasis: '100%', alignContent:'center'}}>
                 <Carousel
                   layout={"default"}
                   data={contract.images}
@@ -191,14 +231,14 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
                     inactiveDotOpacity={0.4}
                     inactiveDotScale={0.6}
                   />
-            </View> : 
+            </View> : null : 
             <View>
                 <Text style={{color: 'white', textAlign: 'center', marginTop: '5%'}}>Contract expires in: {}</Text>
                 {time == 0 ? null : <CountDown until={time} timeLabelStyle={{color: 'white'}} digitStyle={{backgroundColor: 'white'}} size={18}/>}
             </View>}
         </View>
-            </ImageBackground> 
             </ScrollView>
+            </ImageBackground> 
             
             
             : <Loading/>

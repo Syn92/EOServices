@@ -1,31 +1,46 @@
+import axios from 'axios';
 import * as React from 'react';
 import { useState } from 'react';
 import { ImageBackground, StyleSheet, View } from 'react-native';
 import { SearchBar } from 'react-native-elements';
 import { ScrollView } from 'react-native-gesture-handler';
-import ChatRoomCard from '../components/Chat/ChatRoomCard';
-import { getCardTitle, IRoom } from '../interfaces/Chat';
-import { ChatContext } from '../navigation/ChatSocketProvider';
+import UserCard from '../components/UserCard';
+import ServerConstants from '../constants/Server';
+import { User } from '../interfaces/User';
+import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
 import { RootTabScreenProps } from '../types';
 
-export default function ChatRoomsScreen({ navigation }: RootTabScreenProps<'ChatRooms'>) {
-
+export default function SearchUserScreen({ navigation }: RootTabScreenProps<'SearchUser'>) {
   const [search, setSearch] = useState('');
+  const [users, setUsers] = useState<User[]>([]);
+  const { user } =  React.useContext(AuthenticatedUserContext);
 
-  function onChannelPress(room: IRoom) {
-    navigation.navigate('Chat', room)
+  React.useEffect(() => {
+    axios.get(ServerConstants.local + 'user')
+    .then(function (response) {
+      const resUsers = response.data as User[]
+      setUsers(resUsers.filter(x => x.uid != user?.uid));
+    }).catch(function (error) {
+      console.log(error);
+    });
+  }, [user])
+
+  function isUserVisible(userVisible: User): boolean {
+    if(userVisible.name)
+      return userVisible.name.toLowerCase().indexOf(search.toLowerCase()) > -1
+    else
+      return userVisible.email.toLowerCase().indexOf(search.toLowerCase()) > -1
   }
-  const { rooms } =  React.useContext(ChatContext);
-  console.log(rooms.length)
+
   return (
     <ImageBackground style={styles.container} source={require('../assets/images/bg.png')}>
       <View style={styles.searchContainer}>
         {/* @ts-ignore onChangeText wrong type https://github.com/react-native-elements/react-native-elements/issues/3089 */}
         <SearchBar value={search} containerStyle={styles.search} onChangeText={setSearch} round={true} lightTheme={true} />
       </View>
-      <ScrollView style={styles.roomsContainer}>
-        {rooms.filter(room => getCardTitle(room).toLowerCase().indexOf(search.toLowerCase()) > -1)
-          .map((room, key) => { return <ChatRoomCard key={key} room={room} onPress={onChannelPress}/>})}
+      <ScrollView style={styles.usersContainer}>
+        {users.filter(x => isUserVisible(x))
+          .map((x, key) => { return <UserCard key={key} user={x}/>})}
       </ScrollView>
     </ImageBackground>
   );
@@ -45,7 +60,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
     borderBottomWidth: 0,
   },
-  roomsContainer: {
+  usersContainer: {
       height: '100%',
       flexDirection: 'column',
       margin: 20,

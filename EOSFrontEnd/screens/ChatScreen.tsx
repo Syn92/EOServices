@@ -25,7 +25,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
   const [contractValue, setContractValue] = useState<string>(route.params.service.priceEOS.toString());
   const [room, setRoom] = useImmer<IRoom>(route.params);
 
-  const { user, urlData } =  React.useContext(AuthenticatedUserContext);
+  const { user, urlData,setUrlData } =  React.useContext(AuthenticatedUserContext);
   const { messages, setRoomWatchedId }= React.useContext(ChatContext);
   const { socket } =  React.useContext(ChatSocketContext);
   const contractAPI = ContractAPI.getInstance()
@@ -39,13 +39,15 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
     if(!urlData)
       return;
     let value = urlData.queryParams.value
-    console.log(value)
     if(value){
+      console.log(value)
       const contractMessage = getContractMessage(route.params, user, value)
       const contractGiftedMessage = {...contractMessage, _id: uuid.v4().toString()}
       setGiftedMessages(previousMessages => GiftedChat.append(previousMessages, [{...toGiftedMessage(contractGiftedMessage, user), sent: false}]))
       socket.emit('newMessage', contractMessage)
-      setLastOfferId(contractGiftedMessage._id)  }
+      setLastOfferId(contractGiftedMessage._id)
+      setUrlData(null)
+    }
     }
     , [urlData])
 
@@ -88,6 +90,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
   }
 
   const newContractRequestListener = (request: ContractRequest) => {
+    console.log("called contract request")
     setRoom(old => {if(request.roomId == old._id) old.contract = request})
   }
 
@@ -101,13 +104,14 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
   )
 
   useEffect(() => {
-    setMessages(messages.get(room._id))
+    setMessages(messages.get(room._id) || [])
     socket.on('messagesSeen', messagesSeenListener)
     socket.on('newMessage', newMessageListener)
     socket.on('newRequestStatus', newRequestStatusListener)
     socket.on('newContractRequest', newContractRequestListener)
 
     return function cleanup() {
+      console.log("disconnecting sockets")
       socket.off('messagesSeen', messagesSeenListener)
       socket.off('newMessage', newMessageListener)
       socket.off('newRequestStatus', newRequestStatusListener)
@@ -189,11 +193,11 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
       return (
         <View style={[(isSender ? props.containerStyle.right : props.containerStyle.left) , styles.contractMessage]}>
           <Text style={[messageStyle, styles.titleContract]}>Offer {isSender ? 'Sent' : 'Received'}</Text>
-          <View style={styles.contractContainer}>
+          <TouchableOpacity onPress={openOfferDetails}  style={styles.contractContainer}>
             <Text style={[styles.contractText]}>{room.service.title}</Text>
             <Image style={styles.contractImage} source={{uri: thumbnail, width: 50, height: 50}}/>
             <Text style={[styles.contractText]}>{props.currentMessage.offerValue + " EOS"}</Text>
-          </View>
+          </TouchableOpacity>
           {getContractStatus(props.currentMessage, isSender, messageStyle )}
         </View>
         )
@@ -202,8 +206,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
     return null
   }
 
-  function openOfferDetails(params: any) {
-    console.log('OPEN OFFER DETAILS');
+  function openOfferDetails() {
     navigation.navigate('Contract',{'id': room.contract._id})
   }
 
@@ -217,11 +220,12 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
       seller: isSeller ? user.uid : route.params.user.uid,
       accepted: false,
       deposit: false,
+      sellerWalletAccount: user.walletAccountName,
+      buyerWalletAccount:room.user.walletAccountName
     }
 
     axios.post(ServerConstants.local + 'post/request', contract).then(async (res:any) => {
-      await contractAPI.acceptDeal(res.data.dealId,"nicoltesteos",value.toString())
-
+      await contractAPI.acceptDeal(res.data.dealId,user.walletAccountName,value.toString())
       setShowContractDialog(false)
     }).catch(err => console.log('send contracts', err))
   }
