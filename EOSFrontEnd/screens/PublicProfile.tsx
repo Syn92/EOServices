@@ -55,7 +55,7 @@ export function PublicProfile({route, navigation}: any) {
         return (
             <View>
                 <View style={styles.avatar}>
-                    <Image resizeMode='cover' style={styles.photo} source={require('../assets/images/avatar.webp')} />
+                    <Image resizeMode='cover' style={styles.photo} source={publicUser?.avatar ? {uri: publicUser?.avatar} : require('../assets/images/avatar.webp')} />
                     <Text style={styles.username}>{publicUser?.name}</Text>
                     <Text>⭐⭐⭐⭐⭐</Text>
                 </View>
