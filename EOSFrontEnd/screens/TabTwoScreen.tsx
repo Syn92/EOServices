@@ -65,7 +65,7 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
   }, []);
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container} nestedScrollEnabled={true}>
       <View style={styles.appHeader}>
         <Text style={styles.title}>EOS MARKETPLACE</Text>
       </View>
@@ -116,7 +116,7 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
             <ActionButtonSecondary styleContainer={[styles.typeButtonLeft, (selectedType == servTypeSell) ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'}]} title="Offering" onPress={() => {if(selectedType != servTypeSell) setSelectedType(servTypeSell); else {setSelectedType(noneServType)}}} styleText={selectedType == servTypeSell ? {color: 'white'} : {color: '#04B388'}}></ActionButtonSecondary>
             <ActionButtonSecondary styleContainer={[styles.typeButtonRight,(selectedType == servTypeBuy) ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'} ]} title="Looking for" onPress={() => {if(selectedType != servTypeBuy) setSelectedType(servTypeBuy); else {setSelectedType(noneServType)}}} styleText={selectedType == servTypeBuy ? {color: 'white'} : {color: '#04B388'}}></ActionButtonSecondary>
           </View>
-      <ScrollView  onScrollBeginDrag={()=> {setSelectedCadastre('')}} ref={scrollViewRef} contentContainerStyle={styles.scrollContainer}>
+      <ScrollView  onScrollBeginDrag={()=> {setSelectedCadastre('')}} ref={scrollViewRef} contentContainerStyle={styles.scrollContainer} nestedScrollEnabled={true}>
 
        {
          data.filter((e:IService) => (e.title.startsWith(searchString.toLowerCase()) && (filterCatSelected == filterNone ? true : e.category == filterCatSelected) && (selectedType == noneServType ? true : e.serviceType == selectedType))).map((e: IService) => {
@@ -128,28 +128,23 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
        }
         </ScrollView>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'center',
   },
   appHeader: {
-    justifyContent: 'flex-end',
-    // alignContent: 'flex-start',
-    display: 'flex',
-    flexBasis: '15%',
+    marginTop: 15,
   },
   title: {
+    marginVertical: 15,
     fontSize: 20,
     fontWeight: 'bold',
     color: 'black',
-    textAlign: 'left',
-    marginBottom: 15,
   },
   separator: {
     marginVertical: 30,
@@ -176,9 +171,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   mapContainer: {
-    justifyContent: 'flex-start',
+    // justifyContent: 'flex-start',
     width: '90%',
-    flexBasis: '30%',
+    height: 200,
   },
   buttonTypeContainer: {
     alignContent: 'center',
@@ -211,14 +206,15 @@ const styles = StyleSheet.create({
   listContainer: {
     // minHeight: '100%',
     backgroundColor: 'white',
-    height: '55%',
+    height: 365,
+    // flexGrow: 1,
     // flexBasis: '50%',
     display: 'flex',
     flexDirection: 'column',
     width: '85%',
     borderRadius: 15,
-    borderBottomRightRadius: 0,
-    borderBottomLeftRadius: 0,
+    // borderBottomRightRadius: 0,
+    // borderBottomLeftRadius: 0,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -228,13 +224,18 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     alignContent: 'center',
     elevation: 5,
-    marginBottom: 50,
+    marginBottom: 15,
   },
   scrollContainer: {
+    flexDirection: 'column',
+    overflow: 'scroll',
     // flexBasis: '100%',
     // minHeight: '100%',
     // flex: 1,
-    marginBottom: 50,
+    // flexGrow: 1,
+    // marginBottom: 50,
+    // flex: 1,
+    // maxHeight: 400,
   },
   searchInput: {
     margin: 20,
