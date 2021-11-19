@@ -1,4 +1,5 @@
 import { LatLng } from "react-native-maps";
+import { FilterCat } from "../constants/Utils";
 import { CustomFeature } from "../utils/Cadastre";
 
 export interface IService {
@@ -7,7 +8,7 @@ export interface IService {
     material: string;
     priceEOS: number;
     serviceType: 'Offering' | 'Looking For';
-    category: string;
+    category: FilterCat;
     cadastre: CustomFeature;
     markerPos: LatLng;
     owner: string;
