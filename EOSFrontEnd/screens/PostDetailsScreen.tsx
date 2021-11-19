@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
     width: '80%',
     display: 'flex',
     flexDirection: 'column',
-    marginVertical: 30,
+    marginVertical: 40,
     padding: 10,
     borderRadius: 15,
     shadowColor: "#000",
