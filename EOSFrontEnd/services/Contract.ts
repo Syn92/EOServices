@@ -41,7 +41,7 @@ export class ContractAPI{
 
     private async signingRequest(actions:any,value:string){
         SigningRequest.create({ actions,chainId:"2a02a0053e5a8cf73a56ba0fda11e4d92e0238a4a2aa74fccf46d5a910746840" }, this.opts ).then((res)=>{
-          res.setCallback("exp://192.168.86.249:19000/--/three?value="+value+"",false)
+          res.setCallback(`exp://${ServerConstants.ip}:19000/--/three?value=+${value}`,false)
           Linking.openURL(res.encode())
         })
 
