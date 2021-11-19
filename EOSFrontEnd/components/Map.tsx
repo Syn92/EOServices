@@ -196,8 +196,8 @@ export default function Map(props: IProps) {
                 <Geojson geojson={selectedGeoJson} strokeColor="black" fillColor="green" strokeWidth={3} zIndex={3}/>
                 <Geojson geojson={geoJson} strokeColor="blue" fillColor="rgba(0, 255, 255, 0.2)" strokeWidth={1} zIndex={2}
                 tappable={true} onPress={mapPressed}/>
-                <UrlTile urlTemplate='https://api.maptiler.com/maps/streets/{z}/{x}/{y}@2x.png?key=eif7poHbo0Lyr1ArRDWL'
-                zIndex={1}/>
+                <UrlTile urlTemplate='https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=eif7poHbo0Lyr1ArRDWL'
+                zIndex={1} tileSize={512} shouldReplaceMapContent={true}/>
                 {markers.length > 0 ? renderMarkers(markers) : null}
             </MapView>
         </View>
