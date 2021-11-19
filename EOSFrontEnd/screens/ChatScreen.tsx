@@ -104,6 +104,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
   )
 
   useEffect(() => {
+    console.log("connecting sockets")
     setMessages(messages.get(room._id))
     socket.on('messagesSeen', messagesSeenListener)
     socket.on('newMessage', newMessageListener)
@@ -111,6 +112,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
     socket.on('newContractRequest', newContractRequestListener)
 
     return function cleanup() {
+      console.log("disconnecting sockets")
       socket.off('messagesSeen', messagesSeenListener)
       socket.off('newMessage', newMessageListener)
       socket.off('newRequestStatus', newRequestStatusListener)

@@ -15,9 +15,8 @@ export default function ChatRoomsScreen({ navigation }: RootTabScreenProps<'Chat
   function onChannelPress(room: IRoom) {
     navigation.navigate('Chat', room)
   }
-
   const { rooms } =  React.useContext(ChatContext);
-
+  console.log(rooms.length)
   return (
     <ImageBackground style={styles.container} source={require('../assets/images/bg.png')}>
       <View style={styles.searchContainer}>

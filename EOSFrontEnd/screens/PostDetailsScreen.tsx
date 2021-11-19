@@ -68,7 +68,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
           text: offerDetails,
         }
         setLoading(true)
-        socket.emit('newRoom', param)
+        // socket.emit('newRoom', param)
         // await axios.post(ServerConstants.local + 'post/request', param)
         setLoading(false)
         setOfferSent(true)

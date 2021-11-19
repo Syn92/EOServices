@@ -42,16 +42,19 @@ export function ChatSocketProvider({ children }:{ children: any }) {
       return;
     }
 
+    console.log("setting up sockets")
     axios.get(ServerConstants.local + 'chatRooms', { params: {userId: user.uid } })
       .then(function (response) {
         const newRooms = response.data as IRoom[] || [];
         setUpMessages(newRooms)
         setUpSockets(newRooms.map(x => x._id));
+        console.log(rooms.length)
       }).catch(function (error) {
         console.log(error);
       });
 
       return function cleanup() {
+        console.log("cleaned up sockets")
         socket.close();
       };
   }, [user])
