@@ -5,7 +5,7 @@ import { Button, Dimensions, Image, ImageBackground, ScrollView, StyleSheet, Tex
 import { ProfileCard } from '../components/ProfileCard'
 import { Icon } from 'react-native-elements';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
-import { User } from '../interfaces/User';
+import { createRating, User } from '../interfaces/User';
 import axios from 'axios';
 import ServerConstants from '../constants/Server';
 import { ProfileServiceList } from '../components/ProfileList/Services/ProfileServiceList';
@@ -54,7 +54,9 @@ export function PublicProfile({route, navigation}: any) {
                 <View style={styles.avatar}>
                     <Image resizeMode='cover' style={styles.photo} source={require('../assets/images/avatar.webp')} />
                     <Text style={styles.username}>{publicUser?.name}</Text>
-                    <Text>⭐⭐⭐⭐⭐</Text>
+                    <View style={{display: 'flex', flexDirection: 'row'}}>
+                        {createRating(publicUser?.rating)}
+                    </View>
                 </View>
 
                 {/* ---- Description ---- */}
@@ -65,8 +67,8 @@ export function PublicProfile({route, navigation}: any) {
                 {/* ---- Profile cards ---- */}
                 <ProfileCard icon='calendar-today' iconType='material' title='Joined Date' editable={ false }>
                     <Text style={{fontSize: 20,}}>{publicUser?.joinedDate}</Text>
-                </ProfileCard>                
-                
+                </ProfileCard>
+
                 {/* Orders list */}
                 <View style={styles.listContainer}>
                     <View style={styles.refresh}>
@@ -85,7 +87,7 @@ export function PublicProfile({route, navigation}: any) {
                 <ImageBackground style={{ flex: 1 }} source={require('../assets/images/bg.png')}>
                     <StatusBar style='light'/>
                     {/* ---- Avatar + ratings ---- */}
-                    { !publicUser ? null : renderPage()}                    
+                    { !publicUser ? null : renderPage()}
                 </ImageBackground>
             </View>
         </ScrollView>
