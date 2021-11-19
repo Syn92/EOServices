@@ -1,6 +1,5 @@
 import React from 'react'
 import { GestureResponderEvent, StyleSheet, Text, View } from 'react-native'
-import { Button } from 'react-native-elements/dist/buttons/Button';
 import { TouchableOpacity } from 'react-native';
 
 interface Props {
@@ -23,6 +22,13 @@ const styles = StyleSheet.create({
     buttonContainer: {
         backgroundColor: '#fff',
         elevation: 8,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
         borderRadius: 15,
         paddingVertical: 10,
         paddingHorizontal: 12,
