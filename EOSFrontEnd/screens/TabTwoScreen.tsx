@@ -136,16 +136,14 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'center',
   },
   appHeader: {
-    justifyContent: 'flex-end',
-    // alignContent: 'flex-start',
-    display: 'flex',
-    flexBasis: '15%',
+    marginTop: 15,
   },
   title: {
+    marginVertical: 15,
     fontSize: 20,
     fontWeight: 'bold',
     color: 'white',
@@ -161,6 +159,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     display: 'flex',
     flexDirection: 'row',
+    alignContent: 'space-between'
   },
   headerText: {
     color: "#182851",
@@ -174,12 +173,11 @@ const styles = StyleSheet.create({
   buttonContainer: {
     display: 'flex',
     flexDirection: 'row',
-    flexBasis: 100,
   },
   mapContainer: {
-    justifyContent: 'flex-start',
+    // justifyContent: 'flex-start',
     width: '90%',
-    flexBasis: '30%',
+    height: 250,
   },
   buttonTypeContainer: {
     alignContent: 'center',
@@ -212,14 +210,15 @@ const styles = StyleSheet.create({
   listContainer: {
     // minHeight: '100%',
     backgroundColor: 'white',
-    height: '55%',
-    // flexBasis: '50%',
+    height: 365,
+    // flexGrow: 1,
+    flexBasis: '56%',
     display: 'flex',
     flexDirection: 'column',
     width: '85%',
     borderRadius: 15,
-    borderBottomRightRadius: 0,
-    borderBottomLeftRadius: 0,
+    // borderBottomRightRadius: 0,
+    // borderBottomLeftRadius: 0,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -229,13 +228,18 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     alignContent: 'center',
     elevation: 5,
-    marginBottom: 50,
+    marginBottom: 15,
   },
   scrollContainer: {
+    flexDirection: 'column',
+    overflow: 'scroll',
     // flexBasis: '100%',
     // minHeight: '100%',
     // flex: 1,
-    marginBottom: 50,
+    // flexGrow: 1,
+    // marginBottom: 50,
+    // flex: 1,
+    // maxHeight: 400,
   },
   searchInput: {
     margin: 20,

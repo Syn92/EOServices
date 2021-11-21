@@ -76,8 +76,8 @@ export function PublicProfile({route, navigation}: any) {
                 {/* ---- Profile cards ---- */}
                 <ProfileCard icon='calendar-today' iconType='material' title='Joined Date' editable={ false }>
                     <Text style={{fontSize: 20,}}>{publicUser?.joinedDate}</Text>
-                </ProfileCard>                
-                
+                </ProfileCard>
+
                 {/* Orders list */}
                 <View style={styles.listContainer}>
                     <View style={styles.refresh}>
@@ -96,7 +96,7 @@ export function PublicProfile({route, navigation}: any) {
                 <ImageBackground style={{ flex: 1 }} source={require('../assets/images/bg.png')}>
                     <StatusBar style='light'/>
                     {/* ---- Avatar + ratings ---- */}
-                    { !publicUser ? null : renderPage()}                    
+                    { !publicUser ? null : renderPage()}
                 </ImageBackground>
             </View>
         </ScrollView>
