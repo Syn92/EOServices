@@ -27,7 +27,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     const { user, urlData,setUrlData } =  React.useContext(AuthenticatedUserContext);
     const [time, setTime] = React.useState<number>()
     const [activeIndex, setActiveIndex] = React.useState(0);
-    const [ modalVisible, setModalVisible ] = React.useState(true);
+    const [ modalVisible, setModalVisible ] = React.useState(false);
 
     
     React.useEffect(() => {
@@ -69,6 +69,8 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
                 setContract(response.data as Contract);
                 let creationTime: number = new Date(response.data.creationDate).getTime() + 259200*1000 //3days in mseconds
                 setTime((creationTime - (new Date().getTime()))/1000)
+                if(contract && contract.serviceReceived && contract.serviceDelivered)
+                    setModalVisible(true);
             })
           } catch (e) {
             console.error('Fetch Contract Details: ', e)
