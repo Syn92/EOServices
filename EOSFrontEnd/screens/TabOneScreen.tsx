@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Image, Pressable } from 'react-native';
+import { StyleSheet, Text, View, Image, Pressable, ImageBackground } from 'react-native';
 import { Icon } from 'react-native-elements';
 
 import Map from '../components/Map';
@@ -56,6 +56,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   }, []);
 
   return (
+    <ImageBackground style={{ flex: 1 }} source={require('../assets/images/bg.png')}>
     <View style={styles.container}>
       {/* <Button title="Logout" onPress={handleLogout} /> */}
       <View style={styles.mapContainer}>
@@ -83,6 +84,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
       </View> : <View></View>}
       <View style={styles.separator} />
     </View>
+    </ImageBackground>
   );
 }
 

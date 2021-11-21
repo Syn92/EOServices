@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   mapContainer: {
     // justifyContent: 'flex-start',
     width: '90%',
-    height: 250,
+    height: '29%',
   },
   buttonTypeContainer: {
     alignContent: 'center',
