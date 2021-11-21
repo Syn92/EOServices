@@ -1,5 +1,5 @@
 import { RootTabScreenProps } from "../types";
-import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, Image, ScrollView } from "react-native";
+import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, Image, ScrollView, Modal } from "react-native";
 import * as React from 'react';
 import { Icon } from "react-native-elements";
 import { ContractRequest, Contract } from '../interfaces/Contracts';
@@ -15,17 +15,20 @@ import ActionButtonSecondary from "../components/ActionButtonSecondary";
 import * as ImagePicker from 'expo-image-picker';
 import { ExpandImagePickerResult } from "expo-image-picker/build/ImagePicker.types";
 import Carousel, { Pagination } from "react-native-snap-carousel";
-import {ContractAPI} from "../services/Contract"
+import {ContractAPI} from "../services/Contract";
+import { Rating, AirbnbRating } from 'react-native-ratings';
 
 
 export default function ContractScreen({route, navigation }: RootTabScreenProps<'Contract'>) {
     let contractId: any = route.params;
     let contractAPI:ContractAPI = ContractAPI.getInstance()
     const [contract, setContract] = React.useState<Contract>();
-    const [loading, setLoading] = React.useState(true)
+    const [rating, setRating] = React.useState(0);
     const { user, urlData,setUrlData } =  React.useContext(AuthenticatedUserContext);
     const [time, setTime] = React.useState<number>()
     const [activeIndex, setActiveIndex] = React.useState(0);
+    const [ modalVisible, setModalVisible ] = React.useState(true);
+
     
     React.useEffect(() => {
         if(!urlData)
@@ -151,6 +154,25 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
         )
     }
 
+    function endRoutine(): any {
+        console.log(rating)
+        let body = {
+            uid: user?.uid == contract.buyer.uid ? contract.seller.uid : contract.buyer.uid,
+            rating: rating,
+        }
+        try {
+            axios.post(ServerConstants.local + 'auth/rating', body).then( () => {
+                axios.delete(ServerConstants.local + 'post', { params: { id: contract._id } }).then(() => {
+                        setModalVisible(false);
+                        navigation.navigate('TabThree')
+                    })
+                }
+            ).catch((err) => {console.log(err)})
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
     const _renderItem = ({item, index}) => {
         return (
             <View>
@@ -159,11 +181,45 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
         );
     }
 
+    function renderEndModal(): any {
+      return (
+        <View style={styles.endModalContainer}>
+            <Text style={{fontSize: 18, marginTop: '10%'}}>Thank you for using EOS marketplace</Text>
+            <View style={{display: 'flex', alignItems: 'center', marginBottom: -25}}>
+                <Text style={{fontSize: 25}}>Please Rate: </Text>
+                <Text style={{fontSize: 18, fontWeight:'bold',}}>{user?.uid == contract.buyer.uid ? contract.seller.name : contract.buyer.name}</Text>
+            </View>
+
+            <Rating
+                type="custom"
+                ratingTextColor="#04B388"
+                showRating={true}
+                fractions={1}
+                startingValue={2.5}
+                onFinishRating={(e: number) => {setRating(e)}}
+            />
+            <ActionButton styleContainer={{width: '50%', marginBottom: '5%'}} title="Thank you" onPress={endRoutine}></ActionButton>
+        </View>
+      ); 
+    }
+
 
     return(
             contract && time?
             <ImageBackground style={{ flex: 1, height: '100%' }} source={require('../assets/images/bg.png')}>
             <ScrollView style={{display: 'flex', flex: 1}}>
+            <Modal
+                        statusBarTranslucent={true}
+                        animationType='fade'
+                        transparent={true}
+                        visible={modalVisible}
+                        onRequestClose={() => {
+                            setModalVisible(false)
+                        }}>
+                        <View style={styles.centeredView}>
+                            {renderEndModal()}
+                        </View>
+                    </Modal>
                 <TouchableOpacity style={styles.backButton} onPress={() => {navigation.goBack()}}>
                     <Icon name="keyboard-arrow-left" size={60} color="#04B388"/>
                   </TouchableOpacity>
@@ -313,7 +369,43 @@ const styles = StyleSheet.create({
           width: '90%',
           marginTop: '10%',
           marginBottom: '5%',
-      }
+      },
+      centeredView: {
+        flex: 1,
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+        marginTop: 22,
+        backgroundColor: 'rgba(0, 0, 0, 0.57)',
+    },
+    modalView: {
+        margin: 20,
+        width: '80%',
+        backgroundColor: 'white',
+        borderRadius: 15,
+        paddingVertical: 25,
+        paddingHorizontal: 25,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    endModalContainer: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        flexDirection: 'column',
+        alignItems: 'center',
+        backgroundColor: 'white',
+        borderRadius: 20,
+        width: '80%',
+        height: '45%',
+    },
 })
 
 

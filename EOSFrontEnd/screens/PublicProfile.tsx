@@ -5,7 +5,7 @@ import { Button, Dimensions, Image, ImageBackground, ScrollView, StyleSheet, Tex
 import { ProfileCard } from '../components/ProfileCard'
 import { Icon } from 'react-native-elements';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
-import { User } from '../interfaces/User';
+import { createRating, User } from '../interfaces/User';
 import axios from 'axios';
 import ServerConstants from '../constants/Server';
 import { ProfileServiceList } from '../components/ProfileList/Services/ProfileServiceList';
@@ -25,6 +25,7 @@ export function PublicProfile({route, navigation}: any) {
     React.useEffect(() => {
         fetchPublicUser();
         fetchUserServices();
+        
     }, []);
 
     async function fetchUserServices() {
@@ -38,14 +39,16 @@ export function PublicProfile({route, navigation}: any) {
 
     async function fetchPublicUser() {
         try {
-            const res = await axios.get<any>(ServerConstants.local + 'auth', { params: { uid: uid } });
-            if (res.data){
-                const data: any = res.data
-                delete data._id
-                setPublicUser(data)
-            } else {
-                throw new Error('Error retrieving user')
-            }
+            axios.get<any>(ServerConstants.local + 'auth', { params: { uid: uid } }).then((res) => {
+                if (res.data){
+                    const data: any = res.data
+                    delete data._id
+                    setPublicUser(data)
+                } else {
+                    throw new Error('Error retrieving user')
+                }
+
+            })
         } catch (e) {
             console.log('fetch public user', e)
         }
@@ -57,7 +60,12 @@ export function PublicProfile({route, navigation}: any) {
                 <View style={styles.avatar}>
                     <Image resizeMode='cover' style={styles.photo} source={publicUser?.avatar ? {uri: publicUser?.avatar} : require('../assets/images/avatar.webp')} />
                     <Text style={styles.username}>{publicUser?.name}</Text>
-                    <Text>⭐⭐⭐⭐⭐</Text>
+                    <View style={{display: 'flex', flexDirection: 'row'}}>
+                        {
+                            publicUser.rating ? createRating(publicUser?.rating).map((e) => {return (e)}) : null
+                        }
+                        </View>
+                        { publicUser.rating ? <Text style={{color: 'white'}}>{publicUser?.rating.toFixed(2)}</Text> : null}
                 </View>
 
                 {/* ---- Description ---- */}
