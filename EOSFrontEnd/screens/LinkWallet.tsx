@@ -18,9 +18,15 @@ export function LinkWallet({ navigation }: { navigation: any }) {
   const [eosUsername, setEosUsername] = useState('');
   const { user, setUser } = React.useContext(AuthenticatedUserContext);
   const [isLoading, setLoadingStatus] = useState(false);
+  const [isNotValid, setIsNotValid] = useState(false);
 
 
   async function addLinkAccountName() {
+    if(eosUsername.length == 0) {
+      setIsNotValid(true);
+      return
+    }
+    setIsNotValid(false);
     try {
       setLoadingStatus(true);
       let res = await axios.patch(ServerConstants.local + 'auth', {
@@ -52,25 +58,23 @@ export function LinkWallet({ navigation }: { navigation: any }) {
           {/* Wallet username input */}
           <View style={styles.inputView}>
             <Text style={styles.inputLabel}>Link Existing Wallet Account</Text>
-            <View style={{display: "flex",flexDirection: 'row',flexBasis: 100}}>
             <TextInput
-              style={{ color: 'white', width: "80%" }}
+              style={{ color: 'white'}}
               autoCapitalize='none'
               autoCorrect={false}
-              maxLength={9}
               placeholder="Enter account name..."
               placeholderTextColor='#ffffff50'
               value={eosUsername}
               onChangeText={text => setEosUsername(text)}
             />
-            <Text style={{ color: 'white', width: "20%" }}>.gm</Text>
-            </View>
           </View>
           <TouchableOpacity onPress={() => navigation.navigate('CreateWalletTutorial')} style={styles.helpLink}>
             <Text style={styles.helpLinkText}>
               No wallet? See how to create one here
             </Text>
           </TouchableOpacity>
+
+          {isNotValid ? <Text style={styles.errorText}>Enter a valid wallet account name.</Text> : null}
 
           <TouchableOpacity style={styles.button} onPress={addLinkAccountName}>
             <Text style={styles.buttonText}>Add Wallet Account</Text>
