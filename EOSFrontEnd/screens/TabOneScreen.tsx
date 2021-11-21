@@ -33,10 +33,10 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
     }
   };
 
-  const getService = (cadastreId: string) => {
-    if(cadastreId != selectedMarker){
-      setSelectedMarker(cadastreId)
-      setSelectedService(data.filter((e: any ) => e.cadastreId == cadastreId)[0])
+  const getService = (serviceId: string) => {
+    if(serviceId != selectedMarker){
+      setSelectedMarker(serviceId)
+      setSelectedService(data.filter((e: IService ) => e._id == serviceId)[0])
     } else {
       setSelectedMarker('');
     }
