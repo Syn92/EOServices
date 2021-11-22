@@ -29,10 +29,14 @@ export function Login({navigation}: {navigation: any}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [loginIsEmpty, setIsEmpty] = useState(false);
 
   async function signInWithEmail() {
     try {
-      if (email !== '' && password !== '') {
+      if (email == '' || password == '') {
+        setIsEmpty(true);
+      } else {
+        setIsEmpty(false);
         setLoadingStatus(true);
         Firebase.auth().signInWithEmailAndPassword(email, password)
         .catch((e: any)=> {
@@ -137,6 +141,7 @@ export function Login({navigation}: {navigation: any}) {
               </View>
 
               {loginError ? <Text style={styles.errorText}>{loginError}</Text> : null}
+              {loginIsEmpty ? <Text style={styles.errorText}>The email and/or password field is empty</Text> : null}
               
               <TouchableOpacity style={{...styles.button, ...styles.mailButton}} onPress={signInWithEmail}>
                 <Text style={{...styles.text, fontSize: 20, fontWeight: 'bold'}}>LOGIN</Text>
