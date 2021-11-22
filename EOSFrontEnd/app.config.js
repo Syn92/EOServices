@@ -22,6 +22,7 @@ export default {
       "**/*"
     ],
     ios: {
+      "bundleIdentifier":"com.jebouas.EOSFrontEnd",
       supportsTablet: true
     },
     android: {
