@@ -34,51 +34,42 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     React.useEffect(() => {
         if(!urlData)
             return
-        console.log(urlData.queryParams)
         let value = urlData.queryParams.value
         if(value == 'accepted'){
-            console.log('acceptedValue: ' +value);
+            displayErrorModal(false)
             axios.patch(ServerConstants.local + 'post/accept', {serviceId: contract.serviceId, contractId: contract._id}).then(async (res:any) => {
                 await fetchContract();
             }).catch(err => console.log(err))
             setUrlData(null)
         } else if(value == 'deposited'){
-            console.log('depositedValue: '+ value)
+            displayErrorModal(false)
             axios.patch(ServerConstants.local + 'post/deposit', {contractId: contract._id}).then(async (res:any) => {
                 await fetchContract();
             }).catch(err => console.log(err))
             setUrlData(null)
         } else if (value == 'received'){
-            console.log('receivedValue: '+ value)
+            displayErrorModal(false)
             axios.patch(ServerConstants.local + 'post/received', {contractId: contract._id}).then(async (res:any) => {
                 await fetchContract();
                 setModalVisible(true);
             }).catch(err => console.log(err))
             setUrlData(null)
         } else if (value == 'delivered'){
-            console.log('given: '+ value)
+            displayErrorModal(false)
             axios.patch(ServerConstants.local + 'post/delivered', {contractId: contract._id}).then(async (res:any) => {
-                if(res.status == 200){
                     await fetchContract();
                     setModalVisible(true);
-                }
             }).catch(err => console.log(err))
             setUrlData(null)
         }
         else if (value == 'canceled'){
-            console.log('given: '+ value)
+            displayErrorModal(false)
             axios.delete(ServerConstants.local + 'post', { params: { id: contract._id } }).then((res:any) => {
                 console.log(res);
                 navigation.goBack();
             }).catch(err => console.log(err))
             setUrlData(null)
         } 
-        // else if(!urlData.queryParams.value) {
-        //     console.log(urlData)
-        //     setIsError(true);
-        //     setModalVisible(true);
-        // }
-            
     }, [urlData])
 
     
@@ -98,36 +89,43 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     
 
     React.useEffect(() => {
-        fetchContract().then(() => {
-
-        })
+        fetchContract()
         
     }, [])
 
     function acceptContract() {
-        contractAPI.acceptDeal(contract.dealId, user?.walletAccountName, 'accepted').then((res: any) => {
-            console.log(res)
-            
+        contractAPI.acceptDeal(contract.dealId, user?.walletAccountName, 'accepted').then(() => {
+            displayErrorModal(true);
         })
     }
+    
     function refuseContract() {
         contractAPI.cancelDeal(contract.dealId, user?.walletAccountName, 'canceled').then(() => {
-
+            displayErrorModal(true);
         })
     }
 
     function deposit() {
         contractAPI.deposit(contract.dealId, user?.walletAccountName, Number(contract.finalPriceEOS)).then(() => {
-           
+            displayErrorModal(true);
         })
     }
 
     function serviceReceived() {
-        contractAPI.completeDeal(contract.dealId, user?.walletAccountName, 'received', 'goodsrcvd').catch((err) => {console.log(err)})
+        contractAPI.completeDeal(contract.dealId, user?.walletAccountName, 'received', 'goodsrcvd').then(() => {
+            displayErrorModal(true);
+        })
     }
 
     function serviceDelivered() {
-        contractAPI.completeDeal(contract.dealId, user?.walletAccountName, 'delivered', 'delivered').catch((err) => {console.log(err)})
+        contractAPI.completeDeal(contract.dealId, user?.walletAccountName, 'delivered', 'delivered').then(() => {
+            displayErrorModal(true);
+        })
+    }
+
+    function displayErrorModal(value: boolean) {
+            setIsError(value)
+            setModalVisible(value)
     }
 
     const addPhoto = async () => {
@@ -330,7 +328,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
                 <Text style={{color: 'white', textAlign: 'center', marginTop: '5%'}}>Contract expires in: {}</Text>
                 {time == 0 ? null : <CountDown until={time} timeLabelStyle={{color: 'white'}} digitStyle={{backgroundColor: 'white'}} size={18}/>}
             </View>}
-            {!contract.serviceDelivered ? <ActionButton title="Cancel" onPress={refuseContract} styleContainer={{backgroundColor: 'red', width:'30%', marginTop: '5%'}}></ActionButton> : null}
+            {!contract.serviceDelivered ? <ActionButton title="Cancel" onPress={refuseContract} styleContainer={{backgroundColor: 'red', width:'30%', marginVertical: '5%'}}></ActionButton> : null}
         </View>
             </ScrollView>
             </ImageBackground> 
