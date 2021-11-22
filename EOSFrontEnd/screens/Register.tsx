@@ -16,13 +16,22 @@ export function Register({ navigation }: { navigation: any }) {
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [signupError, setSignupError] = useState('');
   const [isLoading, setLoadingStatus] = useState(false);
+  const [registerIsEmpty, setIsEmpty] = useState(false);
+  const [isNotSamePassword, setIsNotSamePassword] = useState(false)
 
   async function handleSignup() {
+    setSignupError('');
+    setIsEmpty(false);
+    setIsNotSamePassword(false);
     try {
-      setLoadingStatus(true);
-      if (email !== '' && password !== '') {
-        if (password == passwordConfirmation)
-          await auth.createUserWithEmailAndPassword(email, password);
+      if (email == '' || password == '' || passwordConfirmation == '') {
+        setIsEmpty(true);
+      } else if (password !== passwordConfirmation) {
+        setIsNotSamePassword(true);
+      } else {
+        setLoadingStatus(true);
+        // if (password == passwordConfirmation)
+        await auth.createUserWithEmailAndPassword(email, password);
         setLoadingStatus(false);
       }
     } catch (error: any) {
@@ -87,6 +96,8 @@ export function Register({ navigation }: { navigation: any }) {
 
 
           {signupError ? <Text style={styles.errorText}>{signupError}</Text> : null}
+          {registerIsEmpty ? <Text style={styles.errorText}>The email and/or password field is empty</Text> : null}
+          {isNotSamePassword ? <Text style={styles.errorText}>The password is not the same</Text> : null}
 
           <TouchableOpacity style={styles.button} onPress={handleSignup}>
             <Text style={styles.buttonText}>Create Account</Text>
