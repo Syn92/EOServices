@@ -41,9 +41,8 @@ export class ContractAPI{
 
     private async signingRequest(actions:any,value:string){
         let res = await SigningRequest.create({ actions,chainId:"2a02a0053e5a8cf73a56ba0fda11e4d92e0238a4a2aa74fccf46d5a910746840" }, this.opts )
-        res.setCallback(`exp://10.0.0.221:19000/--/three?value=${value}`,false)
-        return Linking.openURL(res.encode())
-
+          res.setCallback(`exp://${ServerConstants.ip}:19000/--/three?value=${value}`,false)
+          return Linking.openURL(res.encode())
     }
      async completeDeal(dealId:string,walletAccountName:string,value:string,action:string){
       const actions = [{
@@ -62,7 +61,7 @@ export class ContractAPI{
           deal_id:dealId
       },
       }]
-      return this.signingRequest(actions, value)
+      return this.signingRequest(actions, value).catch((err) => {console.log(err)})
      }
 
     async createDeal(deal:ContractRequest){
@@ -103,7 +102,6 @@ export class ContractAPI{
     }
 
     async deposit(dealId:string,walletAccountName:string,price:number){
-      console.log(price.toFixed(4).toString())
       const actions = [{
         account: 'eosio.token',
         name: 'transfer',

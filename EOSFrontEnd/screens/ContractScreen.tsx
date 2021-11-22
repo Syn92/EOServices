@@ -32,11 +32,13 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
 
     
     React.useEffect(() => {
-        if(!urlData)
+        displayErrorModal(false)
+        if(!urlData){
+            console.log("returning")
             return
+        }
         let value = urlData.queryParams.value
         if(value == 'accepted'){
-            displayErrorModal(false)
             axios.patch(ServerConstants.local + 'post/accept', {serviceId: contract.serviceId, contractId: contract._id}).then(async (res:any) => {
                 await fetchContract();
             }).catch(err => console.log(err))
