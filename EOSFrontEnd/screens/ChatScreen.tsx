@@ -2,7 +2,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import * as React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { ImageBackground, StyleSheet, Text, View, Image, Button, Modal, TouchableOpacity, TextInput, KeyboardAvoidingView } from 'react-native';
-import { Icon } from 'react-native-elements';
+import { Icon, Overlay } from 'react-native-elements';
 import { Actions, Bubble, Composer, GiftedChat, Send } from 'react-native-gifted-chat';
 import { useImmer } from 'use-immer';
 import { getContractMessage, getImageMessage, IGiftedMessage, IMessage, IRoom, toGiftedMessage, toISentMessage } from '../interfaces/Chat';
@@ -15,6 +15,7 @@ import axios from 'axios';
 import ServerConstants from '../constants/Server';
 import { ContractAPI } from '../services/Contract';
 import { ContractRequest, RequestStatus } from '../interfaces/Contracts';
+import ActionButton from '../components/ActionButton';
 
 export default function ChatScreen({ navigation, route }: RootStackScreenProps<'Chat'>) {
   const [isSeller, setIsSeller] = React.useState<boolean>()
@@ -24,11 +25,13 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
   const [lastOfferId, setLastOfferId] = useState<string | null>(null);
   const [contractValue, setContractValue] = useState<string>(route.params.service.priceEOS.toString());
   const [room, setRoom] = useImmer<IRoom>(route.params);
+  const [errorOverlay, setErrorOverlay] = useState(false);
 
   const { user, urlData,setUrlData } =  React.useContext(AuthenticatedUserContext);
   const { messages, setRoomWatchedId }= React.useContext(ChatContext);
   const { socket } =  React.useContext(ChatSocketContext);
   const contractAPI = ContractAPI.getInstance()
+
   React.useEffect(()=> {
     setIsSeller(room.service.serviceType == 'Offering' ?
     (user.uid == room.service.owner)
@@ -207,7 +210,11 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
   }
 
   function openOfferDetails() {
-    navigation.navigate('Contract',{'id': room.contract._id})
+    if(room.contract)
+      navigation.navigate('Contract',{'id': room.contract._id})
+    else {
+      setErrorOverlay(true)
+    }
   }
 
   function sendContract(value: number) {
@@ -292,6 +299,12 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
         renderCustomView={renderCustomView}/>
       </KeyboardAvoidingView>
       {sendContractDialog()}
+      <Overlay overlayStyle={{height: '30%', display: 'flex', justifyContent: 'space-between', borderRadius: 10}} isVisible={errorOverlay} onBackdropPress={() => {setErrorOverlay(false)}}>
+        <Icon name="error-outline" size={70} color="red"></Icon>
+        <Text style={{fontSize: 30, textAlign: 'center'}}>Sorry !</Text>
+        <Text style={{fontSize: 18, textAlign: 'center', width: '70%', color: 'gray'}}>Contract doesn't exist anymore</Text>
+        <ActionButton styleContainer={{margin: '3%'}} title="OK" onPress={() => {setErrorOverlay(false)}}></ActionButton>
+      </Overlay>
     </ImageBackground>
   );
 }
