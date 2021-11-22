@@ -187,10 +187,11 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
         try {
             axios.post(ServerConstants.local + 'auth/rating', body).then(async () => {
                 if(contract.serviceDelivered && contract.serviceReceived){
-                    await axios.delete(ServerConstants.local + 'post', { params: { id: contract._id } })
+                    await axios.delete(ServerConstants.local + 'post', { params: { id: contract._id } }).then(() => {
+                        navigation.goBack();
+                    })
                 }
                     setModalVisible(false);
-                    navigation.navigate('TabThree')
                 }
             ).catch((err) => {console.log(err)})
         } catch (error) {
@@ -323,11 +324,13 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
                     inactiveDotOpacity={0.4}
                     inactiveDotScale={0.6}
                   />
+                  
             </View> : null : 
             <View>
                 <Text style={{color: 'white', textAlign: 'center', marginTop: '5%'}}>Contract expires in: {}</Text>
                 {time == 0 ? null : <CountDown until={time} timeLabelStyle={{color: 'white'}} digitStyle={{backgroundColor: 'white'}} size={18}/>}
             </View>}
+            {!contract.serviceDelivered ? <ActionButton title="Cancel" onPress={refuseContract} styleContainer={{backgroundColor: 'red', width:'30%', marginTop: '5%'}}></ActionButton> : null}
         </View>
             </ScrollView>
             </ImageBackground> 
