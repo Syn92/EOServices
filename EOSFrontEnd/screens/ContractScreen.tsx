@@ -69,7 +69,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
                 setContract(response.data as Contract);
                 let creationTime: number = new Date(response.data.creationDate).getTime() + 259200*1000 //3days in mseconds
                 setTime((creationTime - (new Date().getTime()))/1000)
-                if(contract && contract.serviceReceived && contract.serviceDelivered)
+                if(response && response.data.serviceReceived && response.data.serviceDelivered)
                     setModalVisible(true);
             })
           } catch (e) {
