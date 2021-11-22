@@ -1,5 +1,5 @@
 import { RootTabScreenProps } from "../types";
-import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, Image, ScrollView, Modal } from "react-native";
+import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, Image, ScrollView, Modal, AppState } from "react-native";
 import * as React from 'react';
 import { Icon } from "react-native-elements";
 import { ContractRequest, Contract } from '../interfaces/Contracts';
@@ -17,6 +17,7 @@ import { ExpandImagePickerResult } from "expo-image-picker/build/ImagePicker.typ
 import Carousel, { Pagination } from "react-native-snap-carousel";
 import {ContractAPI} from "../services/Contract";
 import { Rating, AirbnbRating } from 'react-native-ratings';
+import { useFocusEffect } from '@react-navigation/native';
 
 
 export default function ContractScreen({route, navigation }: RootTabScreenProps<'Contract'>) {
@@ -29,33 +30,38 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     const [activeIndex, setActiveIndex] = React.useState(0);
     const [ modalVisible, setModalVisible ] = React.useState(false);
     const [isError, setIsError] = React.useState(false)
+    const [anchorOpened, setAnchorOpened] = React.useState(false)
+    const appState = React.useRef(AppState.currentState);
+    const [appStateVisible, setAppStateVisible] = React.useState(appState.current);
 
     
     React.useEffect(() => {
-        if(!urlData)
+        if(!urlData){
+            if(anchorOpened ){
+                displayErrorModal(true);
+            }
             return
+        }
+        console.log(urlData)
+        
         let value = urlData.queryParams.value
         if(value == 'accepted'){
-            displayErrorModal(false)
             axios.patch(ServerConstants.local + 'post/accept', {serviceId: contract.serviceId, contractId: contract._id}).then(async (res:any) => {
                 await fetchContract();
             }).catch(err => console.log(err))
             setUrlData(null)
         } else if(value == 'deposited'){
-            displayErrorModal(false)
             axios.patch(ServerConstants.local + 'post/deposit', {contractId: contract._id}).then(async (res:any) => {
                 await fetchContract();
             }).catch(err => console.log(err))
             setUrlData(null)
         } else if (value == 'received'){
-            displayErrorModal(false)
             axios.patch(ServerConstants.local + 'post/received', {contractId: contract._id}).then(async (res:any) => {
                 await fetchContract();
                 setModalVisible(true);
             }).catch(err => console.log(err))
             setUrlData(null)
         } else if (value == 'delivered'){
-            displayErrorModal(false)
             axios.patch(ServerConstants.local + 'post/delivered', {contractId: contract._id}).then(async (res:any) => {
                     await fetchContract();
                     setModalVisible(true);
@@ -63,14 +69,15 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
             setUrlData(null)
         }
         else if (value == 'canceled'){
-            displayErrorModal(false)
             axios.delete(ServerConstants.local + 'post', { params: { id: contract._id } }).then((res:any) => {
                 console.log(res);
                 navigation.goBack();
             }).catch(err => console.log(err))
             setUrlData(null)
-        } 
-    }, [urlData])
+        } else if(anchorOpened ){
+            displayErrorModal(true);
+        }
+    }, [urlData, appState])
 
     
     const fetchContract = async () => {
@@ -86,46 +93,67 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
           }
     }
 
+
+    function listner(nextAppState) {
+        if (
+            appState.current.match(/inactive|background/) &&
+            nextAppState === "active"
+          ) {
+            console.log("App has come to the foreground!");
+            // if(anchorOpened)
+                // displayErrorModal(true)
+          }
+    
+          appState.current = nextAppState;
+          setAppStateVisible(appState.current);
+          console.log("AppState", appState.current);
+    }
     
 
     React.useEffect(() => {
         fetchContract()
-        
+        const state: void = AppState.addEventListener('change', (nextAppState) => listner(nextAppState))
+        return () => {
+            AppState.removeEventListener('change', listner)
+        }
     }, [])
+
 
     function acceptContract() {
         contractAPI.acceptDeal(contract.dealId, user?.walletAccountName, 'accepted').then(() => {
-            displayErrorModal(true);
+            setAnchorOpened(true);
         })
     }
     
     function refuseContract() {
         contractAPI.cancelDeal(contract.dealId, user?.walletAccountName, 'canceled').then(() => {
-            displayErrorModal(true);
+            console.log('refuseCallback')
+            setAnchorOpened(true);
         })
     }
 
     function deposit() {
+
         contractAPI.deposit(contract.dealId, user?.walletAccountName, Number(contract.finalPriceEOS)).then(() => {
-            displayErrorModal(true);
+            setAnchorOpened(true);
         })
     }
 
     function serviceReceived() {
         contractAPI.completeDeal(contract.dealId, user?.walletAccountName, 'received', 'goodsrcvd').then(() => {
-            displayErrorModal(true);
+            setAnchorOpened(true);
         })
     }
 
     function serviceDelivered() {
         contractAPI.completeDeal(contract.dealId, user?.walletAccountName, 'delivered', 'delivered').then(() => {
-            displayErrorModal(true);
+            setAnchorOpened(true);
         })
     }
 
     function displayErrorModal(value: boolean) {
-            setIsError(value)
-            setModalVisible(value)
+        setIsError(value)
+        setModalVisible(value)
     }
 
     const addPhoto = async () => {
