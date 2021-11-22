@@ -28,11 +28,13 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     const [time, setTime] = React.useState<number>()
     const [activeIndex, setActiveIndex] = React.useState(0);
     const [ modalVisible, setModalVisible ] = React.useState(false);
+    const [isError, setIsError] = React.useState(false)
 
     
     React.useEffect(() => {
         if(!urlData)
             return
+        console.log(urlData.queryParams)
         let value = urlData.queryParams.value
         if(value == 'accepted'){
             console.log('acceptedValue: ' +value);
@@ -50,16 +52,33 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
             console.log('receivedValue: '+ value)
             axios.patch(ServerConstants.local + 'post/received', {contractId: contract._id}).then(async (res:any) => {
                 await fetchContract();
+                setModalVisible(true);
             }).catch(err => console.log(err))
             setUrlData(null)
         } else if (value == 'delivered'){
             console.log('given: '+ value)
             axios.patch(ServerConstants.local + 'post/delivered', {contractId: contract._id}).then(async (res:any) => {
-                await fetchContract();
+                if(res.status == 200){
+                    await fetchContract();
+                    setModalVisible(true);
+                }
             }).catch(err => console.log(err))
             setUrlData(null)
         }
-
+        else if (value == 'canceled'){
+            console.log('given: '+ value)
+            axios.delete(ServerConstants.local + 'post', { params: { id: contract._id } }).then((res:any) => {
+                console.log(res);
+                navigation.goBack();
+            }).catch(err => console.log(err))
+            setUrlData(null)
+        } 
+        // else if(!urlData.queryParams.value) {
+        //     console.log(urlData)
+        //     setIsError(true);
+        //     setModalVisible(true);
+        // }
+            
     }, [urlData])
 
     
@@ -69,8 +88,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
                 setContract(response.data as Contract);
                 let creationTime: number = new Date(response.data.creationDate).getTime() + 259200*1000 //3days in mseconds
                 setTime((creationTime - (new Date().getTime()))/1000)
-                if(response && response.data.serviceReceived && response.data.serviceDelivered)
-                    setModalVisible(true);
+                    
             })
           } catch (e) {
             console.error('Fetch Contract Details: ', e)
@@ -80,7 +98,9 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     
 
     React.useEffect(() => {
-        fetchContract()
+        fetchContract().then(() => {
+
+        })
         
     }, [])
 
@@ -91,7 +111,9 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
         })
     }
     function refuseContract() {
-        console.log('Refused')
+        contractAPI.cancelDeal(contract.dealId, user?.walletAccountName, 'canceled').then(() => {
+
+        })
     }
 
     function deposit() {
@@ -132,7 +154,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
                         <ActionButton title="Deposit" onPress={deposit}></ActionButton>
                     </View> :
                 <View style={styles.lowerSection}>
-                    <SliderComponent isConfirm={contract.serviceReceived} callback={serviceReceived} ></SliderComponent>
+                    {contract.serviceDelivered ? <SliderComponent isConfirm={contract.serviceReceived} callback={serviceReceived} ></SliderComponent> : <Text style={{textAlign: 'center'}}>Awaiting for the service to be delivered by the seller... </Text>}
                 </View>) :
                 <View style={styles.contractButtonContainer}>
                     <ActionButtonSecondary styleContainer={{width: '45%', borderRadius: 20}} title="Refuse" onPress={refuseContract}></ActionButtonSecondary>
@@ -163,11 +185,12 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
             rating: rating,
         }
         try {
-            axios.post(ServerConstants.local + 'auth/rating', body).then( () => {
-                axios.delete(ServerConstants.local + 'post', { params: { id: contract._id } }).then(() => {
-                        setModalVisible(false);
-                        navigation.navigate('TabThree')
-                    })
+            axios.post(ServerConstants.local + 'auth/rating', body).then(async () => {
+                if(contract.serviceDelivered && contract.serviceReceived){
+                    await axios.delete(ServerConstants.local + 'post', { params: { id: contract._id } })
+                }
+                    setModalVisible(false);
+                    navigation.navigate('TabThree')
                 }
             ).catch((err) => {console.log(err)})
         } catch (error) {
@@ -186,7 +209,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     function renderEndModal(): any {
       return (
         <View style={styles.endModalContainer}>
-            <Text style={{fontSize: 18, marginTop: '10%'}}>Thank you for using EOS marketplace</Text>
+            <Text style={{fontSize: 18, marginTop: '10%', textAlign: 'center', width: '70%'}}>Thank you for using EOS marketplace</Text>
             <View style={{display: 'flex', alignItems: 'center', marginBottom: -25}}>
                 <Text style={{fontSize: 25}}>Please Rate: </Text>
                 <Text style={{fontSize: 18, fontWeight:'bold',}}>{user?.uid == contract.buyer.uid ? contract.seller.name : contract.buyer.name}</Text>
@@ -205,6 +228,16 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
       ); 
     }
 
+    function renderErrorModal(): any {
+        return (
+            <View style={styles.endModalContainer}>
+                <Icon style={{marginTop: '10%',}} name="error-outline" size={100} color="red"></Icon>
+                <Text style={{fontSize: 22, textAlign: 'center', width: '80%'}}>Your action has failed. Please try again.</Text>
+                <ActionButton styleContainer={{width: '50%', marginBottom: '5%'}} title="OK" onPress={() => {setModalVisible(false); setIsError(false)}}></ActionButton>
+            </View>
+        );
+    }
+
 
     return(
             contract && time?
@@ -217,9 +250,10 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
                         visible={modalVisible}
                         onRequestClose={() => {
                             setModalVisible(false)
+                            setIsError(false);
                         }}>
                         <View style={styles.centeredView}>
-                            {renderEndModal()}
+                            { isError ? renderErrorModal() : renderEndModal()}
                         </View>
                     </Modal>
                 <TouchableOpacity style={styles.backButton} onPress={() => {navigation.goBack()}}>

@@ -87,6 +87,26 @@ export class ContractAPI{
           console.log(err)
         })
     }
+
+    async cancelDeal(dealId:string,walletAccountName:string,value:string){
+      console.log(dealId)
+        const actions = [{
+             account: 'eosmarktplce',
+             name: 'cancel',
+             authorization: [{
+               actor:walletAccountName,
+               permission: 'active',
+             }],
+             data: {
+                 party:walletAccountName,
+                 deal_id:dealId
+             },
+           }]
+        this.signingRequest(actions,value).catch((err)=>{
+          console.log(err)
+        })
+    }
+
     async deposit(dealId:string,walletAccountName:string,price:number){
       console.log(price.toFixed(4).toString())
       const actions = [{
