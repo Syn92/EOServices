@@ -66,7 +66,7 @@ export default function ChatRoomCard(props: IProp) {
   return (
     <TouchableOpacity style={styles.mainContainer} onPress={() => props.onPress(props.room)}>
         <View>
-            <Image style={styles.image} source={require('../../assets/images/avatar.webp')}/>
+            <Image style={styles.image} source={props.room.user.avatar ? {uri: props.room.user.avatar} : require('../../assets/images/avatar.webp')}/>
         </View>
         <View style={styles.descriptionContainer}>
             <View style={styles.titleContainer}>

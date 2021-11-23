@@ -31,7 +31,7 @@ export function LinkWallet({ navigation }: { navigation: any }) {
       setLoadingStatus(true);
       let res = await axios.patch(ServerConstants.local + 'auth', {
         uid: user?.uid,
-        patch: { walletAccountName: eosUsername + ".gm" }
+        patch: { walletAccountName: eosUsername }
       })
       console.log(res);
       if (res.status == 200) {
@@ -62,6 +62,7 @@ export function LinkWallet({ navigation }: { navigation: any }) {
               style={{ color: 'white'}}
               autoCapitalize='none'
               autoCorrect={false}
+              maxLength={12}
               placeholder="Enter account name..."
               placeholderTextColor='#ffffff50'
               value={eosUsername}

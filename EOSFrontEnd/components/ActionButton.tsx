@@ -1,7 +1,6 @@
 import React from 'react'
 import { GestureResponderEvent, StyleSheet, Text, View } from 'react-native'
-import { Button } from 'react-native-elements/dist/buttons/Button';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import { TouchableOpacity } from 'react-native';
 
 interface Props {
     title: string,
@@ -23,7 +22,14 @@ const styles = StyleSheet.create({
     buttonContainer: {
         backgroundColor: '#04B388',
         elevation: 8,
-        borderRadius: 10,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        borderRadius: 15,
         paddingVertical: 10,
         paddingHorizontal: 12,
     },
@@ -32,6 +38,5 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontWeight: "bold",
         alignSelf: "center",
-        textTransform: "uppercase"
     }
 })

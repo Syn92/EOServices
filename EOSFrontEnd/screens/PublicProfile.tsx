@@ -25,6 +25,7 @@ export function PublicProfile({route, navigation}: any) {
     React.useEffect(() => {
         fetchPublicUser();
         fetchUserServices();
+        
     }, []);
 
     async function fetchUserServices() {
@@ -37,14 +38,19 @@ export function PublicProfile({route, navigation}: any) {
     }
 
     async function fetchPublicUser() {
-        console.log(uid)
-        const res = await axios.get<any>(ServerConstants.local + 'auth', { params: { uid: uid } });
-        if (res.data){
-            const data: any = res.data
-            delete data._id
-            setPublicUser(data)
-        } else {
-            throw new Error('Error retrieving user')
+        try {
+            axios.get<any>(ServerConstants.local + 'auth', { params: { uid: uid } }).then((res) => {
+                if (res.data){
+                    const data: any = res.data
+                    delete data._id
+                    setPublicUser(data)
+                } else {
+                    throw new Error('Error retrieving user')
+                }
+
+            })
+        } catch (e) {
+            console.log('fetch public user', e)
         }
     }
 
@@ -52,11 +58,14 @@ export function PublicProfile({route, navigation}: any) {
         return (
             <View>
                 <View style={styles.avatar}>
-                    <Image resizeMode='cover' style={styles.photo} source={require('../assets/images/avatar.webp')} />
+                    <Image resizeMode='cover' style={styles.photo} source={publicUser?.avatar ? {uri: publicUser?.avatar} : require('../assets/images/avatar.webp')} />
                     <Text style={styles.username}>{publicUser?.name}</Text>
                     <View style={{display: 'flex', flexDirection: 'row'}}>
-                        {createRating(publicUser?.rating)}
-                    </View>
+                        {
+                            publicUser.rating ? createRating(publicUser?.rating).map((e) => {return (e)}) : null
+                        }
+                        </View>
+                        { publicUser.rating ? <Text style={{color: 'white'}}>{publicUser?.rating.toFixed(2)}</Text> : null}
                 </View>
 
                 {/* ---- Description ---- */}

@@ -81,13 +81,15 @@ const styles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        maxWidth: '22%',
     },
     imageTitle: {
         textDecorationLine: 'underline',
-        color: '#04B388',
+        color: '#182851',
         fontSize: 16,
-        textTransform: 'capitalize'
+        textTransform: 'capitalize',
+        textAlign: 'center'
     },
     row: {
         width: '90%',

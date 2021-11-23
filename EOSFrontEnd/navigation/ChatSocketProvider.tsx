@@ -41,13 +41,14 @@ export function ChatSocketProvider({ children }:{ children: any }) {
 
     if(!user) return;
 
+    console.log("setting up sockets")
     axios.get(ServerConstants.local + 'chatRooms', { params: {userId: user.uid } })
     .then(function (response) {
       const newRooms = response.data as IRoom[] || [];
       setUpMessages(newRooms)
       setUpSockets(newRooms.map(x => x._id));
     }).catch(function (error) {
-      console.log(error);
+      console.log('getchat rooms: ', error);
     });
 
     return function cleanup() {
@@ -81,7 +82,7 @@ export function ChatSocketProvider({ children }:{ children: any }) {
         setMessages(oldMessages => {oldMessages.set(newRoom._id, newMessages)});
         setNotifsCount(oldNotifs => oldNotifs + newMessages.filter(x => !x.seen && x.userId != user.uid).length)
       }).catch(function (error) {
-        console.log(error);
+        console.log('get chat messages: ', error);
       });
     })
   }

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ImageBackground, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Button } from 'react-native-elements/dist/buttons/Button';
 import Map from '../components/Map';
 import { RootTabScreenProps } from '../types';
@@ -26,8 +26,8 @@ async function handleLogout() {
   }
 }
 
-const filterNone: string = 'none';
-const noneServType: string = 'none';
+const filterNone: string = 'None';
+const noneServType: string = 'None';
 
 
 
@@ -40,7 +40,7 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
   const [filterCatSelected, setFilterCatSelected] = useState(filterNone)
   const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState(noneServType)
-  const [selectedCadastre, setSelectedCadastre] = useState<string>()
+  const [selectedService, setSelectedService] = useState<string>()
   var scrollViewRef: any = React.useRef();
   var mapid_y: any = {};
   const fetchData = async () => {
@@ -65,19 +65,20 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
   }, []);
 
   return (
-    <ScrollView contentContainerStyle={styles.container} nestedScrollEnabled={true}>
+    <ImageBackground style={{ flex: 1 }} source={require('../assets/images/bg.png')}>
+    <View style={styles.container}>
       <View style={styles.appHeader}>
         <Text style={styles.title}>EOS MARKETPLACE</Text>
       </View>
       <View style={styles.mapContainer}>
-        <Map pressable={false} services={data} onMarkerPressed={(id) => { setSelectedCadastre(id);scrollViewRef.current?.scrollTo({y: mapid_y[id], animated: true})}} />
+        <Map pressable={false} services={data} onMarkerPressed={(id) => { setSelectedService(id);scrollViewRef.current?.scrollTo({y: mapid_y[id], animated: true})}} />
       </View>
       <View style={styles.searchSection}>
         <Icon style={styles.searchIcon} name="search" size={20} color="#04B388"/>
         <TextInput
             style={styles.input}
             placeholder="Search in marketplace..."
-            placeholderTextColor="#04B388"
+            placeholderTextColor="#182851"
             onChangeText={(searchString) => {setSearchString(searchString)}}
             underlineColorAndroid="transparent"
         />
@@ -109,31 +110,32 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
             <Button icon={<Icon name="refresh" size={30} color="#04B388"/>} onPress={() => {fetchData()}} />
             <Button icon={<Icon name="add" size={30} color="#04B388"/>} onPress={() => {navigation.navigate('AddPost')}} />
             <Button icon={<Icon name="filter-alt" size={30} color="#04B388"/>} onPress={() => {setModalVisible(true)}} />
-            <Button icon={<Icon name="sort" size={30} color="#04B388"/>} onPress={() => {navigation.navigate('AddPost')}} />
           </View>
         </View>
           <View style={styles.buttonTypeContainer}>
             <ActionButtonSecondary styleContainer={[styles.typeButtonLeft, (selectedType == servTypeSell) ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'}]} title="Offering" onPress={() => {if(selectedType != servTypeSell) setSelectedType(servTypeSell); else {setSelectedType(noneServType)}}} styleText={selectedType == servTypeSell ? {color: 'white'} : {color: '#04B388'}}></ActionButtonSecondary>
             <ActionButtonSecondary styleContainer={[styles.typeButtonRight,(selectedType == servTypeBuy) ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'} ]} title="Looking for" onPress={() => {if(selectedType != servTypeBuy) setSelectedType(servTypeBuy); else {setSelectedType(noneServType)}}} styleText={selectedType == servTypeBuy ? {color: 'white'} : {color: '#04B388'}}></ActionButtonSecondary>
           </View>
-      <ScrollView  onScrollBeginDrag={()=> {setSelectedCadastre('')}} ref={scrollViewRef} contentContainerStyle={styles.scrollContainer} nestedScrollEnabled={true}>
+      <ScrollView  onScrollBeginDrag={()=> {setSelectedService('')}} ref={scrollViewRef} contentContainerStyle={styles.scrollContainer}>
 
        {
          data.filter((e:IService) => (e.title.startsWith(searchString.toLowerCase()) && (filterCatSelected == filterNone ? true : e.category == filterCatSelected) && (selectedType == noneServType ? true : e.serviceType == selectedType))).map((e: IService) => {
            return(
-             <TouchableOpacity onLayout={(x) => {mapid_y[e.cadastreId] = x.nativeEvent.layout.y }} onPress={() => {onCardPress(e)}} key={e._id} style={selectedCadastre == e.cadastreId ? {borderWidth: 1, borderColor: '#04B388'} : null}>
+             <TouchableOpacity onLayout={(x) => {mapid_y[e._id] = x.nativeEvent.layout.y }} onPress={() => {onCardPress(e)}} key={e._id} style={selectedService == e._id ? {borderWidth: 1, borderColor: '#04B388'} : null}>
                <PostCard title={e.title} price={e.priceEOS} position={getAddress(e.cadastre)} owner={e.ownerName} thumbnail={e.thumbnail ? e.thumbnail : 'https://cdn1.iconfinder.com/data/icons/business-company-1/500/image-512.png'}></PostCard>
              </TouchableOpacity>)
          })
        }
         </ScrollView>
       </View>
-    </ScrollView>
+    </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     flexDirection: 'column',
     alignItems: 'center',
   },
@@ -144,7 +146,9 @@ const styles = StyleSheet.create({
     marginVertical: 15,
     fontSize: 20,
     fontWeight: 'bold',
-    color: 'black',
+    color: 'white',
+    textAlign: 'left',
+    marginBottom: 15,
   },
   separator: {
     marginVertical: 30,
@@ -158,12 +162,12 @@ const styles = StyleSheet.create({
     alignContent: 'space-between'
   },
   headerText: {
-    color: "#04B388",
+    color: "#182851",
     fontSize: 25,
     textAlign: 'left',
-    marginLeft: 10,
+    marginLeft: 20,
     marginTop: 5,
-    flexGrow: 1,
+    flexBasis: '55%',
 
   },
   buttonContainer: {
@@ -173,7 +177,7 @@ const styles = StyleSheet.create({
   mapContainer: {
     // justifyContent: 'flex-start',
     width: '90%',
-    height: 200,
+    height: '29%',
   },
   buttonTypeContainer: {
     alignContent: 'center',
@@ -208,7 +212,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     height: 365,
     // flexGrow: 1,
-    // flexBasis: '50%',
+    flexBasis: '56%',
     display: 'flex',
     flexDirection: 'column',
     width: '85%',

@@ -22,7 +22,7 @@ export default function UserCard(props: IProp) {
   return (
     <TouchableOpacity style={styles.mainContainer} onPress={() => navigation.navigate('PublicProfile', {uid: props.user.uid})}>
         <View>
-            <Image style={styles.image} source={require('../assets/images/avatar.webp')}/>
+            <Image style={styles.image} source={props.user.avatar ? {uri: props.user.avatar} : require('../assets/images/avatar.webp')}/>
         </View>
         <View style={styles.descriptionContainer}>
             <View style={styles.titleContainer}>

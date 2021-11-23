@@ -9,7 +9,7 @@ import { Platform } from 'react-native';
 
 const defaultContext: { user: User | null, setUser: React.Dispatch<React.SetStateAction<User | null>> | null,
    isNewUser: boolean, setIsNewUser: React.Dispatch<React.SetStateAction<boolean>> | null,
-  urlData: Object, setUrlData: React.Dispatch<React.SetStateAction<Object>> | null } = {
+  urlData: any, setUrlData: React.Dispatch<React.SetStateAction<Object>> | null } = {
     user: null,
     setUser: null,
     isNewUser: false,
@@ -23,7 +23,7 @@ export const AuthenticatedUserContext = createContext(defaultContext);
 export function AuthenticatedUserProvider({ children }:{ children: any }) {
   const [user, setUser] = useState<User | null>(null);
   const [isNewUser, setIsNewUser] = useState<boolean>(false);
-  const [urlData, setUrlData] = useState<Object>()
+  const [urlData, setUrlData] = useState<any>()
   const oldUser = useRef<User | null>(null);
 
 
@@ -40,7 +40,7 @@ export function AuthenticatedUserProvider({ children }:{ children: any }) {
         return;
       }
       const token = (await Notifications.getExpoPushTokenAsync()).data;
-      axios.patch(ServerConstants.prod + 'token', {userId: user.uid, token: token}).catch(err => console.log(err))
+      axios.patch(ServerConstants.prod + 'token', {userId: user.uid, token: token}).catch(err => console.log('pushnotif: ', err))
     } else {
       // console.log('Must use physical device for Push Notifications');
     }
@@ -59,7 +59,7 @@ export function AuthenticatedUserProvider({ children }:{ children: any }) {
     if(oldUser.current?.uid == user?.uid) return; // same user
 
     if(oldUser.current) { // delete token of user logged out
-      axios.delete(ServerConstants.prod + 'token', {data: {userId: oldUser.current.uid}}).catch(err => console.log(err));
+      axios.delete(ServerConstants.prod + 'token', {data: {userId: oldUser.current.uid}}).catch(err => console.log('deletetoken: ', err));
     }
     if(user) { // set token of user logged in
       registerForPushNotificationsAsync().catch(err => console.log(err))

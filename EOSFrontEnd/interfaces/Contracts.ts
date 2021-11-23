@@ -8,7 +8,10 @@ export interface ContractRequest {
     buyer: string,
     seller: string,
     finalPriceEOS: string,
-    accepted: boolean
+    accepted: boolean,
+    deposit: boolean,
+    buyerWalletAccount?: string,
+    sellerWalletAccount?:string,
 }
 
 export interface Contract {
@@ -18,7 +21,13 @@ export interface Contract {
     seller: User,
     finalPriceEOS: string,
     accepted: boolean,
-    serviceDetail: IService
+    serviceDetail: IService,
+    deposit?: boolean,
+    serviceReceived?: false,
+    serviceDelivered?: false,
+    images?: string[],
+    creationDate?: Date,
+    dealId: string,
 }
 
 export interface RequestStatus {

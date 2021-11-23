@@ -10,6 +10,7 @@ import Carousel, { Pagination } from 'react-native-snap-carousel';
 import { getAddress } from '../utils/Cadastre';
 import { AuthenticatedUserContext } from '../navigation/AuthenticatedUserProvider';
 import SuccessModalView from '../components/SuccessModalView';
+import { transact } from '../components/Anchor';
 import { ChatContext, ChatSocketContext } from '../navigation/ChatSocketProvider';
 import { ISentRoom } from '../interfaces/Chat';
 import { IService } from '../interfaces/Service';
@@ -87,6 +88,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
     function closeModal() {
       setErrorMsg('')
       setModalVisible(false);
+      // navigation.navigate('TabThree')
     }
 
     function modalView() {
@@ -252,7 +254,7 @@ const styles = StyleSheet.create({
     width: '80%',
     display: 'flex',
     flexDirection: 'column',
-    marginVertical: 30,
+    marginVertical: 40,
     padding: 10,
     borderRadius: 15,
     shadowColor: "#000",

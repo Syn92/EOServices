@@ -1,5 +1,6 @@
 export default class ServerConstants {
-    static readonly local = 'http://192.168.50.115:4000/';
+    static readonly ip = '192.168.86.25';
+    static readonly local = `http://${ServerConstants.ip}:4000/`;
     static readonly prod = 'https://eos-marketplace.nn.r.appspot.com/';
     //static readonly local = 'http://10.0.0.7:4000/';
-}
+};
