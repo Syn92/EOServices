@@ -298,7 +298,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
       {/* <Text style={styles.title} numberOfLines={1}>{room.user.name + " - " + room.service.title}</Text> */}
       <View style={styles.chatContainer}>
         <GiftedChat messages={giftedMessages}
-        isKeyboardInternallyHandled={false}
+        isKeyboardInternallyHandled={Platform.OS === "ios" ? false : true}
         shouldUpdateMessage={(props, nextProps) => props.currentMessage !== nextProps.currentMessage}
         user={{_id: user.uid, name: user.name}} onSend={sendMessage}
         renderInputToolbar={renderInputToolbar}
