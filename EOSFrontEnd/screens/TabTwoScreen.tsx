@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ImageBackground, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ImageBackground, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Button } from 'react-native-elements/dist/buttons/Button';
 import Map from '../components/Map';
 import { RootTabScreenProps } from '../types';
@@ -43,6 +43,15 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
   const [selectedService, setSelectedService] = useState<string>()
   var scrollViewRef: any = React.useRef();
   var mapid_y: any = {};
+  
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    fetchData().then(() => setRefreshing(false));
+  }, []);
+
+
   const fetchData = async () => {
     try{
       const resp = await axios.get<Array<Object>>(ServerConstants.local + 'post/open');
@@ -116,7 +125,12 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
             <ActionButtonSecondary styleContainer={[styles.typeButtonLeft, (selectedType == servTypeSell) ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'}]} title="Offering" onPress={() => {if(selectedType != servTypeSell) setSelectedType(servTypeSell); else {setSelectedType(noneServType)}}} styleText={selectedType == servTypeSell ? {color: 'white'} : {color: '#04B388'}}></ActionButtonSecondary>
             <ActionButtonSecondary styleContainer={[styles.typeButtonRight,(selectedType == servTypeBuy) ? {backgroundColor: '#04B388'} : {backgroundColor: 'white'} ]} title="Looking for" onPress={() => {if(selectedType != servTypeBuy) setSelectedType(servTypeBuy); else {setSelectedType(noneServType)}}} styleText={selectedType == servTypeBuy ? {color: 'white'} : {color: '#04B388'}}></ActionButtonSecondary>
           </View>
-      <ScrollView  onScrollBeginDrag={()=> {setSelectedService('')}} ref={scrollViewRef} contentContainerStyle={styles.scrollContainer}>
+      <ScrollView  onScrollBeginDrag={()=> {setSelectedService('')}} ref={scrollViewRef} contentContainerStyle={styles.scrollContainer} refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
+        }>
 
        {
          data.filter((e:IService) => (e.title.startsWith(searchString.toLowerCase()) && (filterCatSelected == filterNone ? true : e.category == filterCatSelected) && (selectedType == noneServType ? true : e.serviceType == selectedType))).map((e: IService) => {

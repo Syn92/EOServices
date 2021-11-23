@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { StatusBar } from 'expo-status-bar';
-import { Button, Dimensions, Image, ImageBackground, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableHighlight, TouchableOpacity, View } from 'react-native'
+import { Button, Dimensions, Image, ImageBackground, Modal, RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableHighlight, TouchableOpacity, View } from 'react-native'
 
 import { ProfileCard } from '../components/ProfileCard'
 import { Icon } from 'react-native-elements';
@@ -57,6 +57,14 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
         name: user?.name,
         phone: user?.phone
     });
+
+    
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    fetchRoutine().then(() => {setRefreshing(false); setRating(createRating(user?.rating))});
+  }, []);
 
     React.useEffect(() => {
         fetchRoutine()
@@ -379,7 +387,12 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
     }
 
     return (
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }} refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+            />
+          }>
             <View style={styles.container}>
                 <ImageBackground style={{ flex: 1 }} source={require('../assets/images/bg.png')}>
                     <Modal
