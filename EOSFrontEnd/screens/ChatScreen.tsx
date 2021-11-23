@@ -303,7 +303,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
         user={{_id: user.uid, name: user.name}} onSend={sendMessage}
         renderInputToolbar={renderInputToolbar}
         renderCustomView={renderCustomView}/>
-        <KeyboardAvoidingView  behavior={'padding'}  keyboardVerticalOffset={100}/>
+        <KeyboardAvoidingView  behavior={Platform.OS === "ios" ? "padding" : "height"}  keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}/>
         </View>
         {sendContractDialog()}
       <Overlay overlayStyle={{height: '30%', display: 'flex', justifyContent: 'space-between', borderRadius: 10}} isVisible={errorOverlay} onBackdropPress={() => {setErrorOverlay(false)}}>
