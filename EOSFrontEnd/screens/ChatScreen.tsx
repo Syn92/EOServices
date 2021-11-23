@@ -1,5 +1,7 @@
 import { useFocusEffect } from '@react-navigation/native';
 import * as React from 'react';
+import { Platform } from 'react-native';
+
 import { useCallback, useEffect, useState } from 'react';
 import { ImageBackground, StyleSheet, Text, View, Image, Button, Modal, TouchableOpacity, TextInput, KeyboardAvoidingView } from 'react-native';
 import { Icon, Overlay } from 'react-native-elements';
@@ -64,12 +66,14 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
     if(message.roomId != room._id) return;
 
     if (message.userId == user.uid) { // from me, update it
+      console.log("update from me")
       setGiftedMessages(old => {
         const sentIndex = old.findIndex(x => x.sent)
         const notSentIndex = sentIndex >= 1 ? sentIndex - 1 : 0
         old[notSentIndex].sent = true
         old[notSentIndex]._id = message._id
         old[notSentIndex].image = message.image
+        console.log(old)
       });
     } else { // not from me, add it as seen
       appendMessages([{...message, seen: true}])
@@ -82,6 +86,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
   const newRequestStatusListener = (status: RequestStatus) => {
     if(status.roomId != room._id) return;
     if(status.accepted) {
+    
       setRoom(old => { old.contract.accepted = true })
       setGiftedMessages(old => { old.find(x => x.lastOffer).accepted = true; })
       setContractAccepted(true)
@@ -262,7 +267,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
         visible={showContractDialog}
         onRequestClose={() => setShowContractDialog(false)}>
         <View style={styles.centeredView}>
-          <KeyboardAvoidingView behavior='padding' style={styles.modal}>
+          <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.modal}>
             <Text style={styles.modalTitle}>Confirm Offer Request?</Text>
             <Text style={styles.modalDesc}>You are about to offer '{cleanTitle}' for </Text>
             <View style={styles.modalInputContainer}>
@@ -291,14 +296,16 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
   return (
     <ImageBackground style={styles.container} source={require('../assets/images/bg.png')}>
       {/* <Text style={styles.title} numberOfLines={1}>{room.user.name + " - " + room.service.title}</Text> */}
-      <KeyboardAvoidingView  behavior='height' style={styles.chatContainer}>
+      <View style={styles.chatContainer}>
         <GiftedChat messages={giftedMessages}
+        isKeyboardInternallyHandled={false}
         shouldUpdateMessage={(props, nextProps) => props.currentMessage !== nextProps.currentMessage}
         user={{_id: user.uid, name: user.name}} onSend={sendMessage}
         renderInputToolbar={renderInputToolbar}
         renderCustomView={renderCustomView}/>
-      </KeyboardAvoidingView>
-      {sendContractDialog()}
+        <KeyboardAvoidingView  behavior={'padding'}  keyboardVerticalOffset={100}/>
+        </View>
+        {sendContractDialog()}
       <Overlay overlayStyle={{height: '30%', display: 'flex', justifyContent: 'space-between', borderRadius: 10}} isVisible={errorOverlay} onBackdropPress={() => {setErrorOverlay(false)}}>
         <Icon name="error-outline" size={70} color="red"></Icon>
         <Text style={{fontSize: 30, textAlign: 'center'}}>Sorry !</Text>
@@ -325,6 +332,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     flexGrow: 1,
     flexShrink: 1,
+    // flex:1,
   },
   title: {
     margin: 20,
