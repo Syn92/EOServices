@@ -2,7 +2,7 @@ import { RootTabScreenProps } from "../types";
 import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, Image, ScrollView, Modal } from "react-native";
 import * as React from 'react';
 import { Icon } from "react-native-elements";
-import { ContractRequest, Contract } from '../interfaces/Contracts';
+import { ContractRequest, Contract, RequestStatus } from '../interfaces/Contracts';
 import ServerConstants from "../constants/Server";
 import axios from "axios";
 import { IService } from "../interfaces/Service";
@@ -17,10 +17,12 @@ import { ExpandImagePickerResult } from "expo-image-picker/build/ImagePicker.typ
 import Carousel, { Pagination } from "react-native-snap-carousel";
 import {ContractAPI} from "../services/Contract";
 import { Rating, AirbnbRating } from 'react-native-ratings';
+import { ChatSocketContext } from "../navigation/ChatSocketProvider";
 
 
 export default function ContractScreen({route, navigation }: RootTabScreenProps<'Contract'>) {
-    let contractId: any = route.params;
+    let roomId: any = route.params.roomId;
+    let contractId: any = route.params.id;
     let contractAPI:ContractAPI = ContractAPI.getInstance()
     const [contract, setContract] = React.useState<Contract>();
     const [rating, setRating] = React.useState(0);
@@ -29,6 +31,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     const [activeIndex, setActiveIndex] = React.useState(0);
     const [ modalVisible, setModalVisible ] = React.useState(false);
     const [isError, setIsError] = React.useState(false)
+    const { socket } =  React.useContext(ChatSocketContext);
 
     
     React.useEffect(() => {
@@ -40,18 +43,22 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
         let value = urlData.queryParams.value
         if(value == 'accepted'){
             axios.patch(ServerConstants.local + 'post/accept', {serviceId: contract.serviceId, contractId: contract._id}).then(async (res:any) => {
+                socket.emit('contractUpdated', roomId)
                 await fetchContract();
+
             }).catch(err => console.log(err))
             setUrlData(null)
         } else if(value == 'deposited'){
             displayErrorModal(false)
             axios.patch(ServerConstants.local + 'post/deposit', {contractId: contract._id}).then(async (res:any) => {
+                socket.emit('contractUpdated', roomId)
                 await fetchContract();
             }).catch(err => console.log(err))
             setUrlData(null)
         } else if (value == 'received'){
             displayErrorModal(false)
             axios.patch(ServerConstants.local + 'post/received', {contractId: contract._id}).then(async (res:any) => {
+                socket.emit('contractUpdated', roomId)
                 await fetchContract();
                 setModalVisible(true);
             }).catch(err => console.log(err))
@@ -59,14 +66,16 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
         } else if (value == 'delivered'){
             displayErrorModal(false)
             axios.patch(ServerConstants.local + 'post/delivered', {contractId: contract._id}).then(async (res:any) => {
-                    await fetchContract();
-                    setModalVisible(true);
+                socket.emit('contractUpdated', roomId)
+                await fetchContract();
+                setModalVisible(true);
             }).catch(err => console.log(err))
             setUrlData(null)
         }
         else if (value == 'canceled'){
             displayErrorModal(false)
             axios.delete(ServerConstants.local + 'post', { params: { id: contract._id } }).then((res:any) => {
+                socket.emit('contractUpdated', roomId)
                 console.log(res);
                 navigation.goBack();
             }).catch(err => console.log(err))
@@ -77,7 +86,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     
     const fetchContract = async () => {
         try {
-            axios.get(ServerConstants.local + 'post/contract?id='+ contractId.id).then((response: any) => {
+            axios.get(ServerConstants.local + 'post/contract?id='+ contractId).then((response: any) => {
                 setContract(response.data as Contract);
                 let creationTime: number = new Date(response.data.creationDate).getTime() + 259200*1000 //3days in mseconds
                 setTime((creationTime - (new Date().getTime()))/1000)
@@ -92,8 +101,23 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
 
     React.useEffect(() => {
         fetchContract()
-        
+        setupSocket()
+        return () => cleanUpSocket()
     }, [])
+
+    function setupSocket() {
+        console.log('setup')
+        socket.on('contractUpdated', contractUpdateListner)
+    }
+
+    function cleanUpSocket() {
+        socket.off('contractUpdated', contractUpdateListner)
+    }
+    
+    function contractUpdateListner(id: string) {
+        if(contract._id == id)
+            fetchContract();
+    }
 
     function acceptContract() {
         contractAPI.acceptDeal(contract.dealId, user?.walletAccountName, 'accepted').then(() => {
@@ -137,8 +161,9 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
           base64: true,
         });
         if(!result.cancelled){
-            axios.post(ServerConstants.local + 'post/contract/image', {contractId: contract._id, image:result.base64}).then(() => {
-                fetchContract();
+            axios.post(ServerConstants.local + 'post/contract/image', {contractId: contract._id, image:result.base64}).then(async () => {
+                await fetchContract();
+                socket.emit('contractUpdated', roomId)
             }).catch((e) => {
                 console.log('add photo: ', e)
             })

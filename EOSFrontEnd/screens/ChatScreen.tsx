@@ -216,7 +216,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
 
   function openOfferDetails() {
     if(room.contract)
-      navigation.navigate('Contract',{'id': room.contract._id})
+      navigation.navigate('Contract',{'id': room.contract._id, 'roomId': room._id})
     else {
       setErrorOverlay(true)
     }
