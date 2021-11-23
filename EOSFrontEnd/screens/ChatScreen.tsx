@@ -73,7 +73,6 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
         old[notSentIndex].sent = true
         old[notSentIndex]._id = message._id
         old[notSentIndex].image = message.image
-        console.log(old)
       });
     } else { // not from me, add it as seen
       appendMessages([{...message, seen: true}])

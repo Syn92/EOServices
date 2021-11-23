@@ -215,7 +215,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
             axios.post(ServerConstants.local + 'auth/rating', body).then(async () => {
                 if(contract.serviceDelivered && contract.serviceReceived){
                     await axios.delete(ServerConstants.local + 'post', { params: { id: contract._id } }).then(() => {
-                        navigation.goBack();
+                        socket.emit('contractDeleted', roomId)
                     })
                 }
                     setModalVisible(false);
