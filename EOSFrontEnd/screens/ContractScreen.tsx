@@ -42,32 +42,27 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
         }
         let value = urlData.queryParams.value
         if(value == 'accepted'){
-            axios.patch(ServerConstants.local + 'post/accept', {serviceId: contract.serviceId, contractId: contract._id}).then(async (res:any) => {
+            axios.patch(ServerConstants.local + 'post/accept', {serviceId: contract.serviceId, contractId: contract._id}).then( (res:any) => {
                 socket.emit('contractUpdated', roomId)
-                await fetchContract();
-
             }).catch(err => console.log(err))
             setUrlData(null)
         } else if(value == 'deposited'){
             displayErrorModal(false)
-            axios.patch(ServerConstants.local + 'post/deposit', {contractId: contract._id}).then(async (res:any) => {
+            axios.patch(ServerConstants.local + 'post/deposit', {contractId: contract._id}).then((res:any) => {
                 socket.emit('contractUpdated', roomId)
-                await fetchContract();
             }).catch(err => console.log(err))
             setUrlData(null)
         } else if (value == 'received'){
             displayErrorModal(false)
-            axios.patch(ServerConstants.local + 'post/received', {contractId: contract._id}).then(async (res:any) => {
+            axios.patch(ServerConstants.local + 'post/received', {contractId: contract._id}).then((res:any) => {
                 socket.emit('contractUpdated', roomId)
-                await fetchContract();
                 setModalVisible(true);
             }).catch(err => console.log(err))
             setUrlData(null)
         } else if (value == 'delivered'){
             displayErrorModal(false)
-            axios.patch(ServerConstants.local + 'post/delivered', {contractId: contract._id}).then(async (res:any) => {
+            axios.patch(ServerConstants.local + 'post/delivered', {contractId: contract._id}).then((res:any) => {
                 socket.emit('contractUpdated', roomId)
-                await fetchContract();
                 setModalVisible(true);
             }).catch(err => console.log(err))
             setUrlData(null)
@@ -75,7 +70,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
         else if (value == 'canceled'){
             displayErrorModal(false)
             axios.delete(ServerConstants.local + 'post', { params: { id: contract._id } }).then((res:any) => {
-                socket.emit('contractUpdated', roomId)
+                socket.emit('contractDeleted', roomId)
                 console.log(res);
                 navigation.goBack();
             }).catch(err => console.log(err))
@@ -108,15 +103,21 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     function setupSocket() {
         console.log('setup')
         socket.on('contractUpdated', contractUpdateListner)
+        socket.on('contractDeleted', contractDeletedListner)
+
     }
 
     function cleanUpSocket() {
         socket.off('contractUpdated', contractUpdateListner)
+        socket.off('contractDeleted', contractDeletedListner)
     }
     
-    function contractUpdateListner(id: string) {
-        if(contract._id == id)
-            fetchContract();
+    function contractUpdateListner() {
+        fetchContract();
+    }
+
+    function contractDeletedListner() {
+        navigation.goBack();
     }
 
     function acceptContract() {
