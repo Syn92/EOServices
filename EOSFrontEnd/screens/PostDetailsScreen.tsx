@@ -31,7 +31,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
 
     const fetchData = async () => {
       try {
-        axios.get(ServerConstants.local + 'post/?id='+id).then((response) => {
+        axios.get(ServerConstants.prod + 'post/?id='+id).then((response) => {
             setService(response.data as IService);
             setOfferSent(rooms.some(x => x.service._id == (response.data as IService)._id))
             setLoading(false);
@@ -69,7 +69,7 @@ export default function PostDetailsScreen({route, navigation }: RootTabScreenPro
         }
         setLoading(true)
         socket.emit('newRoom', param)
-        // await axios.post(ServerConstants.local + 'post/request', param)
+        // await axios.post(ServerConstants.prod + 'post/request', param)
         setLoading(false)
         setOfferSent(true)
 

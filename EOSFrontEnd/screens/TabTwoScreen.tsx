@@ -54,7 +54,7 @@ export default function TabTwoScreen({ navigation }: RootTabScreenProps<'TabTwo'
 
   const fetchData = async () => {
     try{
-      const resp = await axios.get<Array<Object>>(ServerConstants.local + 'post/open');
+      const resp = await axios.get<Array<Object>>(ServerConstants.prod + 'post/open');
       const respData: Array<Object> = resp.data
       setData(respData);
       setLoading(false);

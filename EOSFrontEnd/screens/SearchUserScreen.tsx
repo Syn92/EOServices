@@ -16,7 +16,7 @@ export default function SearchUserScreen({ navigation }: RootTabScreenProps<'Sea
   const { user } =  React.useContext(AuthenticatedUserContext);
 
   React.useEffect(() => {
-    axios.get(ServerConstants.local + 'user')
+    axios.get(ServerConstants.prod + 'user')
     .then(function (response) {
       const resUsers = response.data as User[]
       setUsers(resUsers.filter(x => x.uid != user?.uid));

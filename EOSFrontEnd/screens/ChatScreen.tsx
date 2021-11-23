@@ -235,7 +235,7 @@ export default function ChatScreen({ navigation, route }: RootStackScreenProps<'
       buyerWalletAccount:room.user.walletAccountName
     }
 
-    axios.post(ServerConstants.local + 'post/request', contract).then(async (res:any) => {
+    axios.post(ServerConstants.prod + 'post/request', contract).then(async (res:any) => {
       await contractAPI.acceptDeal(res.data.dealId,user.walletAccountName,value.toString())
       setShowContractDialog(false)
     }).catch(err => console.log('send contracts', err))

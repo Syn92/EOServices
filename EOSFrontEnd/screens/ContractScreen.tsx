@@ -41,26 +41,26 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
         }
         let value = urlData.queryParams.value
         if(value == 'accepted'){
-            axios.patch(ServerConstants.local + 'post/accept', {serviceId: contract.serviceId, contractId: contract._id}).then( (res:any) => {
+            axios.patch(ServerConstants.prod + 'post/accept', {serviceId: contract.serviceId, contractId: contract._id}).then( (res:any) => {
                 socket.emit('contractUpdated', roomId)
             }).catch(err => console.log(err))
             setUrlData(null)
         } else if(value == 'deposited'){
             displayErrorModal(false)
-            axios.patch(ServerConstants.local + 'post/deposit', {contractId: contract._id}).then((res:any) => {
+            axios.patch(ServerConstants.prod + 'post/deposit', {contractId: contract._id}).then((res:any) => {
                 socket.emit('contractUpdated', roomId)
             }).catch(err => console.log(err))
             setUrlData(null)
         } else if (value == 'received'){
             displayErrorModal(false)
-            axios.patch(ServerConstants.local + 'post/received', {contractId: contract._id}).then((res:any) => {
+            axios.patch(ServerConstants.prod + 'post/received', {contractId: contract._id}).then((res:any) => {
                 socket.emit('contractUpdated', roomId)
                 setModalVisible(true);
             }).catch(err => console.log(err))
             setUrlData(null)
         } else if (value == 'delivered'){
             displayErrorModal(false)
-            axios.patch(ServerConstants.local + 'post/delivered', {contractId: contract._id}).then((res:any) => {
+            axios.patch(ServerConstants.prod + 'post/delivered', {contractId: contract._id}).then((res:any) => {
                 socket.emit('contractUpdated', roomId)
                 setModalVisible(true);
             }).catch(err => console.log(err))
@@ -68,7 +68,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
         }
         else if (value == 'canceled'){
             displayErrorModal(false)
-            axios.delete(ServerConstants.local + 'post', { params: { id: contract._id } }).then((res:any) => {
+            axios.delete(ServerConstants.prod + 'post', { params: { id: contract._id } }).then((res:any) => {
                 socket.emit('contractDeleted', roomId)
                 console.log(res);
                 navigation.goBack();
@@ -80,7 +80,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
     
     const fetchContract = async () => {
         try {
-            axios.get(ServerConstants.local + 'post/contract?id='+ contractId).then((response: any) => {
+            axios.get(ServerConstants.prod + 'post/contract?id='+ contractId).then((response: any) => {
                 setContract(response.data as Contract);
                 let creationTime: number = new Date(response.data.creationDate).getTime() + 259200*1000 //3days in mseconds
                 setTime((creationTime - (new Date().getTime()))/1000)
@@ -161,7 +161,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
           base64: true,
         });
         if(!result.cancelled){
-            axios.post(ServerConstants.local + 'post/contract/image', {contractId: contract._id, image:result.base64}).then(async () => {
+            axios.post(ServerConstants.prod + 'post/contract/image', {contractId: contract._id, image:result.base64}).then(async () => {
                 await fetchContract();
                 socket.emit('contractUpdated', roomId)
             }).catch((e) => {
@@ -210,9 +210,9 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
             rating: rating,
         }
         try {
-            axios.post(ServerConstants.local + 'auth/rating', body).then(async () => {
+            axios.post(ServerConstants.prod + 'auth/rating', body).then(async () => {
                 if(contract.serviceDelivered && contract.serviceReceived){
-                    await axios.post(ServerConstants.local + 'post/completed', {contractId: contract._id}).then(() => {
+                    await axios.post(ServerConstants.prod + 'post/completed', {contractId: contract._id}).then(() => {
                         socket.emit('contractDeleted', roomId)
                     })
                 }

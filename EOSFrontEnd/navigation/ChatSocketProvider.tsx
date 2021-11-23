@@ -19,7 +19,7 @@ export interface ChatContextType {
   setRoomWatchedId: React.Dispatch<React.SetStateAction<string | null>>,
 }
 
-const socket = io(ServerConstants.local + "chat");
+const socket = io(ServerConstants.prod + "chat");
 export const ChatSocketContext = createContext<SocketContextType>({socket});
 
 export const ChatContext = createContext<ChatContextType | undefined>({rooms: [], messages: new Map<string, IMessage[]>(),
@@ -42,7 +42,7 @@ export function ChatSocketProvider({ children }:{ children: any }) {
     if(!user) return;
 
     console.log("setting up sockets")
-    axios.get(ServerConstants.local + 'chatRooms', { params: {userId: user.uid } })
+    axios.get(ServerConstants.prod + 'chatRooms', { params: {userId: user.uid } })
     .then(function (response) {
       const newRooms = response.data as IRoom[] || [];
       setUpMessages(newRooms)
@@ -76,7 +76,7 @@ export function ChatSocketProvider({ children }:{ children: any }) {
   function setUpMessages(newRooms: IRoom[]): void {
     setRooms(newRooms);
     newRooms.forEach(newRoom => {
-      axios.get(ServerConstants.local + 'chatMessages', { params: {roomId: newRoom._id } })
+      axios.get(ServerConstants.prod + 'chatMessages', { params: {roomId: newRoom._id } })
       .then(function (response) {
         const newMessages = response.data as IMessage[] || []
         setMessages(oldMessages => {oldMessages.set(newRoom._id, newMessages)});

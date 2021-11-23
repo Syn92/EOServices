@@ -40,8 +40,9 @@ export class ContractAPI{
     }
 
     private async signingRequest(actions:any,value:string){
+        let ip = Linking.getInitialURL()
         let res = await SigningRequest.create({ actions,chainId:"2a02a0053e5a8cf73a56ba0fda11e4d92e0238a4a2aa74fccf46d5a910746840" }, this.opts )
-        res.setCallback(`exp://${ServerConstants.expoIp}:19000/--/three?value=${value}`,false)
+        res.setCallback(`${ip}/--/three?value=${value}`,false)
         return Linking.openURL(res.encode())
     }
      async completeDeal(dealId:string,walletAccountName:string,value:string,action:string){
@@ -65,7 +66,7 @@ export class ContractAPI{
      }
 
     async createDeal(deal:ContractRequest){
-        return axios.post(ServerConstants.local+"contract",deal)
+        return axios.post(ServerConstants.prod+"contract",deal)
     }
     async acceptDeal(dealId:string,walletAccountName:string,value:string){
       console.log(dealId)

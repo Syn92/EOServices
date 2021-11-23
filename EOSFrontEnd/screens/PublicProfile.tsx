@@ -30,7 +30,7 @@ export function PublicProfile({route, navigation}: any) {
 
     async function fetchUserServices() {
         try {
-            const res = await axios.get<any>(ServerConstants.local + 'post/open', { params: { uid: uid } });
+            const res = await axios.get<any>(ServerConstants.prod + 'post/open', { params: { uid: uid } });
             setServices(res.data);
         } catch (e) {
             console.error('Fetch User Services Public: ', e)
@@ -39,7 +39,7 @@ export function PublicProfile({route, navigation}: any) {
 
     async function fetchPublicUser() {
         try {
-            axios.get<any>(ServerConstants.local + 'auth', { params: { uid: uid } }).then((res) => {
+            axios.get<any>(ServerConstants.prod + 'auth', { params: { uid: uid } }).then((res) => {
                 if (res.data){
                     const data: any = res.data
                     delete data._id

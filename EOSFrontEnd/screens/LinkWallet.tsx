@@ -29,7 +29,7 @@ export function LinkWallet({ navigation }: { navigation: any }) {
     setIsNotValid(false);
     try {
       setLoadingStatus(true);
-      let res = await axios.patch(ServerConstants.local + 'auth', {
+      let res = await axios.patch(ServerConstants.prod + 'auth', {
         uid: user?.uid,
         patch: { walletAccountName: eosUsername }
       })

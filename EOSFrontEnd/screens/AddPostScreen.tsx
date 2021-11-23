@@ -77,7 +77,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
       }
       if(!submited){
         setSubmited(true);
-        axios.post(ServerConstants.local + 'post', body).then(() => setModalVisible(true)).catch((err) => {console.log('post service: ', err); setSubmited(false)})
+        axios.post(ServerConstants.prod + 'post', body).then(() => setModalVisible(true)).catch((err) => {console.log('post service: ', err); setSubmited(false)})
       }
     } else {
       console.log("input missing")
@@ -100,7 +100,7 @@ export default function AddPostScreen({ navigation }: RootTabScreenProps<'AddPos
       setCadastresAC([]);
       return;
     }
-    axios.get(ServerConstants.local + "address", {params: {address: enteredAddress}})
+    axios.get(ServerConstants.prod + "address", {params: {address: enteredAddress}})
       .then(function (response) {
         // handle success
         const acResults = response.data as CustomFeature[];

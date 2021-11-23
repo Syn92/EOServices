@@ -77,7 +77,7 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
 
     async function fetchUserServices() {
         try {
-            const res = await axios.get<any>(ServerConstants.local + 'post/privateProfileServices', { params: { uid: user?.uid } });
+            const res = await axios.get<any>(ServerConstants.prod + 'post/privateProfileServices', { params: { uid: user?.uid } });
             if (res.data)
                 setServices(res.data)
             else
@@ -93,7 +93,7 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
 
     async function fetchPendingRequests() {
         try {
-            const res = await axios.get<any>(ServerConstants.local + 'post/requests', { params: { uid: user?.uid } });
+            const res = await axios.get<any>(ServerConstants.prod + 'post/requests', { params: { uid: user?.uid } });
             setPendingRequests(res.data)
         } catch (e) {
             console.error('Fetch Pending Requests: ', e)
@@ -128,7 +128,7 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
 
     async function fetchUser() {
         try {
-            const res = await axios.get<any>(ServerConstants.local + 'auth', { params: { uid: user?.uid } });
+            const res = await axios.get<any>(ServerConstants.prod + 'auth', { params: { uid: user?.uid } });
             if (res.data) {
                 const data: any = res.data
                 delete data._id
@@ -146,7 +146,7 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
 
     async function editDescription() {
         try {
-            let res = await axios.patch(ServerConstants.local + 'auth', {
+            let res = await axios.patch(ServerConstants.prod + 'auth', {
                 uid: user?.uid,
                 patch: { description: description }
             })
@@ -164,7 +164,7 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
 
     async function editContactInfo(){
         try {
-            let res = await axios.patch(ServerConstants.local + 'auth', {
+            let res = await axios.patch(ServerConstants.prod + 'auth', {
                 uid: user?.uid,
                 patch: contactInfo
             })
@@ -199,7 +199,7 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
 
     async function uploadAvatar(image: string){
         try {
-            let res = await axios.post(ServerConstants.local + 'auth/avatar', {
+            let res = await axios.post(ServerConstants.prod + 'auth/avatar', {
                 uid: user?.uid,
                 avatar: image
             })
