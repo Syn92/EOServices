@@ -21,9 +21,9 @@ import { ChatSocketContext } from "../navigation/ChatSocketProvider";
 
 
 export default function ContractScreen({route, navigation }: RootTabScreenProps<'Contract'>) {
-    let roomId: any = route.params.roomId;
-    let contractId: any = route.params.id;
     let contractAPI:ContractAPI = ContractAPI.getInstance()
+    const [roomId, setRoomId] = React.useState(route.params.roomId)
+    const [contractId, setcontractId] = React.useState(route.params.id)
     const [contract, setContract] = React.useState<Contract>();
     const [rating, setRating] = React.useState(0);
     const { user, urlData,setUrlData } =  React.useContext(AuthenticatedUserContext);
@@ -112,11 +112,12 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
         socket.off('contractDeleted', contractDeletedListner)
     }
     
-    function contractUpdateListner() {
+    function contractUpdateListner(empty: any[]) {
+        console.log('here')
         fetchContract();
     }
 
-    function contractDeletedListner() {
+    function contractDeletedListner(empty: any[]) {
         navigation.goBack();
     }
 
