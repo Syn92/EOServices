@@ -2,7 +2,10 @@ import { useNavigation } from '@react-navigation/native';
 import React from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { Icon } from 'react-native-elements'
+import { IRoom } from '../../../interfaces/Chat';
 import { Contract } from '../../../interfaces/Contracts';
+import { ServiceStatus } from '../../../interfaces/Services';
+import { ChatContext } from '../../../navigation/ChatSocketProvider';
 import { getAddress } from '../../../utils/Cadastre';
 
 interface Prop {
@@ -17,14 +20,22 @@ function getIcon(category: string) {
 
 export function ProfileContractCard(props: Prop) {
 
+    const { rooms } =  React.useContext(ChatContext);
     const navigation = useNavigation()
 
-    function test() {
-        console.log(props.contract)
+    function handleClick() {
+        const room = rooms.find((room: IRoom) => room.contract?._id === props.contract._id)
+        
+        if (props.contract.serviceDetail.status == ServiceStatus.IN_PROGRESS) {
+            if (room?._id)
+                navigation.navigate('Contract',{'id': room.contract._id, 'roomId': room._id})
+        } else if (props.contract.serviceDetail.status == ServiceStatus.COMPLETED) {
+
+        }
     }
 
     return (
-        <TouchableOpacity style={styles.card} onPress={/* go to chat */test}>
+        <TouchableOpacity style={styles.card} onPress={handleClick}>
             <View style={styles.iconContainer}>
                 <Icon name={getIcon(props.contract.serviceDetail.category)} 
                     type='material'

@@ -2,10 +2,9 @@ import { RootTabScreenProps } from "../types";
 import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, Image, ScrollView, Modal } from "react-native";
 import * as React from 'react';
 import { Icon } from "react-native-elements";
-import { ContractRequest, Contract, RequestStatus } from '../interfaces/Contracts';
+import {Contract } from '../interfaces/Contracts';
 import ServerConstants from "../constants/Server";
 import axios from "axios";
-import { IService } from "../interfaces/Service";
 import Loading from "../components/Loading";
 import { AuthenticatedUserContext } from "../navigation/AuthenticatedUserProvider";
 import { SliderComponent } from "../components/Slider";
@@ -104,7 +103,6 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
         console.log('setup')
         socket.on('contractUpdated', contractUpdateListner)
         socket.on('contractDeleted', contractDeletedListner)
-
     }
 
     function cleanUpSocket() {
@@ -214,7 +212,7 @@ export default function ContractScreen({route, navigation }: RootTabScreenProps<
         try {
             axios.post(ServerConstants.local + 'auth/rating', body).then(async () => {
                 if(contract.serviceDelivered && contract.serviceReceived){
-                    await axios.delete(ServerConstants.local + 'post', { params: { id: contract._id } }).then(() => {
+                    await axios.post(ServerConstants.local + 'post/completed', {contractId: contract._id}).then(() => {
                         socket.emit('contractDeleted', roomId)
                     })
                 }
