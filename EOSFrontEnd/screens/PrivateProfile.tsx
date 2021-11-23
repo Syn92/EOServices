@@ -77,13 +77,15 @@ export function PrivateProfile({ navigation }: { navigation: any }) {
 
     async function fetchUserServices() {
         try {
-            const open = await axios.get<any>(ServerConstants.local + 'post/open', { params: { uid: user?.uid } });
-            const contracts = await axios.get<any>(ServerConstants.local + 'post/contracts', { params: { uid: user?.uid } });
-            setServices({
-                open: open.data,
-                inProgress: contracts.data,
-                completed: [],
-            });
+            const res = await axios.get<any>(ServerConstants.local + 'post/privateProfileServices', { params: { uid: user?.uid } });
+            if (res.data)
+                setServices(res.data)
+            else
+                setServices({
+                    open: [],
+                    inProgress: [],
+                    completed: [],
+                });
         } catch (e) {
             console.error('Fetch User Services Private: ', e)
         }
