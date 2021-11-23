@@ -183,6 +183,7 @@ function TabFourStackScreen() {
       <TabFourStack.Screen name="PublicProfile" component={PublicProfile} options={{ headerShown: false }} />
       <TabOneStack.Screen name="PostDetails" component={PostDetailsScreen} />
       <TabOneStack.Screen name="SearchUser" component={SearchUserScreen} />
+      <TabThreeStack.Screen name="Contract" component={ContractScreen} options={{ headerShown: false }}/>
     </TabFourStack.Navigator>
   )
 }

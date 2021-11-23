@@ -1,6 +1,7 @@
 import { LatLng } from "react-native-maps";
 import { FilterCat } from "../constants/Utils";
 import { CustomFeature } from "../utils/Cadastre";
+import { ServiceStatus } from "./Services";
 
 export interface IService {
     title: string;
@@ -18,4 +19,5 @@ export interface IService {
     _id: string;
     acceptedBy?: string
     images: string[];
+    status: ServiceStatus
 }
