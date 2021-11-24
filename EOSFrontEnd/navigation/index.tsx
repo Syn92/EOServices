@@ -184,6 +184,7 @@ function TabFourStackScreen() {
       <TabOneStack.Screen name="PostDetails" component={PostDetailsScreen} />
       <TabOneStack.Screen name="SearchUser" component={SearchUserScreen} />
       <TabThreeStack.Screen name="Contract" component={ContractScreen} options={{ headerShown: false }}/>
+      <TabThreeStack.Screen name="Chat" component={ChatScreen} options={({ route }) => ({ title: (route.params as IRoom).user.name + " - " + (route.params as IRoom).service.title })} />
     </TabFourStack.Navigator>
   )
 }
