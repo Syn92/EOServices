@@ -1,11 +1,10 @@
-import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react'
-import { StyleSheet, Text, Image, Modal, View, TouchableOpacity } from 'react-native'
+import { StyleSheet, Text, Image, View, TouchableOpacity } from 'react-native'
 import { RequestInfo, RequestIndex } from '../../../interfaces/Services';
-import Server from '../../../constants/Server';
-import { Icon } from 'react-native-elements';
 import { Contract } from '../../../interfaces/Contracts';
+import { ChatContext } from '../../../navigation/ChatSocketProvider';
+import { IRoom } from '../../../interfaces/Chat';
 
 interface Prop {
     requestInfo: RequestInfo,
@@ -16,157 +15,23 @@ interface Prop {
 export function ProfileRequestCard(props: Prop) {
 
     const navigation = useNavigation()
-
-    const [ confirmationModalVisible, setConfirmationModalVisible] = useState(false)
-    const [ modalVisible, setModalVisible ] = useState(false);
-    const [ isModalLoading, setIsModalLoading ] = useState(true)
+    const { rooms } =  React.useContext(ChatContext);
     const [ cardType, setCardType ] = useState<RequestIndex>();
 
     useEffect(() => {
         setCardType(props.requestInfo.requestUser ? RequestIndex.selling : RequestIndex.buying)
     }, [])
 
-    async function denyRequest() {
-        try {
-            let res = await axios.delete(Server.local + 'post', { params: { id: props.request._id } })
-            props.onUpdate()
-            // res.status == 200 --> request deleted
-            // res.status == 204 --> didnt find match in db
-            setModalVisible(false)
-        } catch (e) {
-            setModalVisible(false)
-            console.error('Deny request: ', e)
-        }
-    }
 
-    async function acceptRequest() {
-        try {
-            await axios.patch(Server.local + 'post/accept', {
-                serviceId: props.request.serviceId,
-                contractId: props.request._id
-            })
-            props.onUpdate()
-            setModalVisible(false)
-        } catch (e) {
-            setModalVisible(false)
-            console.error('Accept request: ', e)
-        }
-    }
+    function onPressHandle() {
+        const room = rooms.find((room: IRoom) => room.contract?._id == props.request._id)
 
-    async function onAcceptRequest() {
-        if (props.requestInfo.isUnique)
-            await acceptRequest()
-        else
-            setConfirmationModalVisible(true)
-    }
-
-    function confirmationModal() {
-        return (
-            <View style={modalStyles.confirmationModalView}>
-                <Text style={{fontWeight: 'bold', fontSize: 20}}>Careful!</Text>
-                <Icon name='info' type='material' color='gold' size={100}/>
-                <Text style={{textAlign:'center', marginVertical: '3%'}}>
-                    If you accept this request, all other requests for this service will be deleted.
-                </Text>
-                <View style={modalStyles.buttonContainer}>
-                    <TouchableOpacity style={{...modalStyles.button, backgroundColor: 'grey'}} onPress={() => setConfirmationModalVisible(false)}>
-                        <Text style={modalStyles.buttonText}>Cancel</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={modalStyles.button} onPress={acceptRequest}>
-                        <Text style={modalStyles.buttonText}>Continue</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-        )
-    }
-
-    function incomingModal() {
-
-        return (
-            <View style={modalStyles.modalView}>
-                <Modal
-                    statusBarTranslucent={true}
-                    animationType='slide'
-                    transparent={true}
-                    visible={confirmationModalVisible}
-                    onRequestClose={() => {
-                        setConfirmationModalVisible(false)
-                    }}>
-                    <View style={styles.centeredView}>
-                            {confirmationModal()}
-                    </View>
-                </Modal>
-                <View style={modalStyles.titleContainer}>
-                    { props.requestInfo.thumbnail ? <View style={styles.imageContainer}>
-                        <Image style={modalStyles.image} source={{uri: props.requestInfo.thumbnail, width: 50, height: 50}}/>
-                    </View> : null }
-                    <View style={modalStyles.titleContentContainer}>
-                            <Text style={modalStyles.title}>{props.requestInfo.title}</Text>
-                            <Text style={modalStyles.user}>From: {props.requestInfo.requestUser}</Text>
-                    </View>
-                </View>
-                {/* idk si ca reste */}
-                {/* <View style={modalStyles.contentContainer}>
-                    <Text style={modalStyles.contentTitle}>Request details: </Text>
-                    <Text>{props.request.reqDescription}</Text>
-                </View> */}
-
-                <View style={modalStyles.buttonContainer}>
-                    <TouchableOpacity style={modalStyles.button} onPress={() => {setModalVisible(false); navigation.navigate('PostDetails', props.request.serviceId)}}>
-                        <Text style={modalStyles.buttonText}>Service</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={modalStyles.button} onPress={denyRequest}>
-                        <Text style={modalStyles.buttonText}>Deny</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={modalStyles.button} onPress={onAcceptRequest}>
-                        <Text style={modalStyles.buttonText}>Accept</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-        )
-    }
-
-    function outgoingModal() {
-        return (
-            <View style={modalStyles.modalView}>
-                <View style={modalStyles.titleContainer}>
-                    { props.requestInfo.thumbnail ? <View style={styles.imageContainer}>
-                        <Image style={modalStyles.image} source={{uri: props.requestInfo.thumbnail, width: 50, height: 50}}/>
-                    </View> : null }
-                    <View style={modalStyles.titleContentContainer}>
-                            <Text style={modalStyles.title}>{props.requestInfo.title}</Text>
-                            <Text style={modalStyles.user}>Offered by: {props.requestInfo.serviceOwner}</Text>
-                    </View>
-                </View>
-                {/* same */}
-                {/* <View style={modalStyles.contentContainer}>
-                    <Text style={modalStyles.contentTitle}>Request details: </Text>
-                    <Text>{props.request.reqDescription}</Text>
-                </View> */}
-
-                <View style={modalStyles.buttonContainer}>
-                    <TouchableOpacity style={{...modalStyles.button, width: '90%'}} onPress={() => setModalVisible(false)}>
-                        <Text style={modalStyles.buttonText}>Close</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-        )
+        if (room)
+            navigation.navigate('Chat', room)
     }
 
     return (
-        <TouchableOpacity style={styles.card} onPress={() => setModalVisible(true)}>
-            <Modal
-                statusBarTranslucent={true}
-                animationType='slide'
-                transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => {
-                    setModalVisible(false)
-                }}>
-                <View style={styles.centeredView}>
-                        {cardType == RequestIndex.selling ? outgoingModal() : incomingModal()}
-                </View>
-            </Modal>
+        <TouchableOpacity style={styles.card} onPress={onPressHandle}>
             <View style={styles.imageContainer}>
                 <Image style={styles.image} source={{uri: props.requestInfo.thumbnail, width: 50, height: 50}}/>
             </View>
